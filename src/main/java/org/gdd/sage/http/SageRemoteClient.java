@@ -1,27 +1,21 @@
 package org.gdd.sage.http;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.jena.graph.*;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Node_Variable;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
-import org.gdd.sage.http.SageQuery;
-import org.gdd.sage.http.SageResponse;
+import org.apache.jena.sparql.util.NodeFactoryExtra;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,6 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Allows evaluation of Basic Graph Patterns against a SaGe server
+ * @author Thomas Minier
+ */
 public class SageRemoteClient {
     private String serverURL;
     private CloseableHttpClient httpClient;
@@ -46,19 +44,50 @@ public class SageRemoteClient {
     }
 
     /**
+     * Evaluate a Basic Graph Pattern against a SaGe server, with an optional next link
+     * @param bgp - BGP to evaluate
+     * @param next - (optional) Link used to resume query evaluation
+     * @return A 2-Tuple (query results, next link). If the next link is null, then the BGP has been completely evaluated.
+     * @throws IOException
+     */
+    public QueryResults query(BasicPattern bgp, String next) throws IOException {
+        List<Binding> results = new ArrayList<>();
+        CloseableHttpResponse response = sendQuery(bgp, next);
+        SageResponse sageResponse = decodeResponse(response);
+        response.close();
+
+        // format bindings in Jena format
+        for (Map<String, String> binding: sageResponse.bindings) {
+            BindingHashMap b = new BindingHashMap();
+            for (Map.Entry<String, String> entry: binding.entrySet()) {
+                Var key = Var.alloc(entry.getKey().substring(1));
+                Node value;
+                if (entry.getValue().startsWith("\"")) {
+                    value = NodeFactoryExtra.parseNode(entry.getValue());
+                } else {
+                    value = NodeFactory.createURI(entry.getValue());
+                }
+                b.add(key, value);
+            }
+            results.add(b);
+        }
+        return new QueryResults(results, sageResponse.next);
+    }
+
+    /**
      * Send an HTTP POST query to the SaGe Server
      * @param bgp - BGP to evaluate
      * @param next - Next link (may be null)
      * @return The HTTP Response received from the server
      * @throws IOException
      */
-    private CloseableHttpResponse doQuery(BasicPattern bgp, String next) throws IOException {
+    private CloseableHttpResponse sendQuery(BasicPattern bgp, String next) throws IOException {
         HttpPost query = new HttpPost(this.serverURL);
         query.setHeader("accept", "application/json");
         query.setHeader("content-type", "application/json");
 
-        SageQuery q = new SageQuery(bgp.getList(), next);
-        query.setEntity(new StringEntity(q.toJSONString()));
+        String q = SageQuery.toJSONString("bgp", bgp.getList(), next);
+        query.setEntity(new StringEntity(q));
         return httpClient.execute(query);
     }
 
@@ -74,12 +103,6 @@ public class SageRemoteClient {
     }
 
     public static void main(String[] args) {
-        // create HTTP client
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpPost query = new HttpPost(
-                "http://localhost:8000/sparql/bsbm1k");
-        query.setHeader("accept", "application/json");
-        query.setHeader("content-type", "application/json");
         BasicPattern bgp = new BasicPattern();
 
         Triple triple1 = new Triple(
@@ -92,40 +115,15 @@ public class SageRemoteClient {
                 new Node_Variable("label"));
         bgp.add(triple1);
         bgp.add(triple2);
-        SageQuery q = new SageQuery(bgp.getList(), null);
+
+        SageRemoteClient client = new SageRemoteClient("http://localhost:8000/sparql/bsbm1k");
+
         try {
-            query.setEntity(new StringEntity(q.toJSONString()));
-            // do POST query and read results
-            CloseableHttpResponse response = httpclient.execute(query);
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            ObjectMapper mapper = new ObjectMapper();
-
-            SageResponse queryResponse = mapper.readValue(rd, new TypeReference<SageResponse>(){});
-            response.close();
-
-            // format bindings in Jena format
-            List<Binding> results = new ArrayList<>();
-            for (Map<String, String> binding: queryResponse.bindings) {
-                BindingHashMap b = new BindingHashMap();
-                for (Map.Entry<String, String> entry: binding.entrySet()) {
-                    Var key = Var.alloc(entry.getKey().substring(1));
-                    Node value;
-                    if (entry.getValue().startsWith("\"")) {
-                        value = NodeFactory.createLiteral(entry.getValue());
-                    } else {
-                        value = NodeFactory.createURI(entry.getValue());
-                    }
-                    b.add(key, value);
-                }
-                results.add(b);
-            }
-            System.out.println(results);
-            System.out.println("Cardinality: " + queryResponse.pageSize);
-            System.out.println("nb results: " + results.size());
-            System.out.println("Next link: " + queryResponse.next);
-
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            QueryResults results = client.query(bgp, null);
+            System.out.println(results.bindings);
+            System.out.println("nb results: " + results.bindings.size());
+            System.out.println("Next link: " + results.next);
+            System.out.println("has next? " + results.hasNext());
         } catch (IOException e) {
             e.printStackTrace();
         }

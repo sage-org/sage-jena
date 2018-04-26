@@ -4,6 +4,7 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 
 public class CustomStageGenerator implements StageGenerator {
@@ -19,8 +20,8 @@ public class CustomStageGenerator implements StageGenerator {
                                  QueryIterator input,
                                  ExecutionContext execCxt) {
         Graph g = execCxt.getActiveGraph() ;
-        System.out.println(pattern);
+        System.out.println(input.nextBinding());
 
-      return null;
+        return new QueryIterNullIterator(execCxt);
     }
 }

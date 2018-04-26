@@ -10,4 +10,5 @@ public class SageResponse {
     public List<Map<String, String>> bindings;
     public int pageSize;
     public String next;
+    public boolean hasNext;
 }
