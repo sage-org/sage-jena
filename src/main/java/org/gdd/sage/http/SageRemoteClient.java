@@ -47,7 +47,7 @@ public class SageRemoteClient {
      * Evaluate a Basic Graph Pattern against a SaGe server, with an optional next link
      * @param bgp - BGP to evaluate
      * @param next - (optional) Link used to resume query evaluation
-     * @return A 2-Tuple (query results, next link). If the next link is null, then the BGP has been completely evaluated.
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      * @throws IOException
      */
     public QueryResults query(BasicPattern bgp, String next) throws IOException {
@@ -100,32 +100,5 @@ public class SageRemoteClient {
     private SageResponse decodeResponse(CloseableHttpResponse response) throws IOException {
         BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
         return mapper.readValue(rd, new TypeReference<SageResponse>(){});
-    }
-
-    public static void main(String[] args) {
-        BasicPattern bgp = new BasicPattern();
-
-        Triple triple1 = new Triple(
-                NodeFactory.createURI("http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product272"),
-                NodeFactory.createURI("http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/producer"),
-                Var.alloc("producer"));
-        Triple triple2 = new Triple(
-                Var.alloc("producer"),
-                NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"),
-                new Node_Variable("label"));
-        bgp.add(triple1);
-        bgp.add(triple2);
-
-        SageRemoteClient client = new SageRemoteClient("http://localhost:8000/sparql/bsbm1k");
-
-        try {
-            QueryResults results = client.query(bgp, null);
-            System.out.println(results.bindings);
-            System.out.println("nb results: " + results.bindings.size());
-            System.out.println("Next link: " + results.next);
-            System.out.println("has next? " + results.hasNext());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }

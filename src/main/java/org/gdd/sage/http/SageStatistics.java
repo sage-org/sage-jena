@@ -6,5 +6,5 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SageStatistics {
-    public Map<String, Map<String, Integer>> cardinalities;
+    public Map<Map<String, String>, Integer> cardinalities;
 }
