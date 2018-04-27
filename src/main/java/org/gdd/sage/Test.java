@@ -48,8 +48,7 @@ public class Test {
                 "    OPTIONAL { ?review bsbm:rating2 ?rating2 . }\n" +
                 "    }\n" +
                 "}\n";
-        SageStageGenerator myStageGenerator = new SageStageGenerator();
-        StageBuilder.setGenerator(ARQ.getContext(), myStageGenerator) ;
+        StageBuilder.setGenerator(ARQ.getContext(), SageStageGenerator.createDefault()) ;
         Query query = QueryFactory.create(queryString);
         try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
             ResultSet results = qexec.execSelect();
