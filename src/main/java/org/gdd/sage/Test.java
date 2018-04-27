@@ -5,17 +5,19 @@ import org.apache.jena.rdf.model.*;
 import org.apache.jena.sparql.engine.main.StageBuilder;
 import org.apache.jena.util.FileManager;
 import org.gdd.sage.engine.SageStageGenerator;
+import org.gdd.sage.model.SageModelFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class Test {
     public static void main(String[] args) {
-        Model model = ModelFactory.createDefaultModel();
-        InputStream in = FileManager.get().open("/Users/minier-t/Documents/hdt-files/scale1000.ttl");
-        if (in == null) {
-            throw new IllegalArgumentException("File: not found");
-        }
-//         model.read(in, null, "TURTLE");
+        Model model = SageModelFactory.createModel("http://localhost:8000/sparql/bsbm1k");
+        /*try (InputStream in = FileManager.get().open("/Users/minier-t/Documents/hdt-files/scale1000.ttl")) {
+            //model.read(in, null, "TURTLE");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
 
         String queryString = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
                 "PREFIX rev: <http://purl.org/stuff/rev#>\n" +
@@ -46,7 +48,7 @@ public class Test {
                 "    OPTIONAL { ?review bsbm:rating2 ?rating2 . }\n" +
                 "    }\n" +
                 "}\n";
-        SageStageGenerator myStageGenerator = new SageStageGenerator("http://localhost:8000/sparql/bsbm1k");
+        SageStageGenerator myStageGenerator = new SageStageGenerator();
         StageBuilder.setGenerator(ARQ.getContext(), myStageGenerator) ;
         Query query = QueryFactory.create(queryString);
         try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {

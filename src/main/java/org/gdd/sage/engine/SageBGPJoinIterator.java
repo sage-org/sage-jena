@@ -12,6 +12,7 @@ import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator;
 import org.apache.jena.sparql.engine.iterator.QueryIteratorBase;
 import org.apache.jena.sparql.serializer.SerializationContext;
 import org.gdd.sage.http.SageRemoteClient;
+import org.gdd.sage.model.SageGraph;
 
 /**
  * Perform a Nested Loop Join between a source of bindings and a Basic Graph patterns.
@@ -22,15 +23,15 @@ public class SageBGPJoinIterator extends QueryIteratorBase {
 
     private QueryIterator source;
     private BasicPattern bgp;
-    private SageRemoteClient client;
+    private SageGraph graph;
     private QueryIterator currentIterator;
     private Binding currentSourceBinding;
     private ExecutionContext context;
 
-    public SageBGPJoinIterator(QueryIterator source, BasicPattern bgp, SageRemoteClient client, ExecutionContext context) {
+    public SageBGPJoinIterator(QueryIterator source, BasicPattern bgp, SageGraph graph, ExecutionContext context) {
         this.source = source;
         this.bgp = bgp;
-        this.client = client;
+        this.graph = graph;
         this.context = context;
         currentSourceBinding = new BindingHashMap();
         currentIterator = this.buildInnerLoop();
@@ -46,7 +47,7 @@ public class SageBGPJoinIterator extends QueryIteratorBase {
             for (Triple t: bgp) {
                 boundBGP.add(Substitute.substitute(t, currentSourceBinding));
             }
-            return new SageBGPIterator(client, boundBGP);
+            return graph.evaluateBGP(boundBGP);
         }
         return new QueryIterNullIterator(context);
     }
