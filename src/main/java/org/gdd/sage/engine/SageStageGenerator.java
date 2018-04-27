@@ -3,6 +3,7 @@ package org.gdd.sage.engine;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.iterator.QueryIterRoot;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.gdd.sage.http.SageRemoteClient;
 
@@ -28,9 +29,9 @@ public class SageStageGenerator implements StageGenerator {
     public QueryIterator execute(BasicPattern pattern,
                                  QueryIterator input,
                                  ExecutionContext execCxt) {
-        return new SageBGPIterator(httpClient, pattern);
-        /*Graph g = execCxt.getActiveGraph() ;
-        System.out.println(input.nextBinding());
-        return new QueryIterNullIterator(execCxt);*/
+        if (input instanceof QueryIterRoot) {
+            return new SageBGPIterator(httpClient, pattern);
+        }
+        return new SageBGPJoinIterator(input, pattern, httpClient, execCxt);
     }
 }

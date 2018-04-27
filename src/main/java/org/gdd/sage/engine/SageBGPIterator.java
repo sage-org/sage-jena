@@ -24,7 +24,7 @@ public class SageBGPIterator extends QueryIteratorBase {
     private BasicPattern bgp;
     private String nextLink;
     private List<Binding> bindingsBuffer;
-    private boolean isDone;
+    private boolean hasNextPage;
 
     /**
      * Constructor
@@ -36,7 +36,8 @@ public class SageBGPIterator extends QueryIteratorBase {
         this.bgp = bgp;
         this.nextLink = null;
         this.bindingsBuffer = new ArrayList<>();
-        this.isDone = false;
+        this.hasNextPage = true;
+        this.fillBindingsBuffer();
     }
 
     /**
@@ -47,9 +48,21 @@ public class SageBGPIterator extends QueryIteratorBase {
         bindingsBuffer.addAll(bindings);
     }
 
+    private void fillBindingsBuffer () {
+        try {
+            QueryResults queryResults = client.query(bgp, nextLink);
+            bindingsBuffer.addAll(queryResults.bindings);
+            nextLink = queryResults.next;
+            hasNextPage = queryResults.hasNext();
+        } catch (IOException e) {
+            e.printStackTrace();
+            hasNextPage = false;
+        }
+    }
+
     @Override
     protected boolean hasNextBinding() {
-        return !bindingsBuffer.isEmpty() || !isDone;
+        return (!bindingsBuffer.isEmpty()) || hasNextPage;
     }
 
     @Override
@@ -61,24 +74,15 @@ public class SageBGPIterator extends QueryIteratorBase {
                 bindingsBuffer.remove(0);
                 return binding;
             }
-            try {
-                QueryResults queryResults = client.query(bgp, nextLink);
-                bindingsBuffer.addAll(queryResults.bindings);
-                nextLink = queryResults.next;
-                if (!queryResults.hasNext()) {
-                    isDone = true;
-                }
-                return this.moveToNextBinding();
-            } catch (IOException e) {
-                isDone = true;
-            }
+            fillBindingsBuffer();
+            return this.moveToNextBinding();
         }
         return null;
     }
 
     @Override
     protected void closeIterator() {
-        isDone = true;
+        hasNextPage = false;
         bindingsBuffer.clear();
     }
 

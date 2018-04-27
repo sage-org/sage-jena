@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Allows evaluation of Basic Graph Patterns against a SaGe server
@@ -51,13 +52,12 @@ public class SageRemoteClient {
      * @throws IOException
      */
     public QueryResults query(BasicPattern bgp, String next) throws IOException {
-        List<Binding> results = new ArrayList<>();
         CloseableHttpResponse response = sendQuery(bgp, next);
         SageResponse sageResponse = decodeResponse(response);
         response.close();
 
         // format bindings in Jena format
-        for (Map<String, String> binding: sageResponse.bindings) {
+        List<Binding> results = sageResponse.bindings.stream().map(binding -> {
             BindingHashMap b = new BindingHashMap();
             for (Map.Entry<String, String> entry: binding.entrySet()) {
                 Var key = Var.alloc(entry.getKey().substring(1));
@@ -69,8 +69,8 @@ public class SageRemoteClient {
                 }
                 b.add(key, value);
             }
-            results.add(b);
-        }
+            return b;
+        }).collect(Collectors.toList());
         return new QueryResults(results, sageResponse.next);
     }
 
