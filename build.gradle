@@ -10,7 +10,7 @@ description = """SaGe client, build as an Apache Jena extension"""
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-mainClassName = "org.gdd.sage.CLI"
+mainClassName = "org.gdd.sage.cli.CLI"
 
 jar {
     manifest {
