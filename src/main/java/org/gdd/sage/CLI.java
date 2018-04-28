@@ -3,6 +3,8 @@ package org.gdd.sage;
 import org.apache.commons.cli.*;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.engine.main.StageBuilder;
 import org.gdd.sage.engine.SageStageGenerator;
 import org.gdd.sage.model.SageModelFactory;
@@ -92,24 +94,58 @@ public class CLI {
                 // Evaluate SPARQL query
                 Query query = QueryFactory.create(queryString);
                 try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
-                    ResultSet results = qexec.execSelect();
-                    results = ResultSetFactory.copyResults(results);
-                    switch (format) {
-                        case "xml":
-                            ResultSetFormatter.outputAsXML(results);
-                            break;
-                        case "json":
-                            ResultSetFormatter.outputAsJSON(results);
-                            break;
-                        case "csv":
-                            ResultSetFormatter.outputAsCSV(results);
-                            break;
-                        case "tsv":
-                            ResultSetFormatter.outputAsTSV(results);
-                            break;
-                        default:
-                            ResultSetFormatter.outputAsSSE(results);
-                            break;
+                    ResultSet results;
+                    if (query.isSelectType()) {
+                        results = qexec.execSelect();
+                        results = ResultSetFactory.copyResults(results);
+                        switch (format) {
+                            case "xml":
+                                ResultSetFormatter.outputAsXML(results);
+                                break;
+                            case "json":
+                                ResultSetFormatter.outputAsJSON(results);
+                                break;
+                            case "csv":
+                                ResultSetFormatter.outputAsCSV(results);
+                                break;
+                            case "tsv":
+                                ResultSetFormatter.outputAsTSV(results);
+                                break;
+                            default:
+                                ResultSetFormatter.outputAsSSE(results);
+                                break;
+                        }
+                    } else if (query.isAskType()) {
+                        ResultSetFormatter.out(qexec.execAsk());
+                    } else {
+                        Model resultsModel = null;
+                        RDFFormat modelFormat;
+                        if (query.isConstructType()) {
+                            resultsModel = qexec.execConstruct();
+                        } else if (query.isDescribeType()) {
+                            resultsModel = qexec.execDescribe();
+                        } else {
+                            logger.error("Unknown SPARQL query type");
+                            System.exit(1);
+                        }
+                        switch (format) {
+                            case "ttl":
+                            case "turtle":
+                                modelFormat = RDFFormat.TURTLE;
+                                break;
+                            case "nt":
+                            case "n-triple":
+                            case "n-triples":
+                                modelFormat = RDFFormat.NTRIPLES_UTF8;
+                                break;
+                            case "json":
+                                modelFormat = RDFFormat.JSONLD;
+                                break;
+                            default:
+                                modelFormat = RDFFormat.RDFXML;
+                                break;
+                        }
+                        RDFDataMgr.write(System.out, resultsModel, modelFormat);
                     }
                 }
             }
