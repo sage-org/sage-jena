@@ -11,7 +11,6 @@ import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator;
 import org.apache.jena.sparql.engine.iterator.QueryIteratorBase;
 import org.apache.jena.sparql.serializer.SerializationContext;
-import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.model.SageGraph;
 
 /**
@@ -71,7 +70,7 @@ public class SageBGPJoinIterator extends QueryIteratorBase {
                 res.addAll(mu);
                 return res;
             }
-            return mu;
+            return null;
         }
         return null;
     }

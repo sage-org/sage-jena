@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'application'
+
+group = 'org.gdd.sage'
+version = '1.0-SNAPSHOT'
+
+description = """"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+mainClassName = "org.gdd.sage.CLI"
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'sage-jena',
+                    'Implementation-Version': version,
+                    'Main-Class': mainClassName
+    }
+}
+
+repositories {
+        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.apache.jena', name: 'apache-jena-libs', version:'3.7.0'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.5'
+    compile group: 'commons-cli', name: 'commons-cli', version:'1.2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+}
