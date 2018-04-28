@@ -5,7 +5,7 @@ apply plugin: 'application'
 group = 'org.gdd.sage'
 version = '1.0-SNAPSHOT'
 
-description = """"""
+description = """SaGe client, build as an Apache Jena extension"""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -15,8 +15,8 @@ mainClassName = "org.gdd.sage.CLI"
 jar {
     manifest {
         attributes 'Implementation-Title': 'sage-jena',
-                    'Implementation-Version': version,
-                    'Main-Class': mainClassName
+                'Implementation-Version': version,
+                'Main-Class': mainClassName
     }
 }
 
