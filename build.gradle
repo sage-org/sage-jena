@@ -21,7 +21,6 @@ jar {
 }
 
 repositories {
-        
      maven { url "http://repo.maven.apache.org/maven2" }
 }
 dependencies {
@@ -30,4 +29,6 @@ dependencies {
     compile group: 'commons-cli', name: 'commons-cli', version:'1.2'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.5'
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:2.+"
 }
