@@ -131,6 +131,7 @@ public class CLI {
                         switch (format) {
                             case "ttl":
                             case "turtle":
+                            case "n3":
                                 modelFormat = RDFFormat.TURTLE;
                                 break;
                             case "nt":
@@ -139,7 +140,15 @@ public class CLI {
                                 modelFormat = RDFFormat.NTRIPLES_UTF8;
                                 break;
                             case "json":
+                            case "rdf/json":
+                                modelFormat = RDFFormat.RDFJSON;
+                                break;
+                            case "jsonld":
                                 modelFormat = RDFFormat.JSONLD;
+                                break;
+                            case "thrift":
+                            case "rdf/binary":
+                                modelFormat = RDFFormat.RDF_THRIFT;
                                 break;
                             default:
                                 modelFormat = RDFFormat.RDFXML;
