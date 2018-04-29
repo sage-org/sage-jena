@@ -16,9 +16,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +33,7 @@ public class SageDefaultClient implements SageRemoteClient {
     /**
      * Constructor
      * @param url - URL of the SaGe server
+     * @param client - HTTP client used to perform HTTP requests
      */
     public SageDefaultClient(String url, HttpClient client) {
         serverURL = url;
@@ -106,7 +105,6 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     private SageResponse decodeResponse(HttpResponse response) throws IOException {
         HttpEntity resEntity = response.getEntity();
-        //BufferedReader rd = new BufferedReader(new InputStreamReader(resEntity.getContent()));
         SageResponse sageResponse = mapper.readValue(EntityUtils.toString(resEntity), new TypeReference<SageResponse>(){});
         EntityUtils.consume(resEntity);
         return sageResponse;
