@@ -40,9 +40,9 @@ public class SageStageGenerator implements StageGenerator {
         if (g instanceof SageGraph) {
             SageGraph sageGraph = (SageGraph) g;
             if (input instanceof QueryIterRoot) {
-                return sageGraph.evaluateBGP(pattern);
+                return sageGraph.BasicGraphPatternFind(pattern);
             }
-            SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.evaluateBGP(pattern);
+            SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.BasicGraphPatternFind(pattern);
             // if the BGP can be downloaded in one HTTP request, then use a hash join to save data transfer
             if (!bgpIt.getHasNextPage()) {
                 return QueryIterHashJoin.create(input, bgpIt, execCxt);

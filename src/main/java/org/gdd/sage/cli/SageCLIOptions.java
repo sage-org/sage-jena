@@ -27,7 +27,7 @@ public class SageCLIOptions {
                 .hasArg()
                 .desc("File containing a SPARQL query to execute")
                 .build();
-        
+
         Option formatOpt = Option.builder()
                 .longOpt("format")
                 .argName("format")

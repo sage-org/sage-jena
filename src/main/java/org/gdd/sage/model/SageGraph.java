@@ -40,7 +40,7 @@ public class SageGraph extends GraphBase {
      * @param bgp - BGP to evaluate
      * @return An iterator over solution bindings for the BGP
      */
-    public QueryIterator evaluateBGP(BasicPattern bgp) {
+    public QueryIterator BasicGraphPatternFind(BasicPattern bgp) {
         return new SageBGPIterator(httpClient, bgp);
     }
 }
