@@ -1,4 +1,4 @@
-package org.gdd.sage.http;
+package org.gdd.sage.http.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;

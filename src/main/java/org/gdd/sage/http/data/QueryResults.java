@@ -1,4 +1,4 @@
-package org.gdd.sage.http;
+package org.gdd.sage.http.data;
 
 import org.apache.jena.sparql.engine.binding.Binding;
 

@@ -15,6 +15,9 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
+import org.gdd.sage.http.data.QueryResults;
+import org.gdd.sage.http.data.SageQuery;
+import org.gdd.sage.http.data.SageResponse;
 
 import java.io.IOException;
 import java.util.List;

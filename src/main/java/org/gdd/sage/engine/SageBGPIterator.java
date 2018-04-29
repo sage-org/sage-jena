@@ -6,7 +6,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIteratorBase;
 import org.apache.jena.sparql.serializer.SerializationContext;
-import org.gdd.sage.http.QueryResults;
+import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.SageRemoteClient;
 import org.slf4j.Logger;
 
