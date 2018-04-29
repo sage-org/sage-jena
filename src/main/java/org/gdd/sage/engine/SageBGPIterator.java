@@ -52,6 +52,14 @@ public class SageBGPIterator extends QueryIteratorBase {
         bindingsBuffer.addAll(bindings);
     }
 
+    /**
+     * Return True if the Iterator has all bindings have not been retrieved from the server
+     * @return
+     */
+    public boolean getHasNextPage() {
+        return this.hasNextPage;
+    }
+
     private void fillBindingsBuffer () {
         try {
             QueryResults queryResults = client.query(bgp, nextLink);
