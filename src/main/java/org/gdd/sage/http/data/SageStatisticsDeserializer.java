@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class SageStatisticsDeserializer extends JsonDeserializer<SageStatistics> {
     @Override
-    public SageStatistics deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public SageStatistics deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         double exportTime = node.get("export").asDouble();
         double importTime = node.get("import").asDouble();

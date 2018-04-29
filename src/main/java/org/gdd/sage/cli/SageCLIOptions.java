@@ -7,29 +7,32 @@ public class SageCLIOptions {
     private Options options;
 
     public SageCLIOptions() {
-        OptionBuilder.withLongOpt("url");
-        OptionBuilder.withArgName("url");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("URL of the SaGe server");
-        Option urlOpt = OptionBuilder.create("u");
+        Option urlOpt = Option.builder("u")
+                .longOpt("url")
+                .argName("url")
+                .hasArg()
+                .desc("URL of the SaGe server")
+                .build();
 
-        OptionBuilder.withLongOpt("query");
-        OptionBuilder.withArgName("sparql-query");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("SPARQL query to execute (passed in command-line)");
-        Option queryOpt = OptionBuilder.create("q");
+        Option queryOpt = Option.builder("q")
+                .longOpt("query")
+                .argName("sparql-query")
+                .hasArg()
+                .desc("SPARQL query to execute (passed in command-line)")
+                .build();
 
-        OptionBuilder.withLongOpt("file");
-        OptionBuilder.withArgName("file");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("File containing a SPARQL query to execute");
-        Option fileOpt = OptionBuilder.create("f");
-
-        OptionBuilder.withLongOpt("format");
-        OptionBuilder.withArgName("format");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("Results format (Result set: text, XML, JSON, CSV, TSV; Graph: RDF serialization)");
-        Option formatOpt = OptionBuilder.create();
+        Option fileOpt = Option.builder("f")
+                .longOpt("file")
+                .argName("file")
+                .hasArg()
+                .desc("File containing a SPARQL query to execute")
+                .build();
+        
+        Option formatOpt = Option.builder()
+                .longOpt("format")
+                .argName("format")
+                .desc("Results format (Result set: text, XML, JSON, CSV, TSV; Graph: RDF serialization)")
+                .build();
 
         // register options
         options = new Options();
@@ -43,7 +46,7 @@ public class SageCLIOptions {
     }
 
     public CommandLine parseArgs(String[] args) throws ParseException {
-        CommandLineParser parser = new BasicParser();
+        CommandLineParser parser = new DefaultParser();
         return parser.parse(options, args);
     }
 

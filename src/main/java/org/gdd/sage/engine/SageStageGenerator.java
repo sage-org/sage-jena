@@ -11,7 +11,7 @@ import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.gdd.sage.model.SageGraph;
 
 /**
- * Provides a custom SateGenerator for evaluating SPARQL queries against a SaGe server
+ * Provides a custom StageGenerator for evaluating SPARQL queries against a SaGe server
  * @author Thomas Minier
  */
 public class SageStageGenerator implements StageGenerator {

@@ -11,8 +11,7 @@ import org.gdd.sage.http.SageRemoteClient;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Evaluate a Basic Graph Pattern (BGP) using a SaGe server using the Iterator pattern.
@@ -25,7 +24,7 @@ public class SageBGPIterator extends QueryIteratorBase {
     private SageRemoteClient client;
     private BasicPattern bgp;
     private String nextLink;
-    private List<Binding> bindingsBuffer;
+    private Deque<Binding> bindingsBuffer;
     private boolean hasNextPage;
     private Logger logger;
 
@@ -38,7 +37,7 @@ public class SageBGPIterator extends QueryIteratorBase {
         this.client = client;
         this.bgp = bgp;
         this.nextLink = null;
-        this.bindingsBuffer = new ArrayList<>();
+        this.bindingsBuffer = new ArrayDeque<>();
         this.hasNextPage = true;
         logger = ARQ.getExecLogger();
         this.fillBindingsBuffer();
@@ -82,9 +81,7 @@ public class SageBGPIterator extends QueryIteratorBase {
         if (this.hasNextBinding()) {
             // pull from internal buffer is possible, otherwise fetch more bindings from server
             if (!bindingsBuffer.isEmpty()) {
-                Binding binding = bindingsBuffer.get(0);
-                bindingsBuffer.remove(0);
-                return binding;
+                return bindingsBuffer.pollFirst();
             }
             fillBindingsBuffer();
             return this.moveToNextBinding();
