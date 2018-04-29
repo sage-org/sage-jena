@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class SageRemoteClientTest {
+public class SageDefaultClientTest {
 
     @Test
     public void query() {

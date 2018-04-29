@@ -1,12 +1,14 @@
 package org.gdd.sage.engine;
 
 import org.apache.jena.atlas.io.IndentedWriter;
+import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIteratorBase;
 import org.apache.jena.sparql.serializer.SerializationContext;
 import org.gdd.sage.http.QueryResults;
 import org.gdd.sage.http.SageRemoteClient;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class SageBGPIterator extends QueryIteratorBase {
     private String nextLink;
     private List<Binding> bindingsBuffer;
     private boolean hasNextPage;
+    private Logger logger;
 
     /**
      * Constructor
@@ -37,6 +40,7 @@ public class SageBGPIterator extends QueryIteratorBase {
         this.nextLink = null;
         this.bindingsBuffer = new ArrayList<>();
         this.hasNextPage = true;
+        logger = ARQ.getExecLogger();
         this.fillBindingsBuffer();
     }
 
@@ -55,7 +59,7 @@ public class SageBGPIterator extends QueryIteratorBase {
             nextLink = queryResults.next;
             hasNextPage = queryResults.hasNext();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             hasNextPage = false;
         }
     }

@@ -8,6 +8,7 @@ import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.SageBGPIterator;
+import org.gdd.sage.http.SageClientBuilder;
 import org.gdd.sage.http.SageRemoteClient;
 
 /**
@@ -23,7 +24,7 @@ public class SageGraph extends GraphBase {
      */
     public SageGraph(String url) {
         super();
-        this.httpClient = new SageRemoteClient(url);
+        this.httpClient = SageClientBuilder.createDefault(url);
     }
 
     @Override
