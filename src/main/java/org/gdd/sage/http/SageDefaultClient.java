@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -59,7 +60,12 @@ public class SageDefaultClient implements SageRemoteClient {
             BindingHashMap b = new BindingHashMap();
             for (Map.Entry<String, String> entry: binding.entrySet()) {
                 Var key = Var.alloc(entry.getKey().substring(1));
-                Node value = NodeFactoryExtra.parseNode(entry.getValue());
+                Node value;
+                if (entry.getValue().startsWith("\"")) {
+                    value = NodeFactoryExtra.parseNode(entry.getValue());
+                } else {
+                    value = NodeFactory.createURI(entry.getValue());
+                }
                 b.add(key, value);
             }
             return b;
