@@ -8,9 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SageStatistics {
-    public double exportTime;
-    public double importTime;
+    private double exportTime;
+    private double importTime;
     private Map<Triple, Integer> cardinalities;
+
+    public double getExportTime() {
+        return exportTime;
+    }
+
+    public double getImportTime() {
+        return importTime;
+    }
 
     public SageStatistics(double exportTime, double importTime) {
         this.exportTime = exportTime;
