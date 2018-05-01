@@ -1,7 +1,10 @@
 package org.gdd.sage.http;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.cache.HttpCacheContext;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.impl.client.cache.CachingHttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 /**
@@ -12,7 +15,9 @@ public class SageClientBuilder {
     private String url;
     private HttpClient httpClient;
 
-    private SageClientBuilder() {}
+    private SageClientBuilder() {
+
+    }
 
     /**
      * Create a default SageRemoteClient
@@ -21,7 +26,12 @@ public class SageClientBuilder {
      */
     public static SageRemoteClient createDefault(String url) {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        HttpClient client = HttpClientBuilder.create()
+        CacheConfig cacheConfig = CacheConfig.custom()
+                .setMaxCacheEntries(1000)
+                .setMaxObjectSize(1000000)
+                .build();
+        HttpClient client = CachingHttpClients.custom()
+                .setCacheConfig(cacheConfig)
                 .setConnectionManager(connectionManager)
                 .setUserAgent("Sage-Jena client/1.0")
                 .build();

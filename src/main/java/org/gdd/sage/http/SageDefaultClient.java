@@ -20,6 +20,7 @@ import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class SageDefaultClient implements SageRemoteClient {
     private String serverURL;
     private HttpClient httpClient;
     private ObjectMapper mapper;
+    private Map<String, SageResponse> bgpCache;
 
     /**
      * Constructor
@@ -42,6 +44,7 @@ public class SageDefaultClient implements SageRemoteClient {
         serverURL = url;
         httpClient = client;
         mapper = new ObjectMapper();
+        bgpCache = new LinkedHashMap<>();
     }
 
     /**
@@ -52,8 +55,18 @@ public class SageDefaultClient implements SageRemoteClient {
      * @throws IOException
      */
     public QueryResults query(BasicPattern bgp, String next) throws IOException {
-        HttpResponse response = sendQuery(bgp, next);
-        SageResponse sageResponse = decodeResponse(response);
+        SageResponse sageResponse;
+        String jsonQuery = SageQueryBuilder.builder()
+                .withType("bgp")
+                .withBasicGraphPattern(bgp)
+                .withNextLink(next)
+                .build();
+        if (bgpCache.containsKey(jsonQuery)) {
+            sageResponse = bgpCache.get(jsonQuery);
+        } else {
+            HttpResponse response = sendQuery(jsonQuery, next);
+            sageResponse = decodeResponse(response);
+        }
 
         // format bindings in Jena format
         List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {
@@ -70,7 +83,11 @@ public class SageDefaultClient implements SageRemoteClient {
             }
             return b;
         }).collect(Collectors.toList());
-        return new QueryResults(results, sageResponse.next);
+        QueryResults qResults = new QueryResults(results, sageResponse.next);
+        if (!sageResponse.hasNext) {
+            bgpCache.put(jsonQuery, sageResponse);
+        }
+        return qResults;
     }
 
     /**
@@ -85,22 +102,16 @@ public class SageDefaultClient implements SageRemoteClient {
 
     /**
      * Send an HTTP POST query to the SaGe Server
-     * @param bgp - BGP to evaluate
+     * @param jsonQuery - JSOn query
      * @param next - Next link (may be null)
      * @return The HTTP Response received from the server
      * @throws IOException
      */
-    private HttpResponse sendQuery(BasicPattern bgp, String next) throws IOException {
+    private HttpResponse sendQuery(String jsonQuery, String next) throws IOException {
         HttpPost query = new HttpPost(this.serverURL);
         query.setHeader("accept", "application/json");
         query.setHeader("content-type", "application/json");
-
-        String q = SageQueryBuilder.builder()
-                .withType("bgp")
-                .withBasicGraphPattern(bgp)
-                .withNextLink(next)
-                .build();
-        query.setEntity(new StringEntity(q));
+        query.setEntity(new StringEntity(jsonQuery));
         return httpClient.execute(query);
     }
 
