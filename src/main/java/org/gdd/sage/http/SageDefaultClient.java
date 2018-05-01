@@ -64,8 +64,7 @@ public class SageDefaultClient implements SageRemoteClient {
         if (bgpCache.containsKey(jsonQuery)) {
             sageResponse = bgpCache.get(jsonQuery);
         } else {
-            HttpResponse response = sendQuery(jsonQuery);
-            sageResponse = decodeResponse(response);
+            sageResponse = decodeResponse(sendQuery(jsonQuery));
         }
 
         // format bindings in Jena format
@@ -83,7 +82,7 @@ public class SageDefaultClient implements SageRemoteClient {
             }
             return b;
         }).collect(Collectors.toList());
-        QueryResults qResults = new QueryResults(results, sageResponse.next);
+        QueryResults qResults = new QueryResults(results, sageResponse.next, sageResponse.stats);
         if (!sageResponse.hasNext) {
             bgpCache.put(jsonQuery, sageResponse);
         }

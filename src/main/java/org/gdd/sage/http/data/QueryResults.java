@@ -7,10 +7,12 @@ import java.util.List;
 public class QueryResults {
     public List<Binding> bindings;
     public String next;
+    public SageStatistics stats;
 
-    public QueryResults(List<Binding> bindings, String next) {
+    public QueryResults(List<Binding> bindings, String next, SageStatistics stats) {
         this.bindings = bindings;
         this.next = next;
+        this.stats = stats;
     }
 
     public boolean hasNext() {

@@ -10,6 +10,9 @@ import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.SageBGPIterator;
 import org.gdd.sage.http.SageClientBuilder;
 import org.gdd.sage.http.SageRemoteClient;
+import org.gdd.sage.http.data.QueryResults;
+
+import java.io.IOException;
 
 /**
  * Represents a remote RDF graph hosted at a Sage server
@@ -40,7 +43,17 @@ public class SageGraph extends GraphBase {
      * @param bgp - BGP to evaluate
      * @return An iterator over solution bindings for the BGP
      */
-    public QueryIterator BasicGraphPatternFind(BasicPattern bgp) {
+    public QueryIterator basicGraphPatternFind(BasicPattern bgp) {
         return new SageBGPIterator(httpClient, bgp);
+    }
+
+    /**
+     * Get metadata about a Basic Graph Pattern
+     * @param bgp - BGP to describe
+     * @return Metadata about the BGP
+     * @throws IOException
+     */
+    public QueryResults analyze(BasicPattern bgp) throws IOException {
+        return httpClient.query(bgp);
     }
 }

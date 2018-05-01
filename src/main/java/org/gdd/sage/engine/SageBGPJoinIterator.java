@@ -46,7 +46,7 @@ public class SageBGPJoinIterator extends QueryIteratorBase {
             for (Triple t: bgp) {
                 boundBGP.add(Substitute.substitute(t, currentSourceBinding));
             }
-            return graph.BasicGraphPatternFind(boundBGP);
+            return graph.basicGraphPatternFind(boundBGP);
         }
         return new QueryIterNullIterator(context);
     }
