@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -20,7 +21,6 @@ import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,7 +44,7 @@ public class SageDefaultClient implements SageRemoteClient {
         serverURL = url;
         httpClient = client;
         mapper = new ObjectMapper();
-        bgpCache = new LinkedHashMap<>();
+        bgpCache = new LRUCache<>(1000);
     }
 
     /**
@@ -64,7 +64,7 @@ public class SageDefaultClient implements SageRemoteClient {
         if (bgpCache.containsKey(jsonQuery)) {
             sageResponse = bgpCache.get(jsonQuery);
         } else {
-            HttpResponse response = sendQuery(jsonQuery, next);
+            HttpResponse response = sendQuery(jsonQuery);
             sageResponse = decodeResponse(response);
         }
 
@@ -103,11 +103,10 @@ public class SageDefaultClient implements SageRemoteClient {
     /**
      * Send an HTTP POST query to the SaGe Server
      * @param jsonQuery - JSOn query
-     * @param next - Next link (may be null)
      * @return The HTTP Response received from the server
      * @throws IOException
      */
-    private HttpResponse sendQuery(String jsonQuery, String next) throws IOException {
+    private HttpResponse sendQuery(String jsonQuery) throws IOException {
         HttpPost query = new HttpPost(this.serverURL);
         query.setHeader("accept", "application/json");
         query.setHeader("content-type", "application/json");
@@ -123,6 +122,10 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     private SageResponse decodeResponse(HttpResponse response) throws IOException {
         HttpEntity resEntity = response.getEntity();
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode != 200) {
+            throw new ClientProtocolException("Unexpected error when executing HTTP request: " + EntityUtils.toString(resEntity));
+        }
         SageResponse sageResponse = mapper.readValue(EntityUtils.toString(resEntity), new TypeReference<SageResponse>(){});
         EntityUtils.consume(resEntity);
         return sageResponse;
