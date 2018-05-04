@@ -6,12 +6,14 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIteratorBase;
 import org.apache.jena.sparql.serializer.SerializationContext;
-import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.SageRemoteClient;
+import org.gdd.sage.http.data.QueryResults;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Evaluate a Basic Graph Pattern (BGP) using a SaGe server using the Iterator pattern.
@@ -61,11 +63,11 @@ public class SageBGPIterator extends QueryIteratorBase {
 
     private void fillBindingsBuffer () {
         try {
-            QueryResults queryResults = client.query(bgp, nextLink);
+            QueryResults queryResults = client.query(bgp, nextLink).get();
             bindingsBuffer.addAll(queryResults.bindings);
             nextLink = queryResults.next;
             hasNextPage = queryResults.hasNext();
-        } catch (IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             logger.error(e.getMessage());
             hasNextPage = false;
         }

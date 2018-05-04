@@ -13,6 +13,7 @@ import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Represents a remote RDF graph hosted at a Sage server
@@ -53,7 +54,7 @@ public class SageGraph extends GraphBase {
      * @return Metadata about the BGP
      * @throws IOException
      */
-    public QueryResults analyze(BasicPattern bgp) throws IOException {
-        return httpClient.query(bgp);
+    public QueryResults analyze(BasicPattern bgp) throws IOException, ExecutionException, InterruptedException {
+        return httpClient.query(bgp).get();
     }
 }

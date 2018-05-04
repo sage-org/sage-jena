@@ -3,9 +3,9 @@ package org.gdd.sage.http;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.gdd.sage.http.data.QueryResults;
 
-import java.io.IOException;
+import java.util.concurrent.Future;
 
 public interface SageRemoteClient {
-    QueryResults query(BasicPattern bgp) throws IOException;
-    QueryResults query(BasicPattern bgp, String next) throws IOException;
+    Future<QueryResults> query(BasicPattern bgp);
+    Future<QueryResults> query(BasicPattern bgp, String next);
 }

@@ -23,6 +23,10 @@ import org.gdd.sage.http.data.SageResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -32,8 +36,9 @@ import java.util.stream.Collectors;
 public class SageDefaultClient implements SageRemoteClient {
     private String serverURL;
     private HttpClient httpClient;
+    private ExecutorService threadPool;
     private ObjectMapper mapper;
-    private Map<String, SageResponse> bgpCache;
+    private Map<String, QueryResults> bgpCache;
 
     /**
      * Constructor
@@ -43,6 +48,7 @@ public class SageDefaultClient implements SageRemoteClient {
     public SageDefaultClient(String url, HttpClient client) {
         serverURL = url;
         httpClient = client;
+        threadPool = Executors.newCachedThreadPool();
         mapper = new ObjectMapper();
         bgpCache = new LRUCache<>(1000);
     }
@@ -54,39 +60,26 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      * @throws IOException
      */
-    public QueryResults query(BasicPattern bgp, String next) throws IOException {
-        SageResponse sageResponse;
+    public Future<QueryResults> query(BasicPattern bgp, String next) {
         String jsonQuery = SageQueryBuilder.builder()
                 .withType("bgp")
                 .withBasicGraphPattern(bgp)
                 .withNextLink(next)
                 .build();
         if (bgpCache.containsKey(jsonQuery)) {
-            sageResponse = bgpCache.get(jsonQuery);
-        } else {
-            sageResponse = decodeResponse(sendQuery(jsonQuery));
+            return CompletableFuture.completedFuture(bgpCache.get(jsonQuery));
         }
-
-        // format bindings in Jena format
-        List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {
-            BindingHashMap b = new BindingHashMap();
-            for (Map.Entry<String, String> entry: binding.entrySet()) {
-                Var key = Var.alloc(entry.getKey().substring(1));
-                Node value;
-                if (entry.getValue().startsWith("\"")) {
-                    value = NodeFactoryExtra.parseNode(entry.getValue());
-                } else {
-                    value = NodeFactory.createURI(entry.getValue());
-                }
-                b.add(key, value);
+        return threadPool.submit(() -> {
+            QueryResults qResults = null;
+            try {
+                qResults = decodeResponse(sendQuery(jsonQuery));
+            } catch (IOException e) {
+                // TODO handle errors
+                return null;
             }
-            return b;
-        }).collect(Collectors.toList());
-        QueryResults qResults = new QueryResults(results, sageResponse.next, sageResponse.stats);
-        if (!sageResponse.hasNext) {
-            bgpCache.put(jsonQuery, sageResponse);
-        }
-        return qResults;
+            bgpCache.put(jsonQuery, qResults);
+            return qResults;
+        });
     }
 
     /**
@@ -95,7 +88,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      * @throws IOException
      */
-    public QueryResults query(BasicPattern bgp) throws IOException {
+    public Future<QueryResults> query(BasicPattern bgp) {
         return query(bgp, null);
     }
 
@@ -119,7 +112,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return A decoded response
      * @throws IOException
      */
-    private SageResponse decodeResponse(HttpResponse response) throws IOException {
+    private QueryResults decodeResponse(HttpResponse response) throws IOException {
         HttpEntity resEntity = response.getEntity();
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode != 200) {
@@ -127,6 +120,22 @@ public class SageDefaultClient implements SageRemoteClient {
         }
         SageResponse sageResponse = mapper.readValue(EntityUtils.toString(resEntity), new TypeReference<SageResponse>(){});
         EntityUtils.consume(resEntity);
-        return sageResponse;
+
+        // format bindings in Jena format
+        List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {
+            BindingHashMap b = new BindingHashMap();
+            for (Map.Entry<String, String> entry: binding.entrySet()) {
+                Var key = Var.alloc(entry.getKey().substring(1));
+                Node value;
+                if (entry.getValue().startsWith("\"")) {
+                    value = NodeFactoryExtra.parseNode(entry.getValue());
+                } else {
+                    value = NodeFactory.createURI(entry.getValue());
+                }
+                b.add(key, value);
+            }
+            return b;
+        }).collect(Collectors.toList());
+        return new QueryResults(results, sageResponse.next, sageResponse.stats);
     }
 }
