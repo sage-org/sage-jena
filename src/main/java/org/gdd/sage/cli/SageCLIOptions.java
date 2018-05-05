@@ -31,6 +31,7 @@ public class SageCLIOptions {
         Option formatOpt = Option.builder()
                 .longOpt("format")
                 .argName("format")
+                .hasArg()
                 .desc("Results format (Result set: text, XML, JSON, CSV, TSV; Graph: RDF serialization)")
                 .build();
 

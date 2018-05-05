@@ -9,7 +9,7 @@ import org.gdd.sage.model.SageGraph;
 
 public class FederatedDatasetBuilder {
     private DatasetGraph federation;
-    
+
     private FederatedDatasetBuilder(Graph defaultGraph) {
         federation = new DatasetGraphMapLink(defaultGraph);
     }
