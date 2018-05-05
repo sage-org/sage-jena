@@ -23,6 +23,7 @@ import org.gdd.sage.http.data.SageResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,29 +57,28 @@ public class SageDefaultClient implements SageRemoteClient {
     /**
      * Evaluate a Basic Graph Pattern against a SaGe server, with a next link
      * @param bgp - BGP to evaluate
-     * @param next - (optional) Link used to resume query evaluation
+     * @param next - Optional Link used to resume query evaluation
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
-     * @throws IOException
      */
-    public Future<QueryResults> query(BasicPattern bgp, String next) {
-        String jsonQuery = SageQueryBuilder.builder()
+    public Future<QueryResults> query(BasicPattern bgp, Optional<String> next) {
+        SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
                 .withType("bgp")
-                .withBasicGraphPattern(bgp)
-                .withNextLink(next)
-                .build();
+                .withBasicGraphPattern(bgp);
+        if (next.isPresent()) {
+            queryBuilder = queryBuilder.withNextLink(next.get());
+        }
+        String jsonQuery = queryBuilder.build();
         if (bgpCache.containsKey(jsonQuery)) {
             return CompletableFuture.completedFuture(bgpCache.get(jsonQuery));
         }
         return threadPool.submit(() -> {
-            QueryResults qResults = null;
             try {
-                qResults = decodeResponse(sendQuery(jsonQuery));
+                QueryResults qResults = decodeResponse(sendQuery(jsonQuery));
+                bgpCache.put(jsonQuery, qResults);
+                return qResults;
             } catch (IOException e) {
-                // TODO handle errors
-                return null;
+                return QueryResults.withError(e.getMessage());
             }
-            bgpCache.put(jsonQuery, qResults);
-            return qResults;
         });
     }
 
@@ -86,10 +86,9 @@ public class SageDefaultClient implements SageRemoteClient {
      * Evaluate a Basic Graph Pattern against a SaGe server, without a next link
      * @param bgp - BGP to evaluate
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
-     * @throws IOException
      */
     public Future<QueryResults> query(BasicPattern bgp) {
-        return query(bgp, null);
+        return query(bgp, Optional.empty());
     }
 
     /**

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -25,7 +26,7 @@ public class SageBGPIterator extends QueryIteratorBase {
 
     private SageRemoteClient client;
     private BasicPattern bgp;
-    private String nextLink;
+    private Optional<String> nextLink;
     private Deque<Binding> bindingsBuffer;
     private boolean hasNextPage;
     private Logger logger;
@@ -38,7 +39,7 @@ public class SageBGPIterator extends QueryIteratorBase {
     public SageBGPIterator(SageRemoteClient client, BasicPattern bgp) {
         this.client = client;
         this.bgp = bgp;
-        this.nextLink = null;
+        this.nextLink = Optional.empty();
         this.bindingsBuffer = new ArrayDeque<>();
         this.hasNextPage = true;
         logger = ARQ.getExecLogger();
@@ -64,12 +65,17 @@ public class SageBGPIterator extends QueryIteratorBase {
     private void fillBindingsBuffer () {
         try {
             QueryResults queryResults = client.query(bgp, nextLink).get();
-            bindingsBuffer.addAll(queryResults.bindings);
-            nextLink = queryResults.next;
-            hasNextPage = queryResults.hasNext();
+            if (queryResults.hasError()) {
+                hasNextPage = false;
+                logger.error(queryResults.getError());
+            } else {
+                bindingsBuffer.addAll(queryResults.getBindings());
+                nextLink = queryResults.getNext();
+                hasNextPage = queryResults.hasNext();
+            }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error(e.getMessage());
             hasNextPage = false;
+            logger.error(e.getMessage());
         }
     }
 
