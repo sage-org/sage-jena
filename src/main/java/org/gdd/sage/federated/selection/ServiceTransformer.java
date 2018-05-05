@@ -7,19 +7,17 @@ import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.BasicPattern;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class ServiceTransformer extends TransformCopy {
-    private Map<String, Set<BasicPattern>> sourceSelection;
+    private Map<BasicPattern, String> sourceSelection;
 
     public ServiceTransformer() {
         super();
         sourceSelection = new HashMap<>();
     }
 
-    public Map<String, Set<BasicPattern>> getSourceSelection() {
+    public Map<BasicPattern, String> getSourceSelection() {
         return sourceSelection;
     }
 
@@ -29,10 +27,11 @@ public class ServiceTransformer extends TransformCopy {
         BGPCollector visitor = new BGPCollector();
         OpWalker.walk(subOp, visitor);
         for (BasicPattern bgp: visitor.getBgpList()) {
-            if (!sourceSelection.containsKey(uri)) {
+            sourceSelection.put(bgp, uri);
+            /*if (!sourceSelection.containsKey(uri)) {
                 sourceSelection.put(uri, new HashSet<>());
             }
-            sourceSelection.get(uri).add(bgp);
+            sourceSelection.get(uri).add(bgp);*/
         }
         return subOp;
     }
