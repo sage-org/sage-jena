@@ -4,17 +4,17 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
+import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.vocabulary.XSD;
 import org.gdd.sage.http.data.QueryResults;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -50,7 +50,7 @@ public class SageDefaultClientTest {
 
     @Test
     public void query() {
-        List<Var> vars = Stream.of("comment", "f", "label", "producer",
+        List<Var> vars = Stream.of("comment", "f", "p", "label", "producer",
                 "productFeature", "propertyNumeric1", "propertyNumeric2", "propertyTextual1",
                 "propertyTextual2", "propertyTextual3").map(Var::alloc).collect(Collectors.toList());
         try {
@@ -60,10 +60,26 @@ public class SageDefaultClientTest {
             assertEquals("Query results should contains exactly 9 solution bindings", 9, results.getBindings().size());
             assertFalse("Query results should not have a next page", results.hasNext());
             for (Binding binding: results.getBindings()) {
+                assertEquals("Each set of bindings should bind to 11 variables", vars.size(), binding.size());
                 for(Var var: vars) {
                     assertTrue(binding.contains(var));
+                    Node currentNode = binding.get(var);
+                    // check for binding's types and XSD datatypes (for literals)
+                    if (var.getVarName().equals("f") || var.getVarName().equals("p")) {
+                        assertTrue("?f and ?p should binds to URI", currentNode.isURI());
+                    } else {
+                        assertTrue("Variables others than ?f and ?p should bind to Literals", currentNode.isLiteral());
+                        if (var.getVarName().startsWith("propertyNumeric")) {
+                            assertEquals(
+                                    "?propertyNumeric1 and ?propertyNumeric2 should bind to integer literals",
+                                    currentNode.getLiteralDatatypeURI(), XSD.integer.getURI());
+                        } else {
+                            assertEquals(
+                                    "?propertyTextual1, ?propertyTextual2 and ?propertyTextual3 should bind to string literals",
+                                    currentNode.getLiteralDatatypeURI(), XSD.xstring.getURI());
+                        }
+                    }
                 }
-                //assertTrue(binding.get(Var.alloc("")));
             }
         } catch (InterruptedException | ExecutionException e) {
             fail(e.getMessage());
