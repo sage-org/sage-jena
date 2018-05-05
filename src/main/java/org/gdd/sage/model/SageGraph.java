@@ -39,6 +39,12 @@ public class SageGraph extends GraphBase {
         return WrappedIterator.create(queryIterator).mapWith(binding -> Substitute.substitute(triple, binding));
     }
 
+    @Override
+    public void close() {
+        super.close();
+        this.httpClient.close();
+    }
+
     /**
      * Evaluate a Basic Graph Pattern using the SaGe server
      * @param bgp - BGP to evaluate

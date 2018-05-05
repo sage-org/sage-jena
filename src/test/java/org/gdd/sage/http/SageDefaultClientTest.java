@@ -10,6 +10,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.vocabulary.XSD;
 import org.gdd.sage.http.data.QueryResults;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,6 +47,11 @@ public class SageDefaultClientTest {
                 .withURL("http://foo.bar/sparql/bsbsm")
                 .withHTTPClient(mockedClient)
                 .build();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        sageClient.close();
     }
 
     @Test

@@ -68,6 +68,7 @@ public class CLI {
                     executor = new DescribeQueryExecutor(format);
                 }
                 executor.execute(model, query);
+                model.close();
             }
         } catch (ParseException e) {
             logger.error(e.getMessage());

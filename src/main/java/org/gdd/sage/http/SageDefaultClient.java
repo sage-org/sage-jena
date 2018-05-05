@@ -57,7 +57,7 @@ public class SageDefaultClient implements SageRemoteClient {
     /**
      * Evaluate a Basic Graph Pattern against a SaGe server, with a next link
      * @param bgp - BGP to evaluate
-     * @param next - Optional Link used to resume query evaluation
+     * @param next - Optional link used to resume query evaluation
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
     public Future<QueryResults> query(BasicPattern bgp, Optional<String> next) {
@@ -89,6 +89,13 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public Future<QueryResults> query(BasicPattern bgp) {
         return query(bgp, Optional.empty());
+    }
+
+    /**
+     * Free all resources used by the client
+     */
+    public void close() {
+        threadPool.shutdown();
     }
 
     /**
