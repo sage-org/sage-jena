@@ -2,13 +2,15 @@ package org.gdd.sage.cli;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.engine.main.StageBuilder;
 import org.gdd.sage.engine.SageStageGenerator;
-import org.gdd.sage.model.SageModelFactory;
+import org.gdd.sage.model.SageGraph;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -52,8 +54,9 @@ public class CLI {
                 } else {
                     queryString = cmd.getOptionValue("query");
                 }
-                // Init SageModel and plug-in custom ARQ engine
-                Model model = SageModelFactory.createModel(url);
+                // Init Sage graph and plug-in custom ARQ engine
+                Graph sageGraph = new SageGraph(url);
+                Model model = ModelFactory.createModelForGraph(sageGraph);
                 StageBuilder.setGenerator(ARQ.getContext(), SageStageGenerator.createDefault());
                 // Evaluate SPARQL query
                 Query query = QueryFactory.create(queryString);
