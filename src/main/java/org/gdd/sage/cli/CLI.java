@@ -2,18 +2,14 @@ package org.gdd.sage.cli;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
-import org.apache.jena.graph.Graph;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.engine.main.StageBuilder;
 import org.gdd.sage.engine.SageStageGenerator;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
-import org.gdd.sage.model.SageGraph;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -57,7 +53,7 @@ public class CLI {
                 } else {
                     queryString = cmd.getOptionValue("query");
                 }
-                // Init Sage dataset
+                // Init Sage dataset (maybe federated)
                 Query query = QueryFactory.create(queryString);
                 FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
                 factory.buildFederation();

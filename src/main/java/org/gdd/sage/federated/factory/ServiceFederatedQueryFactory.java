@@ -7,13 +7,12 @@ import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.Transformer;
-import org.apache.jena.sparql.core.DatasetGraph;
 import org.gdd.sage.federated.FederatedDatasetBuilder;
 import org.gdd.sage.federated.selection.ServiceTransformer;
 import org.gdd.sage.model.SageGraph;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Factory used to build the execution environment for a federated SPARQL query.
@@ -25,12 +24,12 @@ public class ServiceFederatedQueryFactory implements FederatedQueryFactory {
     private String defaultUrl;
     private Query query;
     private Dataset federation;
-    private List<String> uris;
+    private Set<String> uris;
 
     public ServiceFederatedQueryFactory(String defaultUrl, Query query) {
         this.defaultUrl = defaultUrl;
         this.query = query;
-        this.uris = new LinkedList<>();
+        this.uris = new HashSet<>();
     }
 
     @Override

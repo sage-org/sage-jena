@@ -6,22 +6,22 @@ import org.apache.jena.sparql.algebra.TransformCopy;
 import org.apache.jena.sparql.algebra.op.OpGraph;
 import org.apache.jena.sparql.algebra.op.OpService;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Collect all URIS from SERVICE clauses, and perform data localization on each BGP in each SERVICE clause
  * @author Thomas Minier
  */
 public class ServiceTransformer extends TransformCopy {
-    private List<String> uris;
+    private Set<String> uris;
 
     public ServiceTransformer() {
         super();
-        uris = new LinkedList<>();
+        uris = new HashSet<>();
     }
 
-    public List<String> getUris() {
+    public Set<String> getUris() {
         return uris;
     }
 

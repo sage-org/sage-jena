@@ -43,6 +43,7 @@ public class SageStageGenerator implements StageGenerator {
                 return sageGraph.basicGraphPatternFind(pattern);
             }
             SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.basicGraphPatternFind(pattern);
+            // TODO use a symmetric hash join when possible
             // if the BGP can be downloaded in one HTTP request, then use a hash join to save data transfer
             if (!bgpIt.getHasNextPage()) {
                 return QueryIterHashJoin.create(input, bgpIt, execCxt);
