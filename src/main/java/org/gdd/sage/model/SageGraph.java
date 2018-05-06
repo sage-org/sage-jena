@@ -12,7 +12,6 @@ import org.gdd.sage.http.SageClientBuilder;
 import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -58,9 +57,10 @@ public class SageGraph extends GraphBase {
      * Get metadata about a Basic Graph Pattern
      * @param bgp - BGP to describe
      * @return Metadata about the BGP
-     * @throws IOException
+     * @throws ExecutionException
+     * @throws InterruptedException
      */
-    public QueryResults analyze(BasicPattern bgp) throws IOException, ExecutionException, InterruptedException {
+    public QueryResults analyze(BasicPattern bgp) throws ExecutionException, InterruptedException {
         return httpClient.query(bgp).get();
     }
 }
