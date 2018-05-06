@@ -1,7 +1,6 @@
 package org.gdd.sage.cli;
 
 import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.Model;
 
 /**
  * Execute a SPARQL ASK query and output results in stdin
@@ -9,8 +8,8 @@ import org.apache.jena.rdf.model.Model;
  */
 public class AskQueryExecutor implements QueryExecutor {
     @Override
-    public void execute(Model model, Query query) {
-        try(QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+    public void execute(Dataset dataset, Query query) {
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSetFormatter.out(qexec.execAsk());
         }
     }

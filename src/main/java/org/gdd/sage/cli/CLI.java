@@ -4,12 +4,15 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.ARQ;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.engine.main.StageBuilder;
 import org.gdd.sage.engine.SageStageGenerator;
+import org.gdd.sage.federated.factory.FederatedQueryFactory;
+import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
 import org.gdd.sage.model.SageGraph;
 import org.slf4j.Logger;
 
@@ -54,12 +57,15 @@ public class CLI {
                 } else {
                     queryString = cmd.getOptionValue("query");
                 }
-                // Init Sage graph and plug-in custom ARQ engine
-                Graph sageGraph = new SageGraph(url);
-                Model model = ModelFactory.createModelForGraph(sageGraph);
+                // Init Sage dataset
+                Query query = QueryFactory.create(queryString);
+                FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
+                factory.buildFederation();
+                query = factory.getLocalizedQuery();
+                Dataset federation = factory.getFederationDataset();
+                // Plug-in the custom ARQ engine for Sage graphs
                 StageBuilder.setGenerator(ARQ.getContext(), SageStageGenerator.createDefault());
                 // Evaluate SPARQL query
-                Query query = QueryFactory.create(queryString);
                 QueryExecutor executor;
                 if (query.isSelectType()) {
                     executor = new SelectQueryExecutor(format);
@@ -70,8 +76,8 @@ public class CLI {
                 } else {
                     executor = new DescribeQueryExecutor(format);
                 }
-                executor.execute(model, query);
-                model.close();
+                executor.execute(federation, query);
+                federation.close();
             }
         } catch (ParseException e) {
             logger.error(e.getMessage());

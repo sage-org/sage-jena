@@ -1,5 +1,6 @@
 package org.gdd.sage.cli;
 
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -19,8 +20,8 @@ public class ConstructQueryExecutor implements QueryExecutor {
     }
 
     @Override
-    public void execute(Model model, Query query) {
-        Model resultsModel = evaluate(model, query);
+    public void execute(Dataset dataset, Query query) {
+        Model resultsModel = evaluate(dataset, query);
         RDFFormat modelFormat;
         switch (format) {
             case "ttl":
@@ -51,8 +52,8 @@ public class ConstructQueryExecutor implements QueryExecutor {
         RDFDataMgr.write(System.out, resultsModel, modelFormat);
     }
 
-    protected Model evaluate(Model model, Query query) {
-        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+    protected Model evaluate(Dataset dataset, Query query) {
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             return qexec.execConstruct();
         }
     }
