@@ -6,6 +6,7 @@ import org.apache.jena.sparql.algebra.op.OpBGP;
 
 /**
  * Transform BGP operators to localize them. Each BGP is associated with a SERVICE URI and an optional SILENT modifier.
+ * @deprecated
  * @author Thomas Minier
  */
 public class BasicPatternLocalizer extends TransformCopy {

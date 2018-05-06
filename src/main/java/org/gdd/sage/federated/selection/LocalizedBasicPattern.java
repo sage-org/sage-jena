@@ -6,6 +6,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 
 /**
  * A Basic Graph Pattern localized, i.e., tagged with a SERVICE clause
+ * @deprecated
  * @author Thomas Minier
  */
 public class LocalizedBasicPattern extends BasicPattern {
