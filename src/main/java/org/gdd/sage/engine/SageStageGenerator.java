@@ -5,8 +5,7 @@ import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.iterator.QueryIterRoot;
-import org.apache.jena.sparql.engine.join.QueryIterHashJoin;
+import org.apache.jena.sparql.engine.join.Join;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.gdd.sage.model.SageGraph;
 
@@ -39,14 +38,14 @@ public class SageStageGenerator implements StageGenerator {
         // This stage generator only support evaluation of a Sage Graph
         if (g instanceof SageGraph) {
             SageGraph sageGraph = (SageGraph) g;
-            if (input instanceof QueryIterRoot) {
+            if (input.isJoinIdentity()) {
                 return sageGraph.basicGraphPatternFind(pattern);
             }
             SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.basicGraphPatternFind(pattern);
             // TODO use a symmetric hash join when possible
             // if the BGP can be downloaded in one HTTP request, then use a hash join to save data transfer
             if (!bgpIt.getHasNextPage()) {
-                return QueryIterHashJoin.create(input, bgpIt, execCxt);
+                return Join.hashJoin(input, bgpIt, execCxt);
             }
             return new SageBGPJoinIterator(input, pattern, sageGraph, execCxt);
         }

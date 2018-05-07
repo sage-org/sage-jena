@@ -7,6 +7,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.sparql.engine.main.StageBuilder;
+import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.engine.SageStageGenerator;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
@@ -60,7 +61,7 @@ public class CLI {
                 query = factory.getLocalizedQuery();
                 Dataset federation = factory.getFederationDataset();
                 // Plug-in the custom ARQ engine for Sage graphs
-                StageBuilder.setGenerator(ARQ.getContext(), SageStageGenerator.createDefault());
+                SageExecutionContext.configureDefault(ARQ.getContext());
                 // Evaluate SPARQL query
                 QueryExecutor executor;
                 if (query.isSelectType()) {
