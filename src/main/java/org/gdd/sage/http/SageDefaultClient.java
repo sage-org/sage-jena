@@ -54,6 +54,10 @@ public class SageDefaultClient implements SageRemoteClient {
         bgpCache = new LRUCache<>(1000);
     }
 
+    public String getServerURL() {
+        return serverURL;
+    }
+
     /**
      * Evaluate a Basic Graph Pattern against a SaGe server, with a next link
      * @param bgp - BGP to evaluate

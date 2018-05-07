@@ -110,6 +110,6 @@ public class SageBGPIterator extends QueryIteratorBase {
 
     @Override
     public void output(IndentedWriter indentedWriter, SerializationContext serializationContext) {
-
+        indentedWriter.printf("SageBGPIterator { %s } @<%s>", bgp, client.getServerURL());
     }
 }

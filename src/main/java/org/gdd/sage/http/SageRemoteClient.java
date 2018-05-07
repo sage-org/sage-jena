@@ -26,4 +26,6 @@ public interface SageRemoteClient {
      * Free all resources used by the client
      */
     void close();
+
+    String getServerURL();
 }

@@ -30,6 +30,10 @@ public class SageGraph extends GraphBase {
         this.httpClient = SageClientBuilder.createDefault(url);
     }
 
+    public String getServerURL() {
+        return httpClient.getServerURL();
+    }
+
     @Override
     protected ExtendedIterator<Triple> graphBaseFind(Triple triple) {
         BasicPattern bgp = new BasicPattern();

@@ -1,5 +1,6 @@
 package org.gdd.sage.engine;
 
+import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Substitute;
@@ -7,6 +8,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIterRepeatApply;
+import org.apache.jena.sparql.serializer.SerializationContext;
 import org.gdd.sage.model.SageGraph;
 
 /**
@@ -31,5 +33,12 @@ public class SageBGPJoinIterator extends QueryIterRepeatApply {
             boundBGP.add(Substitute.substitute(t, binding));
         }
         return graph.basicGraphPatternFind(boundBGP);
+    }
+
+    @Override
+    public void output(IndentedWriter out, SerializationContext sCxt) {
+        out.print("SageBGPJoinIterator");
+        super.output(out, sCxt);
+        out.printf("{ %s }", bgp);
     }
 }
