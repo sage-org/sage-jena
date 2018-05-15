@@ -1,9 +1,7 @@
 package org.gdd.sage.federated.selection;
 
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.TransformCopy;
-import org.apache.jena.sparql.algebra.op.OpGraph;
 import org.apache.jena.sparql.algebra.op.OpService;
 
 import java.util.HashSet;
@@ -31,8 +29,6 @@ public class ServiceTransformer extends TransformCopy {
         // TODO add SILENT support
         boolean silent = opService.getSilent();
         uris.add(uri);
-        // BasicPatternLocalizer bgpLocalizer = new BasicPatternLocalizer(uri, silent);
-        // Transform each service clause in graph clause, to rely on named sage Dataset next
-        return new OpGraph(NodeFactory.createURI(uri), subOp);
+        return opService;
     }
 }
