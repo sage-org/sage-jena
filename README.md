@@ -1,6 +1,12 @@
 # sage-jena
 SaGe client made using Jena
 
+# Requirements
+
+* [git](https://git-scm.com/)
+* [Java 1.8](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or higher
+* [Gradle 4.7](https://gradle.org) or higher
+
 # Getting started
 
 First, clone and compile the project
