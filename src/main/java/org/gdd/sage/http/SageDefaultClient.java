@@ -54,6 +54,19 @@ public class SageDefaultClient implements SageRemoteClient {
         bgpCache = new LRUCache<>(1000);
     }
 
+    /**
+     * Constructor
+     * @param url - URL of the SaGe server
+     * @param client - HTTP client used to perform HTTP requests
+     */
+    public SageDefaultClient(String url, HttpClient client, ExecutorService threadPool) {
+        serverURL = url;
+        httpClient = client;
+        this.threadPool = threadPool;
+        mapper = new ObjectMapper();
+        bgpCache = new LRUCache<>(1000);
+    }
+
     public String getServerURL() {
         return serverURL;
     }

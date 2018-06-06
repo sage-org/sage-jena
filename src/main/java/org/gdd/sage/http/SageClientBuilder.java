@@ -1,8 +1,6 @@
 package org.gdd.sage.http;
 
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.cache.HttpCacheContext;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;

@@ -27,8 +27,8 @@ public class SageStatistics {
     }
 
     public void addTriple(String subj, String pred, String obj, int cardinality) {
-        Triple triple = new Triple(NodeFactory.createURI(subj), NodeFactory.createURI(pred), NodeFactoryExtra.parseNode(obj));
-        cardinalities.put(triple, cardinality);
+        //Triple triple = new Triple(NodeFactoryExtra.parseNode(subj), NodeFactoryExtra.parseNode(pred), NodeFactoryExtra.parseNode(obj));
+        //cardinalities.put(triple, cardinality);
     }
 
     public int getCardinality(Triple triple) {

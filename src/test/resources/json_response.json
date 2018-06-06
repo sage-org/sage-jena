@@ -122,7 +122,16 @@
   "next": null,
   "pageSize": 9,
   "stats": {
-    "cardinalities": [],
+    "cardinalities": [
+      {
+        "triple": {
+          "subject": "http://example.org",
+          "predicate": "http://rdf.org#type",
+          "object": "?o"
+        },
+        "cardinality": 50.9
+      }
+    ],
     "export": 0.0,
     "import": 0.26798248291015625
   }
