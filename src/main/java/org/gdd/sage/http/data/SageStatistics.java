@@ -1,8 +1,6 @@
 package org.gdd.sage.http.data;
 
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
 
 import java.util.HashMap;
 import java.util.Map;

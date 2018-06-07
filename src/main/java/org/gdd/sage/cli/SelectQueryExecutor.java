@@ -18,7 +18,6 @@ public class SelectQueryExecutor implements QueryExecutor {
         if (query.isSelectType()) {
             try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset) ){
                 ResultSet results = qexec.execSelect();
-                results = ResultSetFactory.copyResults(results);
                 switch (format) {
                     case "xml":
                         ResultSetFormatter.outputAsXML(results);
