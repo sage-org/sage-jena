@@ -1,0 +1,1 @@
+SELECT * WHERE {  ?v4 <http://ogp.me/ns#tag> <http://db.uwaterloo.ca/~galuc/wsdbm/Topic172> .  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/likes> ?v4 .  ?v0 <http://xmlns.com/foaf/age> ?v1 .  ?v0 <http://xmlns.com/foaf/familyName> ?v2 .  ?v0 <http://xmlns.com/foaf/homepage> ?v3 .  }

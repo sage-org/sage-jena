@@ -1,0 +1,1 @@
+SELECT * WHERE {  ?v2 <http://schema.org/nationality> <http://db.uwaterloo.ca/~galuc/wsdbm/Country14> .  ?v1 <http://purl.org/stuff/rev#reviewer> ?v2 .  ?v2 <http://schema.org/email> ?v4 .  ?v0 <http://purl.org/stuff/rev#hasReview> ?v1 .  ?v1 <http://purl.org/stuff/rev#totalVotes> ?v3 .  }

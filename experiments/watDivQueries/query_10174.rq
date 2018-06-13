@@ -1,0 +1,12 @@
+SELECT * WHERE {
+  ?v0 <http://ogp.me/ns#tag> <http://db.uwaterloo.ca/~galuc/wsdbm/Topic149> .
+  ?v0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?v4 .
+  ?v2 <http://db.uwaterloo.ca/~galuc/wsdbm/hasGenre> ?v0 .
+  ?v2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?v3 .
+  ?v2 <http://purl.org/stuff/rev#hasReview> ?v5 .
+  ?v5 <http://purl.org/stuff/rev#rating> ?v6 .
+  ?v5 <http://purl.org/stuff/rev#reviewer> ?v7 .
+  ?v5 <http://purl.org/stuff/rev#text> ?v8 .
+  ?v5 <http://purl.org/stuff/rev#title> ?v9 .
+  ?v5 <http://purl.org/stuff/rev#totalVotes> ?v10 .
+}

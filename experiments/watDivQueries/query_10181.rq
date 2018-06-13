@@ -1,0 +1,1 @@
+SELECT * WHERE {  <http://db.uwaterloo.ca/~galuc/wsdbm/Offer76688> <http://purl.org/goodrelations/includes> ?v1 .  ?v1 <http://schema.org/description> ?v2 .  ?v3 <http://db.uwaterloo.ca/~galuc/wsdbm/likes> ?v1 .  ?v3 <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?v4 .  }

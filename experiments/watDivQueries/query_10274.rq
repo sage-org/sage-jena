@@ -1,0 +1,1 @@
+SELECT * WHERE {  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/makesPurchase> <http://db.uwaterloo.ca/~galuc/wsdbm/Purchase101550> .  ?v0 <http://xmlns.com/foaf/familyName> ?v1 .  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?v2 .  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/userId> ?v4 .  }

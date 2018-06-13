@@ -1,0 +1,1 @@
+SELECT * WHERE {  <http://db.uwaterloo.ca/~galuc/wsdbm/User47994> <http://purl.org/dc/terms/Location> ?v1 .  ?v1 <http://www.geonames.org/ontology#parentCountry> ?v2 .  ?v3 <http://schema.org/eligibleRegion> ?v2 .  ?v3 <http://schema.org/eligibleQuantity> ?v4 .  ?v3 <http://schema.org/priceValidUntil> ?v5 .  }

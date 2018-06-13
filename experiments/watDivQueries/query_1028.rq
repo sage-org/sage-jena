@@ -1,0 +1,1 @@
+SELECT * WHERE {  <http://db.uwaterloo.ca/~galuc/wsdbm/Offer53800> <http://purl.org/goodrelations/includes> ?v1 .  ?v1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?v2 .  ?v1 <http://schema.org/keywords> ?v3 .  }

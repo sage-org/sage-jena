@@ -1,0 +1,1 @@
+SELECT * WHERE {  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/hasGenre> <http://db.uwaterloo.ca/~galuc/wsdbm/SubGenre132> .  ?v0 <http://schema.org/description> ?v1 .  ?v0 <http://schema.org/editor> ?v2 .  }

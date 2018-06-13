@@ -1,0 +1,1 @@
+SELECT * WHERE {  ?v0 <http://ogp.me/ns#tag> <http://db.uwaterloo.ca/~galuc/wsdbm/Topic103> .  ?v0 <http://ogp.me/ns#title> ?v2 .  ?v3 <http://db.uwaterloo.ca/~galuc/wsdbm/likes> ?v0 .  }
