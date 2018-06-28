@@ -79,9 +79,6 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
     public Future<QueryResults> query(BasicPattern bgp, Optional<String> next) {
-        System.out.println(bgp);
-        System.out.println(next);
-
         SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
                 .withType("bgp")
                 .withBasicGraphPattern(bgp);
@@ -90,8 +87,6 @@ public class SageDefaultClient implements SageRemoteClient {
         }
 
         String jsonQuery = queryBuilder.build();
-        System.out.println(jsonQuery);
-        System.out.println("---------------------------");
         if (bgpCache.containsKey(jsonQuery)) {
             return CompletableFuture.completedFuture(bgpCache.get(jsonQuery));
         }
