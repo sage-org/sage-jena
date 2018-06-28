@@ -21,6 +21,7 @@ import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,13 +79,19 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
     public Future<QueryResults> query(BasicPattern bgp, Optional<String> next) {
+        System.out.println(bgp);
+        System.out.println(next);
+
         SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
                 .withType("bgp")
                 .withBasicGraphPattern(bgp);
         if (next.isPresent()) {
             queryBuilder = queryBuilder.withNextLink(next.get());
         }
+
         String jsonQuery = queryBuilder.build();
+        System.out.println(jsonQuery);
+        System.out.println("---------------------------");
         if (bgpCache.containsKey(jsonQuery)) {
             return CompletableFuture.completedFuture(bgpCache.get(jsonQuery));
         }
@@ -123,9 +130,9 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     private HttpResponse sendQuery(String jsonQuery) throws IOException {
         HttpPost query = new HttpPost(this.serverURL);
-        query.setHeader("accept", "application/json");
-        query.setHeader("content-type", "application/json");
-        query.setEntity(new StringEntity(jsonQuery));
+        query.setHeader("accept", "application/json; charset=utf-8");
+        query.setHeader("content-type", "application/json; charset=utf-8");
+        query.setEntity(new StringEntity(jsonQuery, Charset.forName("UTF-8")));
         return httpClient.execute(query);
     }
 
@@ -150,10 +157,10 @@ public class SageDefaultClient implements SageRemoteClient {
             for (Map.Entry<String, String> entry: binding.entrySet()) {
                 Var key = Var.alloc(entry.getKey().substring(1));
                 Node value;
-                if (entry.getValue().startsWith("\"")) {
-                    value = NodeFactoryExtra.parseNode(entry.getValue());
-                } else {
+                if (entry.getValue().startsWith("http")) {
                     value = NodeFactory.createURI(entry.getValue());
+                } else {
+                    value = NodeFactoryExtra.parseNode(entry.getValue());
                 }
                 b.add(key, value);
             }
