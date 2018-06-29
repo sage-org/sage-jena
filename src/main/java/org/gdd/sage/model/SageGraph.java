@@ -64,7 +64,7 @@ public class SageGraph extends GraphBase {
      * @throws ExecutionException
      * @throws InterruptedException
      */
-    public QueryResults analyze(BasicPattern bgp) throws ExecutionException, InterruptedException {
-        return httpClient.query(bgp).get();
+    public QueryResults analyze(BasicPattern bgp) {
+        return httpClient.query(bgp);
     }
 }

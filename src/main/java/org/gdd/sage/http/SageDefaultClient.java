@@ -2,13 +2,12 @@ package org.gdd.sage.http;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
+import com.google.api.client.http.*;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.JsonObjectParser;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.BasicPattern;
@@ -25,7 +24,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,40 +35,31 @@ import java.util.stream.Collectors;
  * @author Thomas Minier
  */
 public class SageDefaultClient implements SageRemoteClient {
-    private String serverURL;
-    private HttpClient httpClient;
+    private GenericUrl serverURL;
     private ExecutorService threadPool;
     private ObjectMapper mapper;
-    private Map<String, QueryResults> bgpCache;
+    private HttpRequestFactory requestFactory;
+    static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
     /**
      * Constructor
      * @param url - URL of the SaGe server
-     * @param client - HTTP client used to perform HTTP requests
      */
-    public SageDefaultClient(String url, HttpClient client) {
-        serverURL = url;
-        httpClient = client;
+    public SageDefaultClient(String url) {
+        serverURL = new GenericUrl(url);
         threadPool = Executors.newCachedThreadPool();
         mapper = new ObjectMapper();
-        bgpCache = new LRUCache<>(1000);
-    }
-
-    /**
-     * Constructor
-     * @param url - URL of the SaGe server
-     * @param client - HTTP client used to perform HTTP requests
-     */
-    public SageDefaultClient(String url, HttpClient client, ExecutorService threadPool) {
-        serverURL = url;
-        httpClient = client;
-        this.threadPool = threadPool;
-        mapper = new ObjectMapper();
-        bgpCache = new LRUCache<>(1000);
+        requestFactory = HTTP_TRANSPORT.createRequestFactory(request -> {
+            request.getHeaders().setAccept("application/json");
+            request.getHeaders().setContentType("application/json");
+            request.getHeaders().setUserAgent("Sage-Jena client/Java 1.8");
+            request.setParser(new JsonObjectParser(JSON_FACTORY));
+        });
     }
 
     public String getServerURL() {
-        return serverURL;
+        return serverURL.toString();
     }
 
     /**
@@ -78,7 +68,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param next - Optional link used to resume query evaluation
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public Future<QueryResults> query(BasicPattern bgp, Optional<String> next) {
+    public QueryResults query(BasicPattern bgp, Optional<String> next) {
         SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
                 .withType("bgp")
                 .withBasicGraphPattern(bgp);
@@ -87,18 +77,12 @@ public class SageDefaultClient implements SageRemoteClient {
         }
 
         String jsonQuery = queryBuilder.build();
-        if (bgpCache.containsKey(jsonQuery)) {
-            return CompletableFuture.completedFuture(bgpCache.get(jsonQuery));
+        try {
+            HttpResponse response = sendQuery(jsonQuery).get();
+            return decodeResponse(response);
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            return QueryResults.withError(e.getMessage());
         }
-        return threadPool.submit(() -> {
-            try {
-                QueryResults qResults = decodeResponse(sendQuery(jsonQuery));
-                bgpCache.put(jsonQuery, qResults);
-                return qResults;
-            } catch (IOException e) {
-                return QueryResults.withError(e.getMessage());
-            }
-        });
     }
 
     /**
@@ -106,7 +90,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param bgp - BGP to evaluate
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public Future<QueryResults> query(BasicPattern bgp) {
+    public QueryResults query(BasicPattern bgp) {
         return query(bgp, Optional.empty());
     }
 
@@ -123,12 +107,9 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return The HTTP Response received from the server
      * @throws IOException
      */
-    private HttpResponse sendQuery(String jsonQuery) throws IOException {
-        HttpPost query = new HttpPost(this.serverURL);
-        query.setHeader("accept", "application/json; charset=utf-8");
-        query.setHeader("content-type", "application/json; charset=utf-8");
-        query.setEntity(new StringEntity(jsonQuery, Charset.forName("UTF-8")));
-        return httpClient.execute(query);
+    private Future<HttpResponse> sendQuery(String jsonQuery) throws IOException {
+        HttpRequest request = requestFactory.buildPostRequest(serverURL, new ByteArrayContent("application/json", jsonQuery.getBytes()));
+        return request.executeAsync(threadPool);
     }
 
     /**
@@ -138,13 +119,12 @@ public class SageDefaultClient implements SageRemoteClient {
      * @throws IOException
      */
     private QueryResults decodeResponse(HttpResponse response) throws IOException {
-        HttpEntity resEntity = response.getEntity();
-        int statusCode = response.getStatusLine().getStatusCode();
+        String responseContent = IOUtils.toString(response.getContent(), Charset.forName("UTF-8"));
+        int statusCode = response.getStatusCode();
         if (statusCode != 200) {
-            throw new ClientProtocolException("Unexpected error when executing HTTP request: " + EntityUtils.toString(resEntity));
+            throw new IOException("Unexpected error when executing HTTP request: " + responseContent);
         }
-        SageResponse sageResponse = mapper.readValue(EntityUtils.toString(resEntity), new TypeReference<SageResponse>(){});
-        EntityUtils.consume(resEntity);
+        SageResponse sageResponse = mapper.readValue(responseContent, new TypeReference<SageResponse>(){});
 
         // format bindings in Jena format
         List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {

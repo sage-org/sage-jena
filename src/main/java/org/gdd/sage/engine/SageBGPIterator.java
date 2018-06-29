@@ -14,7 +14,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Evaluate a Basic Graph Pattern (BGP) using a SaGe server using the Iterator pattern.
@@ -63,19 +62,14 @@ public class SageBGPIterator extends QueryIteratorBase {
     }
 
     private void fillBindingsBuffer () {
-        try {
-            QueryResults queryResults = client.query(bgp, nextLink).get();
-            if (queryResults.hasError()) {
-                hasNextPage = false;
-                logger.error(queryResults.getError());
-            } else {
-                bindingsBuffer.addAll(queryResults.getBindings());
-                nextLink = queryResults.getNext();
-                hasNextPage = queryResults.hasNext();
-            }
-        } catch (InterruptedException | ExecutionException e) {
+        QueryResults queryResults = client.query(bgp, nextLink);
+        if (queryResults.hasError()) {
             hasNextPage = false;
-            logger.error(e.getMessage());
+            logger.error(queryResults.getError());
+        } else {
+            bindingsBuffer.addAll(queryResults.getBindings());
+            nextLink = queryResults.getNext();
+            hasNextPage = queryResults.hasNext();
         }
     }
 

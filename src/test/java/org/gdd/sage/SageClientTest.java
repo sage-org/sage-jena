@@ -1,22 +1,12 @@
 package org.gdd.sage;
 
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.*;
-import org.apache.jena.sparql.algebra.Algebra;
-import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transform;
-import org.apache.jena.sparql.algebra.Transformer;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.engine.optimizer.OptionalTransformer;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class SageClientTest {
 
@@ -38,8 +28,6 @@ public class SageClientTest {
         factory.buildFederation();
         Transform transformer = new OptionalTransformer();
         query = factory.getLocalizedQuery();
-        /*Op op = Algebra.compile(query);
-        op = Transformer.transform(transformer, op);*/
         Dataset dataset = factory.getFederationDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
 

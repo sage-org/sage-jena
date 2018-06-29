@@ -1,17 +1,11 @@
 package org.gdd.sage.http;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.impl.client.cache.CachingHttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
 /**
  * Builder used to create instances of SageRemoteClient
  * @author Thomas Minier
  */
 public class SageClientBuilder {
     private String url;
-    private HttpClient httpClient;
 
     private SageClientBuilder() {
 
@@ -23,19 +17,8 @@ public class SageClientBuilder {
      * @return A new SageRemoteClient with default configuration
      */
     public static SageRemoteClient createDefault(String url) {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        CacheConfig cacheConfig = CacheConfig.custom()
-                .setMaxCacheEntries(1000)
-                .setMaxObjectSize(1000000)
-                .build();
-        HttpClient client = CachingHttpClients.custom()
-                .setCacheConfig(cacheConfig)
-                .setConnectionManager(connectionManager)
-                .setUserAgent("Sage-Jena client/1.0")
-                .build();
         return SageClientBuilder.create()
                 .withURL(url)
-                .withHTTPClient(client)
                 .build();
     }
 
@@ -58,20 +41,10 @@ public class SageClientBuilder {
     }
 
     /**
-     * Set the HTTP client used by the SageRemoteClient
-     * @param client - The HTTP client to use
-     * @return The SageClientBuilder instance, used for chaining calls
-     */
-    public SageClientBuilder withHTTPClient(HttpClient client) {
-        this.httpClient = client;
-        return this;
-    }
-
-    /**
      * Build a new SageRemoteClient
      * @return The SageRemoteClient instance
      */
     public SageRemoteClient build() {
-        return new SageDefaultClient(url, httpClient);
+        return new SageDefaultClient(url);
     }
 }
