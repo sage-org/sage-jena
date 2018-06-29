@@ -86,6 +86,29 @@ public class SageDefaultClient implements SageRemoteClient {
     }
 
     /**
+     * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
+     * @param patterns - List of BGPs to evaluate
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
+     */
+    public QueryResults query(List<BasicPattern> patterns, Optional<String> next) {
+        SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
+                .withType("union")
+                .withUnion(patterns);
+        if (next.isPresent()) {
+            queryBuilder = queryBuilder.withNextLink(next.get());
+        }
+
+        String jsonQuery = queryBuilder.build();
+        try {
+            HttpResponse response = sendQuery(jsonQuery).get();
+            return decodeResponse(response);
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            return QueryResults.withError(e.getMessage());
+        }
+    }
+
+    /**
      * Evaluate a Basic Graph Pattern against a SaGe server, without a next link
      * @param bgp - BGP to evaluate
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.

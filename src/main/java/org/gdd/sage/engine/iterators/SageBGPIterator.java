@@ -1,4 +1,4 @@
-package org.gdd.sage.engine;
+package org.gdd.sage.engine.iterators;
 
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.query.ARQ;
@@ -23,12 +23,13 @@ import java.util.Optional;
  */
 public class SageBGPIterator extends QueryIteratorBase {
 
-    private SageRemoteClient client;
-    private BasicPattern bgp;
-    private Optional<String> nextLink;
-    private Deque<Binding> bindingsBuffer;
-    private boolean hasNextPage;
-    private Logger logger;
+    protected SageRemoteClient client;
+    protected BasicPattern bgp;
+    protected Optional<String> nextLink;
+    protected Deque<Binding> bindingsBuffer;
+    protected boolean hasNextPage = false;
+    protected Logger logger;
+    private boolean warmup = true;
 
     /**
      * Constructor
@@ -40,9 +41,8 @@ public class SageBGPIterator extends QueryIteratorBase {
         this.bgp = bgp;
         this.nextLink = Optional.empty();
         this.bindingsBuffer = new ArrayDeque<>();
-        this.hasNextPage = true;
+
         logger = ARQ.getExecLogger();
-        this.fillBindingsBuffer();
     }
 
     /**
@@ -61,7 +61,7 @@ public class SageBGPIterator extends QueryIteratorBase {
         return this.hasNextPage;
     }
 
-    private void fillBindingsBuffer () {
+    protected void fillBindingsBuffer () {
         QueryResults queryResults = client.query(bgp, nextLink);
         if (queryResults.hasError()) {
             hasNextPage = false;
@@ -75,20 +75,21 @@ public class SageBGPIterator extends QueryIteratorBase {
 
     @Override
     protected boolean hasNextBinding() {
+        if (warmup) {
+            this.fillBindingsBuffer();
+            warmup = false;
+        }
         return (!bindingsBuffer.isEmpty()) || hasNextPage;
     }
 
     @Override
     protected Binding moveToNextBinding() {
-        if (this.hasNextBinding()) {
-            // pull from internal buffer is possible, otherwise fetch more bindings from server
-            if (!bindingsBuffer.isEmpty()) {
-                return bindingsBuffer.pollFirst();
-            }
-            fillBindingsBuffer();
-            return this.moveToNextBinding();
+        // pull from internal buffer is possible, otherwise fetch more bindings from server
+        if (!bindingsBuffer.isEmpty()) {
+            return bindingsBuffer.pollFirst();
         }
-        return null;
+        fillBindingsBuffer();
+        return bindingsBuffer.pollFirst();
     }
 
     @Override

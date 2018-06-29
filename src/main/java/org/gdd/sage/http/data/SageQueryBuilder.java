@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Builder used to create JSON queries thta can be send to a SaGe server
  * @author Thomas Minier
@@ -29,12 +32,7 @@ public class SageQueryBuilder {
         return new SageQueryBuilder();
     }
 
-    /**
-     * Set the Basic Graph Pattern of the query
-     * @param patterns - The Basic Graph Patterns to be send with the query
-     * @return The SageQueryBuilder instance, used for chaining calls
-     */
-    public SageQueryBuilder withBasicGraphPattern(BasicPattern patterns) {
+    private ArrayNode buildBGPNode(BasicPattern patterns) {
         ArrayNode bgp = mapper.createArrayNode();
         for (Triple pattern: patterns.getList()) {
             ObjectNode jsonTriple = mapper.createObjectNode();
@@ -43,7 +41,30 @@ public class SageQueryBuilder {
             jsonTriple.put("object", pattern.getObject().toString());
             bgp.add(jsonTriple);
         }
-        queryNode.putArray("bgp").addAll(bgp);
+        return bgp;
+    }
+
+    /**
+     * Set the Basic Graph Pattern of the query
+     * @param patterns - The Basic Graph Patterns to be send with the query
+     * @return The SageQueryBuilder instance, used for chaining calls
+     */
+    public SageQueryBuilder withBasicGraphPattern(BasicPattern patterns) {
+        queryNode.putArray("bgp").addAll(buildBGPNode(patterns));
+        return this;
+    }
+
+    /**
+     * Set the Union clause of the query
+     * @param union - A set of BGPs
+     * @return The SageQueryBuilder instance, used for chaining calls
+     */
+    public SageQueryBuilder withUnion(List<BasicPattern> union) {
+        List<ArrayNode> unionList = union.stream().map(this::buildBGPNode).collect(Collectors.toList());
+        ArrayNode u = queryNode.putArray("union");
+        for(ArrayNode n: unionList) {
+            u.addArray().addAll(n);
+        }
         return this;
     }
 
