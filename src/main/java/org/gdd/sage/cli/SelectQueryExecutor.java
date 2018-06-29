@@ -19,6 +19,9 @@ public class SelectQueryExecutor implements QueryExecutor {
             try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset) ){
                 ResultSet results = qexec.execSelect();
                 switch (format) {
+                    case "raw":
+                        results.forEachRemaining(System.out::println);
+                        break;
                     case "xml":
                         ResultSetFormatter.outputAsXML(results);
                         break;

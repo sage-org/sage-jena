@@ -12,17 +12,23 @@ public class SageClientTest {
 
     @Test
     public void publicSageServer() {
-        String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
-        String queryString = "prefix dbpedia-owl: <http://dbpedia.org/ontology/>\n" +
-                "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
-                "prefix dbpprop: <http://dbpedia.org/property/>\n" +
+        String url = "http://sage.univ-nantes.fr/sparql/bsbm1M";
+        String queryString = "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\n" +
+                "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                 "\n" +
-                "SELECT ?name ?deathDate WHERE {\n" +
-                "  ?person a dbpedia-owl:Artist;\n" +
-                "          rdfs:label ?name;\n" +
-                "          dbpedia-owl:birthPlace [ rdfs:label \"York\"@en ].\n" +
-                "  OPTIONAL { ?person dbpprop:dateOfDeath ?deathDate. }\n" +
-                "}";
+                "SELECT DISTINCT ?product ?label\n" +
+                "WHERE {\n" +
+                "    ?product rdfs:label ?label .\n" +
+                "    ?product a <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType66> .\n" +
+                "    ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature3> .\n" +
+                "    ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1967> .\n" +
+                "    ?product bsbm:productPropertyNumeric1 ?value1 .\n" +
+                "\tFILTER (?value1 > 136)\n" +
+                "\t}\n" +
+                "ORDER BY ?label\n" +
+                "LIMIT 10";
         Query query = QueryFactory.create(queryString);
         FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
         factory.buildFederation();

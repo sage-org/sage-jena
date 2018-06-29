@@ -11,6 +11,6 @@ WHERE {
     ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1967> .
     ?product bsbm:productPropertyNumeric1 ?value1 .
 	FILTER (?value1 > 136)
-	}
-ORDER BY ?label
+}
+ORDER BY desc(?label)
 LIMIT 10
