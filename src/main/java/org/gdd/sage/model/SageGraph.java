@@ -65,8 +65,6 @@ public class SageGraph extends GraphBase {
      * Get metadata about a Basic Graph Pattern
      * @param bgp - BGP to describe
      * @return Metadata about the BGP
-     * @throws ExecutionException
-     * @throws InterruptedException
      */
     public QueryResults analyze(BasicPattern bgp) {
         return httpClient.query(bgp);

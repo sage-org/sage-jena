@@ -49,7 +49,7 @@ public class SageClientTest {
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
-            results.forEachRemaining(b -> solutions.add(b));
+            results.forEachRemaining(solutions::add);
             assertEquals("It should find 22 solutions bindings", 22, solutions.size());
         }
     }

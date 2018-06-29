@@ -39,8 +39,8 @@ public class SageDefaultClient implements SageRemoteClient {
     private ExecutorService threadPool;
     private ObjectMapper mapper;
     private HttpRequestFactory requestFactory;
-    static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-    static final JsonFactory JSON_FACTORY = new JacksonFactory();
+    private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    private static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
     /**
      * Constructor
