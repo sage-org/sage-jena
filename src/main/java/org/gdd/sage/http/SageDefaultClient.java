@@ -118,6 +118,15 @@ public class SageDefaultClient implements SageRemoteClient {
     }
 
     /**
+     * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
+     * @param patterns - List of BGPs to evaluate
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
+     */
+    public QueryResults query(List<BasicPattern> patterns) {
+        return query(patterns, Optional.empty());
+    }
+
+    /**
      * Free all resources used by the client
      */
     public void close() {

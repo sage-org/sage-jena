@@ -10,17 +10,16 @@ import org.gdd.sage.http.data.QueryResults;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Evaluate an Optional clause using a Bind join approach
+ * An iterator which evaluates a Bind Join between an input iterator and a BGP
  * @author Thomas Minier
  */
-public class BindOptionalIterator extends SageBGPIterator {
+public class BindJoinIterator extends SageBGPIterator {
 
     private QueryIterator source;
-    private List<Binding> tempBuffer;
-    private List<BasicPattern> bgpBuffer;
+    protected List<Binding> tempBuffer;
+    protected List<BasicPattern> bgpBuffer;
     private int bufferSize;
 
     /**
@@ -30,7 +29,7 @@ public class BindOptionalIterator extends SageBGPIterator {
      * @param bgp    - Basic Graph pattern to left join with
      * @param bufferSize - Size of the bind join buffer (15 is the "default" admitted value)
      */
-    public BindOptionalIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {
+    public BindJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {
         super(client, bgp);
         this.source = source;
         this.tempBuffer = new ArrayList<>();
@@ -41,6 +40,19 @@ public class BindOptionalIterator extends SageBGPIterator {
     @Override
     protected boolean hasNextBinding() {
         return source.hasNext() || super.hasNextBinding();
+    }
+
+    /**
+     * Do something with bond join query results
+     * @param results - Query results fetched from the Sage server
+     */
+    protected void reviewResults(QueryResults results) {
+        List<Binding> solutions = results.getBindings();
+        if (!solutions.isEmpty()) {
+            bindingsBuffer.addAll(solutions);
+            nextLink = results.getNext();
+            hasNextPage = results.hasNext();
+        }
     }
 
     @Override
@@ -63,21 +75,12 @@ public class BindOptionalIterator extends SageBGPIterator {
         if (!bgpBuffer.isEmpty()) {
             // send union query to sage server
             QueryResults queryResults = client.query(bgpBuffer, nextLink);
-            List<Binding> solutions = queryResults.getBindings();
             if (queryResults.hasError()) {
                 // an error has occurred, report it
                 hasNextPage = false;
                 logger.error(queryResults.getError());
-            } else if (solutions.isEmpty()) {
-                // optional part: return buffer of input bindings
-                bindingsBuffer.addAll(tempBuffer);
-                hasNextPage = false;
-                nextLink = Optional.empty();
             } else {
-                // found results!
-                bindingsBuffer.addAll(solutions);
-                nextLink = queryResults.getNext();
-                hasNextPage = queryResults.hasNext();
+                reviewResults(queryResults);
             }
         }
     }

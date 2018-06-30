@@ -12,6 +12,7 @@ import org.gdd.sage.http.SageClientBuilder;
 import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**

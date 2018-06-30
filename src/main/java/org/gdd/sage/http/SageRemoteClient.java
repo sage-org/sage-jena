@@ -31,6 +31,13 @@ public interface SageRemoteClient {
     QueryResults query(List<BasicPattern> patterns, Optional<String> next);
 
     /**
+     * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
+     * @param patterns - List of BGPs to evaluate
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
+     */
+    QueryResults query(List<BasicPattern> patterns);
+
+    /**
      * Free all resources used by the client
      */
     void close();
