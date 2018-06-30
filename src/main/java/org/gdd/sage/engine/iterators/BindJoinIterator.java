@@ -24,9 +24,9 @@ public class BindJoinIterator extends SageBGPIterator {
 
     /**
      * Constructor
-     * @param source - Input for the left join
+     * @param source - Input for the join
      * @param client - HTTP client used to query the SaGe server
-     * @param bgp    - Basic Graph pattern to left join with
+     * @param bgp    - Basic Graph pattern to join with
      * @param bufferSize - Size of the bind join buffer (15 is the "default" admitted value)
      */
     public BindJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {

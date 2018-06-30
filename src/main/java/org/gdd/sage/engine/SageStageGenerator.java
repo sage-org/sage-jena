@@ -20,6 +20,7 @@ import org.gdd.sage.model.SageGraph;
 public class SageStageGenerator implements StageGenerator {
 
     private StageGenerator above;
+    private static final int BIND_JOIN_BUFFER_SIZE = 15;
 
     private SageStageGenerator(StageGenerator above) {
         this.above = above;
@@ -49,7 +50,7 @@ public class SageStageGenerator implements StageGenerator {
                 return sageGraph.basicGraphPatternFind(pattern);
             } else if (isOptional) {
                 // use a bind join approach to evaluate Left join/Optionals
-                return new OptionalBindJoinIterator(input, sageGraph.getClient(), pattern, 15);
+                return new OptionalBindJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUFFER_SIZE);
             }
             SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.basicGraphPatternFind(pattern);
             // if the BGP can be downloaded in one HTTP request, then use a hash join to save data transfer
@@ -57,7 +58,7 @@ public class SageStageGenerator implements StageGenerator {
                 return Join.hashJoin(input, bgpIt, execCxt);
             }
             // otherwise, use a Bind Join as default strategy
-            return new BindJoinIterator(input, sageGraph.getClient(), pattern, 15);
+            return new BindJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUFFER_SIZE);
         }
         return above.execute(pattern, input, execCxt);
     }

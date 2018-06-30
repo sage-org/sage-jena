@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Evaluate a Basic Graph Pattern (BGP) using a SaGe server using the Iterator pattern.
+ * Evaluate a Basic Graph Pattern (BGP) using a SaGe server, following the Iterator pattern.
  * It fetches results in a lazy manner, i.e, a new HTTP request is issued only after all results
  * fetched by the previous one has been completely consumed.
  * @author Thomas Minier
