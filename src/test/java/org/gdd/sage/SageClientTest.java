@@ -1,9 +1,11 @@
 package org.gdd.sage;
 
 import org.apache.jena.query.*;
+import org.apache.jena.sparql.algebra.Algebra;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import static org.junit.Assert.*;
 
 public class SageClientTest {
 
+    @Ignore
     @Test
     public void publicSageServer() {
         String url = "http://localhost:8000/sparql/bsbm1M";

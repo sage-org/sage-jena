@@ -8,8 +8,10 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.riot.RiotParseException;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -162,14 +164,24 @@ public class SageDefaultClient implements SageRemoteClient {
         List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {
             BindingHashMap b = new BindingHashMap();
             for (Map.Entry<String, String> entry: binding.entrySet()) {
-                Var key = Var.alloc(entry.getKey().substring(1));
-                Node value;
-                if (entry.getValue().startsWith("http")) {
-                    value = NodeFactory.createURI(entry.getValue());
-                } else {
-                    value = NodeFactoryExtra.parseNode(entry.getValue());
+                try {
+                    Var key = Var.alloc(entry.getKey().substring(1));
+                    Node value;
+                    if (entry.getValue().startsWith("http")) {
+                        value = NodeFactory.createURI("<" + entry.getValue() + ">");
+                    } else {
+                        String literal = entry.getValue().trim();
+                        if (literal.contains("^^http")) {
+                            int index = literal.indexOf("^^http:");
+                            value = NodeFactory.createLiteral(literal.substring(0, index), new BaseDatatype(literal.substring(index + 2)));
+                        } else {
+                            value = NodeFactoryExtra.parseNode(literal);
+                        }
+                    }
+                    b.add(key, value);
+                } catch(RiotParseException e) {
+                    // TODO: for now we skip parsing errors, maybe need to do something cleaner
                 }
-                b.add(key, value);
             }
             return b;
         }).collect(Collectors.toList());
