@@ -39,7 +39,7 @@ public class SageClientTest {
                 "    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyTextual3 ?propertyTextual3 .\n" +
                 "    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyNumeric1 ?propertyNumeric1 .\n" +
                 "    <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyNumeric2 ?propertyNumeric2 .\n" +
-                "    OPTIONAL { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyTextual4 ?propertyTextual4 }\n" +
+                "    OPTIONAL { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyTextual1 ?propertyTextual4 }\n" +
                 "    OPTIONAL { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyTextual5 ?propertyTextual5 }\n" +
                 "    OPTIONAL { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyNumeric4 ?propertyNumeric4 }\n" +
                 "}\n";
@@ -52,7 +52,13 @@ public class SageClientTest {
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
-            results.forEachRemaining(solutions::add);
+            results.forEachRemaining(querySolution -> {
+                System.out.println(querySolution);
+                assertTrue("?propertyTextual4 should be bounded", querySolution.contains("propertyTextual4"));
+                assertFalse("?propertyTextual5 should not be bounded", querySolution.contains("propertyTextual5"));
+                assertFalse("?propertyNumeric4 should not be bounded", querySolution.contains("propertyNumeric4"));
+                solutions.add(querySolution);
+            });
             assertEquals("It should find 22 solutions bindings", 22, solutions.size());
         }
     }

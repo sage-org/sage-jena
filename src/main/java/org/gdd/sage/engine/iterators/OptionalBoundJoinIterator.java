@@ -4,7 +4,6 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +12,7 @@ import java.util.Optional;
  * A Bind Join specialized for Left join/Optionals
  * @author Thomas Minier
  */
-public class OptionalBindJoinIterator extends BindJoinIterator {
+public class OptionalBoundJoinIterator extends BoundJoinIterator {
     /**
      * Constructor
      * @param source     - Input for the left join
@@ -21,23 +20,18 @@ public class OptionalBindJoinIterator extends BindJoinIterator {
      * @param bgp        - Basic Graph pattern to left join with
      * @param bufferSize - Size of the bind join buffer (15 is the "default" admitted value)
      */
-    public OptionalBindJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {
+    public OptionalBoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {
         super(source, client, bgp, bufferSize);
     }
 
     @Override
-    protected void reviewResults(QueryResults results) {
-        List<Binding> solutions = results.getBindings();
-        if (solutions.isEmpty()) {
-            // optional part: return buffer of input bindings
-            bindingsBuffer.addAll(tempBuffer);
+    protected List<Binding> rewriteSolutions(List<Binding> input) {
+        if (input.isEmpty()) {
+            // optional part: avoid rewriting and simply return the bucket of bindings
             hasNextPage = false;
             nextLink = Optional.empty();
-        } else {
-            // found results!
-            bindingsBuffer.addAll(solutions);
-            nextLink = results.getNext();
-            hasNextPage = results.hasNext();
+            return bindingBucket;
         }
+        return super.rewriteSolutions(input);
     }
 }
