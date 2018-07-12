@@ -52,11 +52,11 @@ public class SageStageGenerator implements StageGenerator {
                 // use a bind join approach to evaluate Left join/Optionals
                 return new OptionalBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE);
             }
-            SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.basicGraphPatternFind(pattern);
+            /*SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.basicGraphPatternFind(pattern);
             // if the BGP can be downloaded in one HTTP request, then use a hash join to save data transfer
             if (!bgpIt.getHasNextPage()) {
                 return Join.hashJoin(input, bgpIt, execCxt);
-            }
+            }*/
             // otherwise, use a Bind Join as default strategy
             return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE);
         }

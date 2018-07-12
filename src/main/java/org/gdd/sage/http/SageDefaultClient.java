@@ -168,14 +168,17 @@ public class SageDefaultClient implements SageRemoteClient {
                     Var key = Var.alloc(entry.getKey().substring(1));
                     Node value;
                     if (entry.getValue().startsWith("http")) {
-                        value = NodeFactory.createURI("<" + entry.getValue() + ">");
+                        value = NodeFactory.createURI(entry.getValue());
                     } else {
                         String literal = entry.getValue().trim();
-                        if (literal.contains("^^http")) {
-                            int index = literal.indexOf("^^http:");
-                            value = NodeFactory.createLiteral(literal.substring(0, index), new BaseDatatype(literal.substring(index + 2)));
+                        if (literal.contains("\"^^http")) {
+                            int index = literal.lastIndexOf("\"^^http:");
+                            value = NodeFactory.createLiteral(literal.substring(0, index), new BaseDatatype(literal.substring(index + 3)));
+                        } else if (literal.contains("\"@")) {
+                            int index = literal.lastIndexOf("\"@");
+                            value = NodeFactory.createLiteral(literal.substring(0, index), literal.substring(index + 2));
                         } else {
-                            value = NodeFactoryExtra.parseNode(literal);
+                            value = NodeFactory.createLiteral(literal);
                         }
                     }
                     b.add(key, value);
