@@ -19,6 +19,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
+import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
@@ -181,7 +182,7 @@ public class SageDefaultClient implements SageRemoteClient {
                             int index = literal.lastIndexOf("\"@");
                             value = NodeFactory.createLiteral(literal.substring(0, index), literal.substring(index + 2));
                         } else {
-                            value = NodeFactory.createLiteral(literal);
+                            value = NodeFactoryExtra.parseNode(literal);
                         }
                     }
                     b.add(key, value);
