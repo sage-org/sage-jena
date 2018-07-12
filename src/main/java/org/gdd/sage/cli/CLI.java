@@ -9,15 +9,27 @@ import org.apache.jena.query.QueryFactory;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
+import org.gdd.sage.model.SageGraph;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class CLI {
+
+    private static int computeNbQueries(Dataset federation) {
+        final int[] nbQueries = {0};
+        nbQueries[0] += ((SageGraph) federation.getDefaultModel().getGraph()).getClient().getNbQueries();
+        federation.listNames().forEachRemaining(s -> {
+            nbQueries[0] += ((SageGraph) federation.getNamedModel(s).getGraph()).getClient().getNbQueries();
+        });
+        return nbQueries[0];
+    }
 
     public static void main(String[] args) {
         Logger logger = ARQ.getExecLogger();
@@ -71,7 +83,14 @@ public class CLI {
                 } else {
                     executor = new DescribeQueryExecutor(format);
                 }
+                long startTime = System.nanoTime();
                 executor.execute(federation, query);
+                long endTime = System.nanoTime();
+                if (cmd.hasOption("time")) {
+                    double duration = (endTime - startTime) / 10e9;
+                    int nbQueries = computeNbQueries(federation);
+                    System.err.println(MessageFormat.format("SPARQL query executed in {0}s with {1} HTTP requests", duration , nbQueries));
+                }
                 federation.close();
             }
         } catch (ParseException e) {

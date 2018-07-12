@@ -43,4 +43,6 @@ public interface SageRemoteClient {
     void close();
 
     String getServerURL();
+
+    int getNbQueries();
 }

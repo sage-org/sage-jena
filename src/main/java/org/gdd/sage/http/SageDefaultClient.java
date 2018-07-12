@@ -44,6 +44,7 @@ public class SageDefaultClient implements SageRemoteClient {
     private ExecutorService threadPool;
     private ObjectMapper mapper;
     private HttpRequestFactory requestFactory;
+    private int nbQueries;
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
@@ -61,10 +62,15 @@ public class SageDefaultClient implements SageRemoteClient {
             request.getHeaders().setUserAgent("Sage-Jena client/Java 1.8");
             request.setParser(new JsonObjectParser(JSON_FACTORY));
         });
+        nbQueries = 0;
     }
 
     public String getServerURL() {
         return serverURL.toString();
+    }
+
+    public int getNbQueries() {
+        return nbQueries;
     }
 
     /**
@@ -145,6 +151,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @throws IOException
      */
     private Future<HttpResponse> sendQuery(String jsonQuery) throws IOException {
+        nbQueries++;
         HttpRequest request = requestFactory.buildPostRequest(serverURL, new ByteArrayContent("application/json", jsonQuery.getBytes()));
         return request.executeAsync(threadPool);
     }
