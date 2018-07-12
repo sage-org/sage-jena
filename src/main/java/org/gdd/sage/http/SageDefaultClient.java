@@ -8,10 +8,8 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.datatypes.xsd.impl.XMLLiteralType;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.RiotParseException;
@@ -184,6 +182,10 @@ public class SageDefaultClient implements SageRemoteClient {
                         if (literal.contains("\"^^<http")) {
                             int index = literal.lastIndexOf("\"^^<http:");
                             RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 4, literal.length() - 1));
+                            value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
+                        } else if (literal.contains("\"^^http")) {
+                            int index = literal.lastIndexOf("\"^^http:");
+                            RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 3, literal.length() - 1));
                             value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
                         } else if (literal.contains("\"@")) {
                             int index = literal.lastIndexOf("\"@");
