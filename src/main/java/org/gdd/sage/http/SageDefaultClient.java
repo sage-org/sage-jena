@@ -177,10 +177,10 @@ public class SageDefaultClient implements SageRemoteClient {
                         if (literal.contains("\"^^<http")) {
                             int index = literal.lastIndexOf("\"^^<http:");
                             RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 4, literal.length() - 1));
-                            value = NodeFactory.createLiteral(literal.substring(0, index), datatype);
+                            value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
                         } else if (literal.contains("\"@")) {
                             int index = literal.lastIndexOf("\"@");
-                            value = NodeFactory.createLiteral(literal.substring(0, index), literal.substring(index + 2));
+                            value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
                         } else {
                             value = NodeFactoryExtra.parseNode(literal);
                         }
