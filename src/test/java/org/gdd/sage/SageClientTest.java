@@ -17,7 +17,7 @@ public class SageClientTest {
 
     @Ignore
     @Test
-    public void bsbsmQuery() {
+    public void bsbmQuery() {
         String url = "http://sage.univ-nantes.fr/sparql/bsbm1M";
         String queryString = "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\n" +
                 "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
@@ -53,7 +53,7 @@ public class SageClientTest {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
             results.forEachRemaining(querySolution -> {
-                //System.out.println(querySolution);
+                System.out.println(querySolution);
                 assertTrue("?propertyTextual4 should be bounded", querySolution.contains("propertyTextual4"));
                 assertFalse("?propertyTextual5 should not be bounded", querySolution.contains("propertyTextual5"));
                 assertFalse("?propertyNumeric4 should not be bounded", querySolution.contains("propertyNumeric4"));
