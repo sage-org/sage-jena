@@ -37,9 +37,8 @@ public class ServiceFederatedQueryFactory implements FederatedQueryFactory {
         // localize query and get all SERVICE uris
         Op queryTree = Algebra.compile(query);
         ServiceTransformer transformer = new ServiceTransformer();
-        queryTree = Transformer.transform(transformer, queryTree);
+        Transformer.transform(transformer, queryTree);
         uris.addAll(transformer.getUris());
-        query = OpAsQuery.asQuery(queryTree);
 
         // build the federated dataset
         Graph defaultGraph = new SageGraph(defaultUrl);

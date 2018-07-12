@@ -7,10 +7,36 @@ import org.apache.jena.query.*;
  * @author Thomas Minier
  */
 public class AskQueryExecutor implements QueryExecutor {
+    private String format;
+
+    public AskQueryExecutor(String format) {
+        this.format = format;
+    }
+
     @Override
     public void execute(Dataset dataset, Query query) {
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
-            ResultSetFormatter.out(qexec.execAsk());
+            boolean answer = qexec.execAsk();
+            switch (format) {
+                case "raw":
+                    System.out.println(answer);
+                    break;
+                case "xml":
+                    ResultSetFormatter.outputAsXML(answer);
+                    break;
+                case "json":
+                    ResultSetFormatter.outputAsJSON(answer);
+                    break;
+                case "csv":
+                    ResultSetFormatter.outputAsCSV(answer);
+                    break;
+                case "tsv":
+                    ResultSetFormatter.outputAsTSV(answer);
+                    break;
+                default:
+                    ResultSetFormatter.outputAsSSE(answer);
+                    break;
+            }
         }
     }
 }

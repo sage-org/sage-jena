@@ -65,7 +65,7 @@ public class CLI {
                 if (query.isSelectType()) {
                     executor = new SelectQueryExecutor(format);
                 } else if (query.isAskType()) {
-                    executor = new AskQueryExecutor();
+                    executor = new AskQueryExecutor(format);
                 } else if (query.isConstructType()) {
                     executor = new ConstructQueryExecutor(format);
                 } else {
