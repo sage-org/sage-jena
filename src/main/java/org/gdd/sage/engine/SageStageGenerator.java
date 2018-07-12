@@ -5,12 +5,10 @@ import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.join.Join;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.apache.jena.sparql.util.Symbol;
 import org.gdd.sage.engine.iterators.BoundJoinIterator;
 import org.gdd.sage.engine.iterators.OptionalBoundJoinIterator;
-import org.gdd.sage.engine.iterators.SageBGPIterator;
 import org.gdd.sage.model.SageGraph;
 
 /**
@@ -52,12 +50,6 @@ public class SageStageGenerator implements StageGenerator {
                 // use a bind join approach to evaluate Left join/Optionals
                 return new OptionalBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE);
             }
-            /*SageBGPIterator bgpIt = (SageBGPIterator) sageGraph.basicGraphPatternFind(pattern);
-            // if the BGP can be downloaded in one HTTP request, then use a hash join to save data transfer
-            if (!bgpIt.getHasNextPage()) {
-                return Join.hashJoin(input, bgpIt, execCxt);
-            }*/
-            // otherwise, use a Bind Join as default strategy
             return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE);
         }
         return above.execute(pattern, input, execCxt);

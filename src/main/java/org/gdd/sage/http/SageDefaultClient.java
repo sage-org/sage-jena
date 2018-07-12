@@ -17,7 +17,6 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
