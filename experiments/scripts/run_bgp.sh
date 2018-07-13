@@ -14,7 +14,7 @@ if [ "$#" -ne 3 ]; then
 fi
 
 # SERVER="http://172.16.8.50:8000/bgp/watdiv10m"
-SERVER="http://localhost:8000/bgp/watdiv10m"
+SERVER="http://172.16.8.50:8000/sparql/bsbm1k"
 
 mkdir -p $OUTPUT/results/
 mkdir -p $OUTPUT/errors/
@@ -22,23 +22,23 @@ mkdir -p $OUTPUT/errors/
 RESFILE="${OUTPUT}/execution_times_bgp.csv"
 
 # init results file with headers
-echo "query,time,httpCalls,serverTime,overhead,completeness,soundness,errors" > $RESFILE
+#echo "query,time,httpCalls,serverTime,overhead,completeness,soundness,errors" > $RESFILE
 
 for qfile in $QUERIES/*; do
   x=`basename $qfile`
   qname="${x%.*}"
   echo -n "${qname}," >> $RESFILE
   # execution time
-  ./bin/sage-client.js $SERVER -f $qfile -m $RESFILE > $OUTPUT/results/$qname.log 2> $OUTPUT/errors/$qname.err
-  echo -n "," >> $RESFILE
-  # completeness
-  echo -n `./scripts/completeness.sh ${REF}/$qname.log ${OUTPUT}/results/$qname.log compl` >> $RESFILE
-  echo -n "," >> $RESFILE
-  # soundness
-  echo -n `./scripts/completeness.sh ${REF}/$qname.log ${OUTPUT}/results/$qname.log sound` >> $RESFILE
-  echo -n "," >> $RESFILE
-  # nb errors during query processing
-  echo `wc -l ${OUTPUT}/errors/${qname}.err | awk '{print $1}'` >> $RESFILE
+  bin/sage-jena-1.0-SNAPSHOT/bin/sage-jena -u $SERVER -f $qfile --time > $OUTPUT/results/$qname.log 2>> $RESFILE
+  # echo -n "," >> $RESFILE
+  # # completeness
+  # echo -n `./scripts/completeness.sh ${REF}/$qname.log ${OUTPUT}/results/$qname.log compl` >> $RESFILE
+  # echo -n "," >> $RESFILE
+  # # soundness
+  # echo -n `./scripts/completeness.sh ${REF}/$qname.log ${OUTPUT}/results/$qname.log sound` >> $RESFILE
+  # echo -n "," >> $RESFILE
+  # # nb errors during query processing
+  # echo `wc -l ${OUTPUT}/errors/${qname}.err | awk '{print $1}'` >> $RESFILE
 done
 
 # remove tmp folders

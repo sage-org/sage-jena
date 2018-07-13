@@ -11,12 +11,12 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # SERVER="http://172.16.8.50:8000/tpf/watdiv10m"
-SERVER="http://localhost:8000/bgp/watdiv10m"
+SERVER="http://172.16.8.50:8000/sparql/bsbm1k"
 
 while true; do
   for qfile in `ls $QUERIES/* | sort -R`; do
     x=`basename $qfile`
     qname="${x%.*}"
-    ./bin/sage-client.js $SERVER -f $qfile -s > /dev/null 2> /dev/null
+    bin/sage-jena-1.0-SNAPSHOT/bin/sage-jena -u $SERVER -f $qfile -s > /dev/null 2> /dev/null
   done
 done
