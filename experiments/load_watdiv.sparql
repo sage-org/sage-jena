@@ -1,0 +1,6 @@
+# This query exceed the max. nb of results for a query, as set by the public DBpedia Virtuoso config
+SELECT * WHERE {
+  ?v0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o1 .
+  ?v0 <http://ogp.me/ns#tag> ?v1 .
+  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/hasGenre> ?v3 .
+}

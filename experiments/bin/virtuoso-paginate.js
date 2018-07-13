@@ -30,8 +30,6 @@ const { Parser, Generator } = require('sparqljs')
 const request = require('request').forever({timeout: 1000, minSockets: 10})
 const program = require('commander')
 const { merge, uniq } = require('lodash')
-const ldf = require('ldf-client')
-ldf.Logger.setLevel('WARNING')
 
 let nbCalls = 0
 
