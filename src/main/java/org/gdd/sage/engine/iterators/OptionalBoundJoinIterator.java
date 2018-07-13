@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A Bind Join specialized for Left join/Optionals
+ * A special Bound Join for Left joins/Optional clauses
  * @author Thomas Minier
  */
 public class OptionalBoundJoinIterator extends BoundJoinIterator {
@@ -18,7 +18,7 @@ public class OptionalBoundJoinIterator extends BoundJoinIterator {
      * @param source     - Input for the left join
      * @param client     - HTTP client used to query the SaGe server
      * @param bgp        - Basic Graph pattern to left join with
-     * @param bufferSize - Size of the bind join buffer (15 is the "default" admitted value)
+     * @param bufferSize - Size of the bound join buffer (15 is the "default" admitted value)
      */
     public OptionalBoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {
         super(source, client, bgp, bufferSize);

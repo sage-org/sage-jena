@@ -32,7 +32,7 @@ public class StreamingOpExecutor extends OpExecutor {
     }
 
     /**
-     * Execute an Operator with a given named Graph and input
+     * Execute an Operator with a given named (remote) Graph and input
      * @param graphNode - Node which identify the named graph
      * @param op - Operator to execute
      * @param input - Solution bindings input
@@ -41,7 +41,7 @@ public class StreamingOpExecutor extends OpExecutor {
     private QueryIterator executeWithGraph(Node graphNode, Op op, QueryIterator input) {
         DatasetGraph dataset = execCxt.getDataset();
         if ((!graphNode.isURI()) && (!graphNode.isBlank())) {
-            throw new ARQInternalErrorException("Unexpected Graph node (not an URI) when evaluating graph clause.\n" + graphNode);
+            throw new ARQInternalErrorException("Unexpected SERVICE node (not an URI) when evaluating SERVICE clause.\n" + graphNode);
         } else if (Quad.isDefaultGraph(graphNode)) {
             return exec(op, input);
         } else if (!dataset.containsGraph(graphNode)) {
@@ -53,7 +53,7 @@ public class StreamingOpExecutor extends OpExecutor {
     }
 
     /**
-     * Exxecute a Left Join/Optional using a Bind Join approach
+     * Exxecute a Left Join/Optional with a pure pipeline logic
      * @param left - Left operator
      * @param right - Right operator
      * @param input - Solution bindings input
@@ -62,7 +62,7 @@ public class StreamingOpExecutor extends OpExecutor {
     private QueryIterator executeOptional(Op left, Op right, QueryIterator input) {
         QueryIterator leftIter = QC.execute(left, input, execCxt);
         ExecutionContext newCxt = new ExecutionContext(execCxt);
-        newCxt.getContext().set(Symbol.create("optional"), true);
+        newCxt.getContext().set(SageSymbols.OPTIONAL_SYMBOL, true);
         return QC.execute(right, leftIter, newCxt);
     }
 

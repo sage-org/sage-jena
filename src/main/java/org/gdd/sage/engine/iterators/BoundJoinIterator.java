@@ -49,19 +49,6 @@ public class BoundJoinIterator extends SageBGPIterator {
     }
 
     /**
-     * Do something with bound join query results
-     * @param results - Query results fetched from the Sage server
-     */
-    protected List<Binding> reviewResults(QueryResults results) {
-        List<Binding> solutions = results.getBindings();
-        if (!solutions.isEmpty()) {
-            nextLink = results.getNext();
-            hasNextPage = results.hasNext();
-        }
-        return solutions;
-    }
-
-    /**
      * Find a rewriting key in a list of variables
      * For example, in [ ?s, ?o_1 ], the rewriting key is 1
      * @param vars List of SPARQL variables to analyze
@@ -123,6 +110,19 @@ public class BoundJoinIterator extends SageBGPIterator {
     }
 
     /**
+     * Do something with bound join query results
+     * @param results - Query results fetched from the Sage server
+     */
+    private List<Binding> reviewResults(QueryResults results) {
+        List<Binding> solutions = results.getBindings();
+        if (!solutions.isEmpty()) {
+            nextLink = results.getNext();
+            hasNextPage = results.hasNext();
+        }
+        return solutions;
+    }
+
+    /**
      * Undo the rewriting on solutions bindings, and then merge eahc of them with the corresponding input binding
      * @param input Solutions bindings to process
      * @return
@@ -149,7 +149,7 @@ public class BoundJoinIterator extends SageBGPIterator {
             bindingBucket.clear();
             bgpBucket.clear();
             rewritingMap.clear();
-            while (source.hasNext() && this.bgpBucket.size() < bucketSize) {
+            while (source.hasNext() && bgpBucket.size() < bucketSize) {
                 Binding b = source.nextBinding();
                 BasicPattern boundedBGP = new BasicPattern();
                 // key used for the rewriting

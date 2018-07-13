@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -41,24 +40,7 @@ public class SageBGPIterator extends QueryIteratorBase {
         this.bgp = bgp;
         this.nextLink = Optional.empty();
         this.bindingsBuffer = new ArrayDeque<>();
-
         logger = ARQ.getExecLogger();
-    }
-
-    /**
-     * Append solution bindings in the Iterator buffer
-     * @param bindings - Solution bindings to append
-     */
-    public void append(List<Binding> bindings) {
-        bindingsBuffer.addAll(bindings);
-    }
-
-    /**
-     * Return True if the Iterator has all bindings have not been retrieved from the server
-     * @return
-     */
-    public boolean getHasNextPage() {
-        return this.hasNextPage;
     }
 
     protected void fillBindingsBuffer () {
@@ -85,10 +67,9 @@ public class SageBGPIterator extends QueryIteratorBase {
     @Override
     protected Binding moveToNextBinding() {
         // pull from internal buffer is possible, otherwise fetch more bindings from server
-        if (!bindingsBuffer.isEmpty()) {
-            return bindingsBuffer.pollFirst();
+        if (bindingsBuffer.isEmpty()) {
+            fillBindingsBuffer();
         }
-        fillBindingsBuffer();
         return bindingsBuffer.pollFirst();
     }
 

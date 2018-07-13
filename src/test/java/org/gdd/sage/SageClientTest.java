@@ -1,7 +1,6 @@
 package org.gdd.sage;
 
 import org.apache.jena.query.*;
-import org.apache.jena.sparql.algebra.Algebra;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
