@@ -1,4 +1,4 @@
-package org.gdd.sage.engine.iterators;
+package org.gdd.sage.engine.iterators.base;
 
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.sparql.engine.binding.Binding;

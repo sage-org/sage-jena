@@ -6,8 +6,8 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.StageGenerator;
-import org.gdd.sage.engine.iterators.BoundJoinIterator;
-import org.gdd.sage.engine.iterators.OptionalBoundJoinIterator;
+import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
+import org.gdd.sage.engine.iterators.boundjoin.OptionalBoundJoinIterator;
 import org.gdd.sage.model.SageGraph;
 
 /**

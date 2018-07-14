@@ -1,6 +1,7 @@
 package org.gdd.sage.engine.iterators;
 
 import org.apache.jena.sparql.core.BasicPattern;
+import org.gdd.sage.engine.iterators.base.SageQueryIterator;
 import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 

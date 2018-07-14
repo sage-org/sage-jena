@@ -1,8 +1,9 @@
-package org.gdd.sage.engine.iterators;
+package org.gdd.sage.engine.iterators.boundjoin;
 
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
 import org.gdd.sage.http.SageRemoteClient;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.gdd.sage.engine.iterators;
+package org.gdd.sage.engine.iterators.boundjoin;
 
 import com.google.common.collect.Lists;
 import org.apache.jena.graph.Node;
@@ -11,6 +11,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
+import org.gdd.sage.engine.iterators.base.BufferedIterator;
 import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 import org.slf4j.Logger;
