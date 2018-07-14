@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.ARQ;
+import org.apache.jena.rdfxml.xmloutput.impl.Basic;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.core.Var;
@@ -12,6 +14,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
+import org.slf4j.Logger;
 
 import java.util.*;
 
@@ -19,13 +22,17 @@ import java.util.*;
  * An iterator which evaluates a Bound Join between an input iterator and a BGP
  * @author Thomas Minier
  */
-public class BoundJoinIterator extends SageBGPIterator {
-
+public class BoundJoinIterator extends BufferedIterator {
+    protected SageRemoteClient client;
+    protected Optional<String> nextLink;
+    private BasicPattern bgp;
+    protected boolean hasNextPage = false;
     private QueryIterator source;
     protected List<Binding> bindingBucket;
     protected List<BasicPattern> bgpBucket;
     private Map<Integer, Binding> rewritingMap;
     private int bucketSize;
+    protected Logger logger;
 
     /**
      * Constructor
@@ -35,17 +42,21 @@ public class BoundJoinIterator extends SageBGPIterator {
      * @param bucketSize - Size of the bound join bucket (15 is the "default" admitted value)
      */
     public BoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bucketSize) {
-        super(client, bgp);
+        super();
+        this.client = client;
+        this.bgp = bgp;
         this.source = source;
+        this.nextLink = Optional.empty();
         this.bindingBucket = new ArrayList<>();
         this.bgpBucket = new ArrayList<>();
         this.rewritingMap = new HashMap<>();
         this.bucketSize = bucketSize;
+        logger = ARQ.getExecLogger();
     }
 
     @Override
-    protected boolean hasNextBinding() {
-        return source.hasNext() || super.hasNextBinding();
+    protected boolean canProduceBindings() {
+        return source.hasNext() || hasNextPage;
     }
 
     /**
@@ -143,7 +154,8 @@ public class BoundJoinIterator extends SageBGPIterator {
     }
 
     @Override
-    protected void fillBindingsBuffer() {
+    protected List<Binding> produceBindings() {
+        List<Binding> solutions = new ArrayList<>();
         // if no next page, try to read from source to build a buffer of bounded BGps
         if (!nextLink.isPresent()) {
             bindingBucket.clear();
@@ -175,9 +187,9 @@ public class BoundJoinIterator extends SageBGPIterator {
                 hasNextPage = false;
                 logger.error(queryResults.getError());
             } else {
-                List<Binding> results = rewriteSolutions(reviewResults(queryResults));
-                bindingsBuffer.addAll(results);
+                solutions.addAll(rewriteSolutions(reviewResults(queryResults)));
             }
         }
+        return solutions;
     }
 }
