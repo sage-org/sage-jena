@@ -1,7 +1,6 @@
 package org.gdd.sage;
 
 import org.apache.jena.query.*;
-import org.apache.jena.sparql.algebra.Algebra;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
@@ -57,6 +56,46 @@ public class SageClientTest {
                 assertTrue("?propertyTextual4 should be bounded", querySolution.contains("propertyTextual4"));
                 assertFalse("?propertyTextual5 should not be bounded", querySolution.contains("propertyTextual5"));
                 assertFalse("?propertyNumeric4 should not be bounded", querySolution.contains("propertyNumeric4"));
+                solutions.add(querySolution);
+            });
+            assertEquals("It should find 22 solutions bindings", 22, solutions.size());
+        }
+    }
+
+    @Ignore
+    @Test
+    public void noSuchElementQuery() {
+        String url = "http://172.16.8.50:8000/sparql/bsbm1k";
+        String queryString = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+                "\n" +
+                "SELECT DISTINCT ?product ?productLabel\n" +
+                "WHERE {\n" +
+                "\t?product rdfs:label ?productLabel .\n" +
+                "\t<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer19/Product890> bsbm:productFeature ?prodFeature .\n" +
+                "\t?product bsbm:productFeature ?prodFeature .\n" +
+                "\t<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer19/Product890> bsbm:productPropertyNumeric1 ?origProperty1 .\n" +
+                "\t?product bsbm:productPropertyNumeric1 ?simProperty1 .\n" +
+                "\t<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer19/Product890> bsbm:productPropertyNumeric2 ?origProperty2 .\n" +
+                "\t?product bsbm:productPropertyNumeric2 ?simProperty2 .\n" +
+                "\tFILTER (<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer19/Product890> != ?product)\n" +
+                "\tFILTER (?simProperty1 < (?origProperty1 + 120) && ?simProperty1 > (?origProperty1 - 120))\n" +
+                "\tFILTER (?simProperty2 < (?origProperty2 + 170) && ?simProperty2 > (?origProperty2 - 170))\n" +
+                "}\n" +
+                "ORDER BY DESC(?productLabel)\n" +
+                "LIMIT 5\n";
+        Query query = QueryFactory.create(queryString);
+        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
+        factory.buildFederation();
+        query = factory.getLocalizedQuery();
+        Dataset dataset = factory.getFederationDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext());
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(querySolution -> {
+                System.out.println(querySolution);
                 solutions.add(querySolution);
             });
             assertEquals("It should find 22 solutions bindings", 22, solutions.size());

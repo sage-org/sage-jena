@@ -6,9 +6,8 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.StageGenerator;
-import org.apache.jena.sparql.util.Symbol;
-import org.gdd.sage.engine.iterators.BoundJoinIterator;
-import org.gdd.sage.engine.iterators.OptionalBoundJoinIterator;
+import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
+import org.gdd.sage.engine.iterators.boundjoin.OptionalBoundJoinIterator;
 import org.gdd.sage.model.SageGraph;
 
 /**
@@ -43,8 +42,8 @@ public class SageStageGenerator implements StageGenerator {
         if (g instanceof SageGraph) {
             SageGraph sageGraph = (SageGraph) g;
             // detect if we need to perform a join or a left join
-            boolean isOptional = execCxt.getContext().isTrue(Symbol.create("optional"));
-            if (input.isJoinIdentity()) {
+            boolean isOptional = execCxt.getContext().isTrue(SageSymbols.OPTIONAL_SYMBOL);
+            if (input.isJoinIdentity() && !isOptional) {
                 return sageGraph.basicGraphPatternFind(pattern);
             } else if (isOptional) {
                 // use a bind join approach to evaluate Left join/Optionals

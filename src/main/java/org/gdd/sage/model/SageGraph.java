@@ -8,12 +8,11 @@ import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.iterators.SageBGPIterator;
+import org.gdd.sage.engine.iterators.SageUnionIterator;
 import org.gdd.sage.http.SageClientBuilder;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Represents a remote RDF graph hosted at a Sage server
@@ -31,10 +30,18 @@ public class SageGraph extends GraphBase {
         this.httpClient = SageClientBuilder.createDefault(url);
     }
 
+    /**
+     * Get the URL of the remote sage server
+     * @return The URL of the remote sage server
+     */
     public String getServerURL() {
         return httpClient.getServerURL();
     }
 
+    /**
+     * Get the HTTP client used to access the remote Sage server
+     * @return The HTTP client used to access the remote Sage server
+     */
     public SageRemoteClient getClient() {
         return httpClient;
     }
@@ -63,11 +70,11 @@ public class SageGraph extends GraphBase {
     }
 
     /**
-     * Get metadata about a Basic Graph Pattern
-     * @param bgp - BGP to describe
-     * @return Metadata about the BGP
+     * Evaluate an Union of BGPs using the SaGe server
+     * @param patterns - Union to evaluate
+     * @return An iterator over solution bindings for the Union
      */
-    public QueryResults analyze(BasicPattern bgp) {
-        return httpClient.query(bgp);
+    public QueryIterator unionFind(List<BasicPattern> patterns) {
+        return new SageUnionIterator(httpClient, patterns);
     }
 }

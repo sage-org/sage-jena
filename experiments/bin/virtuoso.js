@@ -28,8 +28,6 @@ SOFTWARE.
 const fs = require('fs')
 const request = require('request').forever({timeout: 1000, minSockets: 10})
 const program = require('commander')
-const ldf = require('ldf-client')
-ldf.Logger.setLevel('WARNING')
 
 // Command line interface to execute queries
 program

@@ -25,10 +25,7 @@ public class ServiceTransformer extends TransformBase {
 
     @Override
     public Op transform(OpService opService, Op subOp) {
-        String uri = opService.getService().getURI();
-        // TODO add SILENT support
-        boolean silent = opService.getSilent();
-        uris.add(uri);
+        uris.add(opService.getService().getURI());
         return opService;
     }
 }

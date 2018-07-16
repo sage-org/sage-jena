@@ -7,11 +7,10 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.ExponentialBackOff;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.datatypes.xsd.impl.XMLLiteralType;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.RiotParseException;
@@ -36,7 +35,8 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
- * Allows evaluation of Basic Graph Patterns against a SaGe server
+ * Allows evaluation of SPARQL queries against a SaGe server.
+ * For now, only BGP and UNION queries are supported.
  * @author Thomas Minier
  */
 public class SageDefaultClient implements SageRemoteClient {
@@ -44,8 +44,10 @@ public class SageDefaultClient implements SageRemoteClient {
     private ExecutorService threadPool;
     private ObjectMapper mapper;
     private HttpRequestFactory requestFactory;
+    private int nbQueries;
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
+    private static final String HTTP_JSON_CONTENT_TYPE = "application/json";
 
     /**
      * Constructor
@@ -56,15 +58,29 @@ public class SageDefaultClient implements SageRemoteClient {
         threadPool = Executors.newCachedThreadPool();
         mapper = new ObjectMapper();
         requestFactory = HTTP_TRANSPORT.createRequestFactory(request -> {
-            request.getHeaders().setAccept("application/json");
-            request.getHeaders().setContentType("application/json");
+            request.getHeaders().setAccept(HTTP_JSON_CONTENT_TYPE);
+            request.getHeaders().setContentType(HTTP_JSON_CONTENT_TYPE);
             request.getHeaders().setUserAgent("Sage-Jena client/Java 1.8");
             request.setParser(new JsonObjectParser(JSON_FACTORY));
+            request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(new ExponentialBackOff()));
         });
+        nbQueries = 0;
     }
 
+    /**
+     * Get the URL of the remote sage server
+     * @return The URL of the remote sage server
+     */
     public String getServerURL() {
         return serverURL.toString();
+    }
+
+    /**
+     * Get the number of HTTP requests performed by the client
+     * @return The number of HTTP requests performed by the client
+     */
+    public int getNbQueries() {
+        return nbQueries;
     }
 
     /**
@@ -145,8 +161,41 @@ public class SageDefaultClient implements SageRemoteClient {
      * @throws IOException
      */
     private Future<HttpResponse> sendQuery(String jsonQuery) throws IOException {
-        HttpRequest request = requestFactory.buildPostRequest(serverURL, new ByteArrayContent("application/json", jsonQuery.getBytes()));
+        nbQueries++;
+        HttpContent postContent = new ByteArrayContent(HTTP_JSON_CONTENT_TYPE, jsonQuery.getBytes());
+        HttpRequest request = requestFactory.buildPostRequest(serverURL, postContent);
         return request.executeAsync(threadPool);
+    }
+
+    /**
+     * Parse a RDF node from String format to a Jena compatible format
+     * @param node RDF node in string format
+     * @return RDF node in a Jena compatible format
+     */
+    private Node parseNode(String node) {
+        Node value;
+        // URI case
+        if (node.startsWith("\""))  {
+            String literal = node.trim();
+            // typed literal case (HDT may parse datatype without the surrounding "<>")
+            if (literal.contains("\"^^<http")) {
+                int index = literal.lastIndexOf("\"^^<http:");
+                RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 4, literal.length() - 1));
+                value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
+            } else if (literal.contains("\"^^http")) {
+                int index = literal.lastIndexOf("\"^^http:");
+                RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 3, literal.length() - 1));
+                value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
+            } else if (literal.contains("\"@")) {
+                int index = literal.lastIndexOf("\"@");
+                value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
+            } else {
+                value = NodeFactory.createLiteral(literal);
+            }
+        } else {
+            value = NodeFactory.createURI(node);
+        }
+        return value;
     }
 
     /**
@@ -169,22 +218,7 @@ public class SageDefaultClient implements SageRemoteClient {
             for (Map.Entry<String, String> entry: binding.entrySet()) {
                 try {
                     Var key = Var.alloc(entry.getKey().substring(1));
-                    Node value;
-                    if (entry.getValue().startsWith("http")) {
-                        value = NodeFactory.createURI(entry.getValue());
-                    } else {
-                        String literal = entry.getValue().trim();
-                        if (literal.contains("\"^^<http")) {
-                            int index = literal.lastIndexOf("\"^^<http:");
-                            RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 4, literal.length() - 1));
-                            value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
-                        } else if (literal.contains("\"@")) {
-                            int index = literal.lastIndexOf("\"@");
-                            value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
-                        } else {
-                            value = NodeFactoryExtra.parseNode(literal);
-                        }
-                    }
+                    Node value = parseNode(entry.getValue());
                     b.add(key, value);
                 } catch(RiotParseException e) {
                     // TODO: for now we skip parsing errors, maybe need to do something cleaner

@@ -33,3 +33,6 @@ hs_err_pid*
 
 #experiments aside
 experiments/w3c/
+
+# Node js stuff
+node_modules
