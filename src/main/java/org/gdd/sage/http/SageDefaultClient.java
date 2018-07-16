@@ -175,9 +175,7 @@ public class SageDefaultClient implements SageRemoteClient {
     private Node parseNode(String node) {
         Node value;
         // URI case
-        if (node.startsWith("http")) {
-            value = NodeFactory.createURI(node);
-        } else {
+        if (node.startsWith("\""))  {
             String literal = node.trim();
             // typed literal case (HDT may parse datatype without the surrounding "<>")
             if (literal.contains("\"^^<http")) {
@@ -192,8 +190,10 @@ public class SageDefaultClient implements SageRemoteClient {
                 int index = literal.lastIndexOf("\"@");
                 value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
             } else {
-                value = NodeFactoryExtra.parseNode(literal);
+                value = NodeFactory.createLiteral(literal);
             }
+        } else {
+            value = NodeFactory.createURI(node);
         }
         return value;
     }
