@@ -35,12 +35,20 @@ public class SageCLIOptions {
                 .desc("Results format (Result set: raw, XML, JSON, CSV, TSV; Graph: RDF serialization)")
                 .build();
 
+        Option measureOpt = Option.builder("m")
+                .longOpt("measure")
+                .argName("measure")
+                .hasArg()
+                .desc("Measure query execution stats and append it to a file")
+                .build();
+
         // register options
         options = new Options();
         options.addOption(urlOpt);
         options.addOption(queryOpt);
         options.addOption(fileOpt);
         options.addOption(formatOpt);
+        options.addOption(measureOpt);
         // boolean options
         options.addOption("time", false, "Time the query execution");
         options.addOption("h", "help", false, "Show help");

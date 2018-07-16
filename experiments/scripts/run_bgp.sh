@@ -29,8 +29,8 @@ for qfile in $QUERIES/*; do
   qname="${x%.*}"
   echo -n "${qname}," >> $RESFILE
   # execution time
-  bin/sage-jena-1.0-SNAPSHOT/bin/sage-jena -u $SERVER -f $qfile --time > $OUTPUT/results/$qname.log 2>> $RESFILE
-  # echo -n "," >> $RESFILE
+  bin/sage-jena-1.0-SNAPSHOT/bin/sage-jena -u $SERVER -f $qfile -m $RESFILE > $OUTPUT/results/$qname.log 2> ${OUTPUT}/errors/${qname}.err
+  echo -n "," >> $RESFILE
   # # completeness
   # echo -n `./scripts/completeness.sh ${REF}/$qname.log ${OUTPUT}/results/$qname.log compl` >> $RESFILE
   # echo -n "," >> $RESFILE
@@ -38,7 +38,7 @@ for qfile in $QUERIES/*; do
   # echo -n `./scripts/completeness.sh ${REF}/$qname.log ${OUTPUT}/results/$qname.log sound` >> $RESFILE
   # echo -n "," >> $RESFILE
   # # nb errors during query processing
-  # echo `wc -l ${OUTPUT}/errors/${qname}.err | awk '{print $1}'` >> $RESFILE
+  echo `wc -l ${OUTPUT}/errors/${qname}.err | awk '{print $1}'` >> $RESFILE
 done
 
 # remove tmp folders

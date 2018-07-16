@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.Optional;
 
@@ -90,10 +91,18 @@ public class CLI {
                     int nbQueries = computeNbQueries(federation);
                     System.err.println(MessageFormat.format("SPARQL query executed in {0}s with {1} HTTP requests", duration , nbQueries));
                 }
+                if (cmd.hasOption("measure")) {
+                    double duration = (endTime - startTime) / 10e9;
+                    int nbQueries = computeNbQueries(federation);
+                    String measure = String.format("%s,%s", duration, nbQueries);
+                    Files.write(Paths.get(cmd.getOptionValue("measure")), measure.getBytes(), StandardOpenOption.APPEND);
+                }
                 federation.close();
             }
         } catch (ParseException e) {
             logger.error(e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
