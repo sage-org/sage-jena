@@ -6,6 +6,11 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.op.OpBGP;
+import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.sparql.syntax.ElementTriplesBlock;
+import org.gdd.sage.cli.DescribeQueryExecutor;
+import org.gdd.sage.cli.QueryExecutor;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
@@ -143,7 +148,7 @@ public class SageClientTest {
     @Ignore
     @Test
     public void describeQuery() {
-        String url = "http://172.16.8.50:8000/sparql/bsbm1M";
+        String url = "http://172.16.8.50:8000/sparql/bsbm1k";
         String queryString = "PREFIX rev: <http://purl.org/stuff/rev#>\n" +
                 "DESCRIBE ?x\n" +
                 "WHERE { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review4194> rev:reviewer ?x }";
@@ -153,16 +158,7 @@ public class SageClientTest {
         query = factory.getLocalizedQuery();
         Dataset dataset = factory.getFederationDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
-        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
-            Model results = qexec.execDescribe();
-            qexec.close();
-            List<Triple> solutions = new ArrayList<>();
-            RDFDataMgr.write(System.out, results, RDFFormat.TURTLE);
-            /*results.forEachRemaining(querySolution -> {
-                System.out.println(querySolution);
-                solutions.add(querySolution);
-            });
-            assertEquals("It should find 22 solutions bindings", 22, solutions.size());*/
-        }
+        QueryExecutor executor = new DescribeQueryExecutor("ttl");
+        executor.execute(dataset, query);
     }
 }
