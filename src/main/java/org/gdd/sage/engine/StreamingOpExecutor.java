@@ -1,7 +1,9 @@
 package org.gdd.sage.engine;
 
+import com.google.common.collect.Lists;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.ARQInternalErrorException;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.op.OpConditional;
@@ -10,11 +12,14 @@ import org.apache.jena.sparql.algebra.op.OpLeftJoin;
 import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingHashMap;
+import org.apache.jena.sparql.engine.iterator.QueryIterProcessBinding;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.QC;
-import org.apache.jena.sparql.util.Symbol;
 
 /**
  * An OpExecutor that streams intermediate results for OpGraph and OpService operators,
@@ -32,27 +37,6 @@ public class StreamingOpExecutor extends OpExecutor {
     }
 
     /**
-     * Execute an Operator with a given named (remote) Graph and input
-     * @param graphNode - Node which identify the named graph
-     * @param op - Operator to execute
-     * @param input - Solution bindings input
-     * @return A QueryIterator that execute the operator
-     */
-    private QueryIterator executeWithGraph(Node graphNode, Op op, QueryIterator input) {
-        DatasetGraph dataset = execCxt.getDataset();
-        if ((!graphNode.isURI()) && (!graphNode.isBlank())) {
-            throw new ARQInternalErrorException("Unexpected SERVICE node (not an URI) when evaluating SERVICE clause.\n" + graphNode);
-        } else if (Quad.isDefaultGraph(graphNode)) {
-            return exec(op, input);
-        } else if (!dataset.containsGraph(graphNode)) {
-            throw new ARQInternalErrorException("Dataset does not contains the named graph <" + graphNode + ">");
-        }
-        Graph currentGraph = dataset.getGraph(graphNode);
-        ExecutionContext graphContext = new ExecutionContext(execCxt, currentGraph);
-        return QC.execute(op, input, graphContext);
-    }
-
-    /**
      * Exxecute a Left Join/Optional with a pure pipeline logic
      * @param left - Left operator
      * @param right - Right operator
@@ -67,13 +51,19 @@ public class StreamingOpExecutor extends OpExecutor {
     }
 
     @Override
-    protected QueryIterator execute(OpGraph opGraph, QueryIterator input) {
-        return executeWithGraph(opGraph.getNode(), opGraph.getSubOp(), input);
-    }
-
-    @Override
     protected QueryIterator execute(OpService opService, QueryIterator input) {
-        return executeWithGraph(opService.getService(), opService.getSubOp(), input);
+        DatasetGraph dataset = execCxt.getDataset();
+        Node graphNode = opService.getService();
+        if ((!graphNode.isURI()) && (!graphNode.isBlank())) {
+            throw new ARQInternalErrorException("Unexpected SERVICE node (not an URI) when evaluating SERVICE clause.\n" + graphNode);
+        } else if (Quad.isDefaultGraph(graphNode)) {
+            return exec(opService.getSubOp(), input);
+        } else if (!dataset.containsGraph(graphNode)) {
+            throw new ARQInternalErrorException("Dataset does not contains the named graph <" + graphNode + ">");
+        }
+        Graph currentGraph = dataset.getGraph(graphNode);
+        ExecutionContext graphContext = new ExecutionContext(execCxt, currentGraph);
+        return QC.execute(opService.getSubOp(), input, graphContext);
     }
 
     @Override

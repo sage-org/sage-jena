@@ -1,5 +1,6 @@
 package org.gdd.sage.cli;
 
+import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -14,8 +15,9 @@ public class DescribeQueryExecutor extends ConstructQueryExecutor {
         super(format);
     }
 
-    protected Model evaluate(Model model, Query query) {
-        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+    @Override
+    protected Model evaluate(Dataset dataset, Query query) {
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             return qexec.execDescribe();
         }
     }

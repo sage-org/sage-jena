@@ -190,7 +190,7 @@ public class SageDefaultClient implements SageRemoteClient {
                 int index = literal.lastIndexOf("\"@");
                 value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
             } else {
-                value = NodeFactory.createLiteral(literal);
+                value = NodeFactoryExtra.parseNode(literal);
             }
         } else {
             value = NodeFactory.createURI(node);
