@@ -6,6 +6,7 @@ import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +41,11 @@ public abstract class SageQueryIterator extends BufferedIterator {
 
     @Override
     protected List<Binding> produceBindings() {
-        return query(nextLink).getBindings();
+        QueryResults qr = query(nextLink);
+        if (qr.hasError()) {
+            return new ArrayList<>();
+        }
+        return qr.getBindings();
     }
 
     @Override

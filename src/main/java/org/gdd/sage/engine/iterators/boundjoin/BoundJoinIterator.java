@@ -26,7 +26,7 @@ public class BoundJoinIterator extends BufferedIterator {
     protected SageRemoteClient client;
     protected Optional<String> nextLink;
     private BasicPattern bgp;
-    protected boolean hasNextPage = false;
+    protected boolean hasNextPage;
     private QueryIterator source;
     protected List<Binding> bindingBucket;
     protected List<BasicPattern> bgpBucket;
@@ -47,6 +47,7 @@ public class BoundJoinIterator extends BufferedIterator {
         this.bgp = bgp;
         this.source = source;
         this.nextLink = Optional.empty();
+        this.hasNextPage = false;
         this.bindingBucket = new ArrayList<>();
         this.bgpBucket = new ArrayList<>();
         this.rewritingMap = new HashMap<>();
@@ -56,7 +57,11 @@ public class BoundJoinIterator extends BufferedIterator {
 
     @Override
     protected boolean canProduceBindings() {
-        return source.hasNext() || hasNextPage;
+        try {
+            return source.hasNext() || hasNextPage;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
     }
 
     /**
@@ -161,21 +166,25 @@ public class BoundJoinIterator extends BufferedIterator {
             bindingBucket.clear();
             bgpBucket.clear();
             rewritingMap.clear();
-            while (source.hasNext() && bgpBucket.size() < bucketSize) {
-                Binding b = source.nextBinding();
-                BasicPattern boundedBGP = new BasicPattern();
-                // key used for the rewriting
-                int key = bgpBucket.size() + 1;
-                for (Triple t: bgp) {
-                    Triple boundedTriple = Substitute.substitute(t, b);
-                    // perform rewriting and register it
-                    boundedTriple = rewriteTriple(key, boundedTriple);
-                    rewritingMap.put(key, b);
-                    // add rewritten triple to BGP
-                    boundedBGP.add(boundedTriple);
+            try {
+                while (source.hasNext() && bgpBucket.size() < bucketSize) {
+                    Binding b = source.next();
+                    BasicPattern boundedBGP = new BasicPattern();
+                    // key used for the rewriting
+                    int key = bgpBucket.size() + 1;
+                    for (Triple t: bgp) {
+                        Triple boundedTriple = Substitute.substitute(t, b);
+                        // perform rewriting and register it
+                        boundedTriple = rewriteTriple(key, boundedTriple);
+                        rewritingMap.put(key, b);
+                        // add rewritten triple to BGP
+                        boundedBGP.add(boundedTriple);
+                    }
+                    bgpBucket.add(boundedBGP);
+                    bindingBucket.add(b);
                 }
-                bgpBucket.add(boundedBGP);
-                bindingBucket.add(b);
+            } catch (NoSuchElementException e) {
+                // silently do nothing
             }
         }
 
