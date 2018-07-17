@@ -9,6 +9,7 @@ import org.apache.jena.query.QueryFactory;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.federated.factory.FederatedQueryFactory;
 import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
+import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
 import org.slf4j.Logger;
 
@@ -21,15 +22,6 @@ import java.text.MessageFormat;
 import java.util.Optional;
 
 public class CLI {
-
-    private static int computeNbQueries(Dataset federation) {
-        final int[] nbQueries = {0};
-        nbQueries[0] += ((SageGraph) federation.getDefaultModel().getGraph()).getClient().getNbQueries();
-        federation.listNames().forEachRemaining(s -> {
-            nbQueries[0] += ((SageGraph) federation.getNamedModel(s).getGraph()).getClient().getNbQueries();
-        });
-        return nbQueries[0];
-    }
 
     public static void main(String[] args) {
         Logger logger = ARQ.getExecLogger();
@@ -65,8 +57,9 @@ public class CLI {
                     queryString = cmd.getOptionValue("query");
                 }
                 // Init Sage dataset (maybe federated)
+                ExecutionStats spy = new ExecutionStats();
                 Query query = QueryFactory.create(queryString);
-                FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
+                FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query, spy);
                 factory.buildFederation();
                 query = factory.getLocalizedQuery();
                 Dataset federation = factory.getFederationDataset();
@@ -83,18 +76,20 @@ public class CLI {
                 } else {
                     executor = new DescribeQueryExecutor(format);
                 }
-                long startTime = System.nanoTime();
+                spy.startTimer();
                 executor.execute(federation, query);
-                long endTime = System.nanoTime();
+                spy.stopTimer();
                 if (cmd.hasOption("time")) {
-                    double duration = (endTime - startTime) / 10e9;
-                    int nbQueries = computeNbQueries(federation);
+                    double duration = spy.getExecutionTime();
+                    int nbQueries = spy.getNbCalls();
                     System.err.println(MessageFormat.format("SPARQL query executed in {0}s with {1} HTTP requests", duration , nbQueries));
                 }
                 if (cmd.hasOption("measure")) {
-                    double duration = (endTime - startTime) / 10e9;
-                    int nbQueries = computeNbQueries(federation);
-                    String measure = String.format("%s,%s", duration, nbQueries);
+                    double duration = spy.getExecutionTime();
+                    int nbQueries = spy.getNbCalls();
+                    double avgImport = spy.getMeanImportTimes();
+                    double avgExport = spy.getMeanExportTimes();
+                    String measure = String.format("%s,%s,%s,%s,%s", duration, nbQueries, spy.getMeanHttpTimes(), avgImport, avgExport);
                     Files.write(Paths.get(cmd.getOptionValue("measure")), measure.getBytes(), StandardOpenOption.APPEND);
                 }
                 federation.close();

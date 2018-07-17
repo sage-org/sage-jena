@@ -44,7 +44,7 @@ public class SageDefaultClient implements SageRemoteClient {
     private ExecutorService threadPool;
     private ObjectMapper mapper;
     private HttpRequestFactory requestFactory;
-    private int nbQueries;
+    private ExecutionStats spy;
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String HTTP_JSON_CONTENT_TYPE = "application/json";
@@ -64,7 +64,25 @@ public class SageDefaultClient implements SageRemoteClient {
             request.setParser(new JsonObjectParser(JSON_FACTORY));
             request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(new ExponentialBackOff()));
         });
-        nbQueries = 0;
+        spy = new ExecutionStats();
+    }
+
+    /**
+     * Constructor
+     * @param url - URL of the SaGe server
+     */
+    public SageDefaultClient(String url, ExecutionStats spy) {
+        serverURL = new GenericUrl(url);
+        threadPool = Executors.newCachedThreadPool();
+        mapper = new ObjectMapper();
+        requestFactory = HTTP_TRANSPORT.createRequestFactory(request -> {
+            request.getHeaders().setAccept(HTTP_JSON_CONTENT_TYPE);
+            request.getHeaders().setContentType(HTTP_JSON_CONTENT_TYPE);
+            request.getHeaders().setUserAgent("Sage-Jena client/Java 1.8");
+            request.setParser(new JsonObjectParser(JSON_FACTORY));
+            request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(new ExponentialBackOff()));
+        });
+        this.spy = spy;
     }
 
     /**
@@ -73,14 +91,6 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public String getServerURL() {
         return serverURL.toString();
-    }
-
-    /**
-     * Get the number of HTTP requests performed by the client
-     * @return The number of HTTP requests performed by the client
-     */
-    public int getNbQueries() {
-        return nbQueries;
     }
 
     /**
@@ -98,10 +108,15 @@ public class SageDefaultClient implements SageRemoteClient {
         }
 
         String jsonQuery = queryBuilder.build();
+        double startTime = System.nanoTime();
         try {
             HttpResponse response = sendQuery(jsonQuery).get();
+            double endTime = System.nanoTime();
+            spy.reportHttpQuery((endTime - startTime) / 1e9);
             return decodeResponse(response);
         } catch (InterruptedException | ExecutionException | IOException e) {
+            double endTime = System.nanoTime();
+            spy.reportHttpQuery((endTime - startTime) / 1e9);
             return QueryResults.withError(e.getMessage());
         }
     }
@@ -121,10 +136,15 @@ public class SageDefaultClient implements SageRemoteClient {
         }
 
         String jsonQuery = queryBuilder.build();
+        double startTime = System.nanoTime();
         try {
             HttpResponse response = sendQuery(jsonQuery).get();
+            double endTime = System.nanoTime();
+            spy.reportHttpQuery((endTime - startTime) / 1e9);
             return decodeResponse(response);
         } catch (InterruptedException | ExecutionException | IOException e) {
+            double endTime = System.nanoTime();
+            spy.reportHttpQuery((endTime - startTime) / 1e9);
             return QueryResults.withError(e.getMessage());
         }
     }
@@ -161,7 +181,6 @@ public class SageDefaultClient implements SageRemoteClient {
      * @throws IOException
      */
     private Future<HttpResponse> sendQuery(String jsonQuery) throws IOException {
-        nbQueries++;
         HttpContent postContent = new ByteArrayContent(HTTP_JSON_CONTENT_TYPE, jsonQuery.getBytes());
         HttpRequest request = requestFactory.buildPostRequest(serverURL, postContent);
         return request.executeAsync(threadPool);
@@ -211,6 +230,7 @@ public class SageDefaultClient implements SageRemoteClient {
             throw new IOException("Unexpected error when executing HTTP request: " + responseContent);
         }
         SageResponse sageResponse = mapper.readValue(responseContent, new TypeReference<SageResponse>(){});
+        spy.reportOverhead(sageResponse.stats.getImportTime(), sageResponse.stats.getExportTime());
 
         // format bindings in Jena format
         List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {

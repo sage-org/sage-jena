@@ -5,6 +5,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.DatasetImpl;
+import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
 
 /**
@@ -53,8 +54,8 @@ public class FederatedDatasetBuilder {
      * @param url - URL of the Sage server. It will also be used as its reference URI.
      * @return The FederatedDatasetBuilder, for chaining
      */
-    public FederatedDatasetBuilder withSageServer(String url) {
-        Model model = ModelFactory.createModelForGraph(new SageGraph(url));
+    public FederatedDatasetBuilder withSageServer(String url, ExecutionStats spy) {
+        Model model = ModelFactory.createModelForGraph(new SageGraph(url, spy));
         federation.addNamedModel(url, model);
         return this;
     }

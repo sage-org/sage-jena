@@ -47,10 +47,4 @@ public interface SageRemoteClient {
      * @return The URL of the remote sage server
      */
     String getServerURL();
-
-    /**
-     * Get the number of HTTP requests performed by the client
-     * @return The number of HTTP requests performed by the client
-     */
-    int getNbQueries();
 }

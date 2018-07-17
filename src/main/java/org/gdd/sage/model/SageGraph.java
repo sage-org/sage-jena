@@ -9,7 +9,8 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.iterators.SageBGPIterator;
 import org.gdd.sage.engine.iterators.SageUnionIterator;
-import org.gdd.sage.http.SageClientBuilder;
+import org.gdd.sage.http.ExecutionStats;
+import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 
 import java.util.List;
@@ -27,7 +28,16 @@ public class SageGraph extends GraphBase {
      */
     public SageGraph(String url) {
         super();
-        this.httpClient = SageClientBuilder.createDefault(url);
+        this.httpClient = new SageDefaultClient(url);
+    }
+
+    /**
+     * Constructor
+     * @param url - URL of the SaGe server
+     */
+    public SageGraph(String url, ExecutionStats spy) {
+        super();
+        this.httpClient = new SageDefaultClient(url, spy);
     }
 
     /**
