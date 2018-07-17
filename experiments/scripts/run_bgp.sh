@@ -14,7 +14,7 @@ if [ "$#" -ne 3 ]; then
 fi
 
 # SERVER="http://172.16.8.50:8000/bgp/watdiv10m"
-SERVER="http://172.16.8.50:8000/sparql/bsbm1k"
+SERVER="http://localhost:8000/sparql/bsbm1k"
 
 mkdir -p $OUTPUT/results/
 mkdir -p $OUTPUT/errors/
@@ -22,7 +22,7 @@ mkdir -p $OUTPUT/errors/
 RESFILE="${OUTPUT}/execution_times_bgp.csv"
 
 # init results file with headers
-#echo "query,time,httpCalls,serverTime,overhead,completeness,soundness,errors" > $RESFILE
+echo "query,time,httpCalls,errors" > $RESFILE
 
 for qfile in $QUERIES/*; do
   x=`basename $qfile`
