@@ -26,13 +26,13 @@ public class OptionalBoundJoinIterator extends BoundJoinIterator {
     }
 
     @Override
-    protected List<Binding> rewriteSolutions(List<Binding> input) {
-        if (input.isEmpty() || (input.size() == 1 && input.get(0).isEmpty())) {
+    protected List<Binding> rewriteSolutions(List<Binding> input, boolean isContainmentQuery) {
+        if (input.isEmpty()) {
             // optional part: avoid rewriting and simply return the bucket of bindings
             hasNextPage = false;
             nextLink = Optional.empty();
             return bindingBucket;
         }
-        return super.rewriteSolutions(input);
+        return super.rewriteSolutions(input, isContainmentQuery);
     }
 }

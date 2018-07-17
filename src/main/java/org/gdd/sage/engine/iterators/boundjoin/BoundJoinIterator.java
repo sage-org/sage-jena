@@ -143,9 +143,16 @@ public class BoundJoinIterator extends BufferedIterator {
      * @param input Solutions bindings to process
      * @return
      */
-    protected List<Binding> rewriteSolutions(List<Binding> input) {
+    protected List<Binding> rewriteSolutions(List<Binding> input, boolean isContainmentQuery) {
         List<Binding> solutions = new LinkedList<>();
-        if (!input.isEmpty()) {
+        if (input.size() == 1 && input.get(0).isEmpty()) {
+            input.clear();
+        }
+        if (input.isEmpty() && isContainmentQuery) {
+            hasNextPage = false;
+            nextLink = Optional.empty();
+            solutions.addAll(bindingBucket);
+        } else if (!input.isEmpty()) {
             for(Binding oldBinding: input) {
                 List<Var> vars = Lists.newArrayList(oldBinding.vars());
                 int key = findKey(vars);
@@ -157,13 +164,13 @@ public class BoundJoinIterator extends BufferedIterator {
                 solutions.add(newBinding);
             }
         }
-        System.out.println(solutions);
         return solutions;
     }
 
     @Override
     protected List<Binding> produceBindings() {
         List<Binding> solutions = new ArrayList<>();
+        boolean isContainmentQuery = false;
         // if no next page, try to read from source to build a buffer of bounded BGps
         if (!nextLink.isPresent()) {
             bindingBucket.clear();
@@ -177,6 +184,7 @@ public class BoundJoinIterator extends BufferedIterator {
                     int key = bgpBucket.size() + 1;
                     for (Triple t: bgp) {
                         Triple boundedTriple = Substitute.substitute(t, b);
+                        isContainmentQuery = (!boundedTriple.getSubject().isVariable()) && (!boundedTriple.getPredicate().isVariable()) && (!boundedTriple.getObject().isVariable());
                         // perform rewriting and register it
                         boundedTriple = rewriteTriple(key, boundedTriple);
                         rewritingMap.put(key, b);
@@ -199,7 +207,7 @@ public class BoundJoinIterator extends BufferedIterator {
                 hasNextPage = false;
                 logger.error(queryResults.getError());
             } else {
-                solutions.addAll(rewriteSolutions(reviewResults(queryResults)));
+                solutions.addAll(rewriteSolutions(reviewResults(queryResults), isContainmentQuery));
             }
         }
         return solutions;

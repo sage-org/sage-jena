@@ -154,8 +154,8 @@ public class SageClientTest {
                 "\n" +
                 "SELECT ?movie WHERE {\n" +
                 "  ?movie dbo:starring <http://dbpedia.org/resource/Brad_Pitt>.\n" +
-                "  OPTIONAL { ?movie <http://dbpedia.org/ontology/musicComposer> ?x }\n" +
-                "} VALUES (?x) { (<http://dbpedia.org/resource/Paul_Buckmaster>) }";
+                "  OPTIONAL { ?movie <http://dbpedia.org/ontology/musicComposer> <http://dbpedia.org/resource/Paul_Buckmaster> }\n" +
+                "}";
         Query query = QueryFactory.create(queryString);
         FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
         factory.buildFederation();
