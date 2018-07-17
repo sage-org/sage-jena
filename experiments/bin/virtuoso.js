@@ -41,7 +41,7 @@ program
 
 // get servers
 if (program.args.length !== 1) {
-  process.stderr.write('Error: you must specify exactly one TPF server to use.\nSee ./bin/reference.js --help for more details.\n')
+  process.stderr.write('Error: you must specify exactly one SPARQL endpoint to use.\nSee ./bin/virtuoso.js --help for more details.\n')
   process.exit(1)
 }
 
@@ -54,7 +54,7 @@ if (program.query) {
 } else if (program.file && fs.existsSync(program.file)) {
   query = fs.readFileSync(program.file, 'utf-8')
 } else {
-  process.stderr.write('Error: you must specify a SPARQL query to execute.\nSee ./bin/reference.js --help for more details.\n')
+  process.stderr.write('Error: you must specify a SPARQL query to execute.\nSee ./bin/virtuoso.js --help for more details.\n')
   process.exit(1)
 }
 
@@ -62,7 +62,7 @@ const config = {
   method: 'GET',
   url: server,
   qs: {
-    'default-graph-uri': 'http://localhost:8890/watdiv10m',
+    'default-graph-uri': 'http://localhost:8000/watdiv10m',
     query: query,
     format: 'application/sparql-results+json',
     timeout: 5 * 60 * 1000

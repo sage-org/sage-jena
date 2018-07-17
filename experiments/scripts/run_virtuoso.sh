@@ -21,7 +21,7 @@ mkdir -p $OUTPUT/errors/
 RESFILE="${OUTPUT}/execution_times_virtuoso.csv"
 
 # init results file with headers
-echo "query,time,httpCalls,errors" > $RESFILE
+echo "query,time,httpCalls,nbResults,errors" > $RESFILE
 
 for qfile in $QUERIES/*; do
   x=`basename $qfile`
@@ -30,9 +30,10 @@ for qfile in $QUERIES/*; do
   # execution time
   ./bin/virtuoso-paginate.js $SERVER -f $qfile -m $RESFILE > $OUTPUT/results/$qname.log 2> $OUTPUT/errors/$qname.err
   echo -n "," >> $RESFILE
-  # nb errors during query processing
+  # nb results
   echo -n `wc -l ${OUTPUT}/results/${qname}.log | awk '{print $1}'` >> $RESFILE
   echo -n "," >> $RESFILE
+  # nb errors during query processing
   echo `wc -l ${OUTPUT}/errors/${qname}.err | awk '{print $1}'` >> $RESFILE
 done
 

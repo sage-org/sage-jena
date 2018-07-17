@@ -22,7 +22,7 @@ mkdir -p $OUTPUT/errors/
 RESFILE="${OUTPUT}/execution_times_bgp.csv"
 
 # init results file with headers
-echo "query,time,httpCalls,errors" > $RESFILE
+echo "query,time,httpCalls,serverTime,importTime,exportTime,errors" > $RESFILE
 
 for qfile in $QUERIES/*; do
   x=`basename $qfile`
