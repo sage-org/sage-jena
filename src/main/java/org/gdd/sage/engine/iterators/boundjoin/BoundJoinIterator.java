@@ -139,7 +139,7 @@ public class BoundJoinIterator extends BufferedIterator {
     }
 
     /**
-     * Undo the rewriting on solutions bindings, and then merge eahc of them with the corresponding input binding
+     * Undo the rewriting on solutions bindings, and then merge each of them with the corresponding input binding
      * @param input Solutions bindings to process
      * @return
      */
@@ -151,10 +151,13 @@ public class BoundJoinIterator extends BufferedIterator {
                 int key = findKey(vars);
                 // rewrite binding, and then merge it with the corresponding one in the bucket
                 BindingHashMap newBinding = revertBinding(key, oldBinding, vars);
-                newBinding.addAll(rewritingMap.get(key));
+                if (rewritingMap.containsKey(key)) {
+                    newBinding.addAll(rewritingMap.get(key));
+                }
                 solutions.add(newBinding);
             }
         }
+        System.out.println(solutions);
         return solutions;
     }
 

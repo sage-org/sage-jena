@@ -147,6 +147,34 @@ public class SageClientTest {
 
     @Ignore
     @Test
+    public void weirdOptional() {
+        String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
+        String queryString = "prefix dbo: <http://dbpedia.org/ontology/>\n" +
+                "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "\n" +
+                "SELECT ?movie WHERE {\n" +
+                "  ?movie dbo:starring <http://dbpedia.org/resource/Brad_Pitt>.\n" +
+                "  OPTIONAL { ?movie <http://dbpedia.org/ontology/musicComposer> ?x }\n" +
+                "} VALUES (?x) { (<http://dbpedia.org/resource/Paul_Buckmaster>) }";
+        Query query = QueryFactory.create(queryString);
+        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
+        factory.buildFederation();
+        query = factory.getLocalizedQuery();
+        Dataset dataset = factory.getFederationDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext());
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(querySolution -> {
+                System.out.println(querySolution);
+                solutions.add(querySolution);
+            });
+            assertEquals("It should find 40 solutions bindings", 40, solutions.size());
+        }
+    }
+
+    @Ignore
+    @Test
     public void describeQuery() {
         String url = "http://172.16.8.50:8000/sparql/bsbm1k";
         String queryString = "PREFIX rev: <http://purl.org/stuff/rev#>\n" +
