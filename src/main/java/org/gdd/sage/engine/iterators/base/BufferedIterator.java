@@ -30,7 +30,7 @@ public abstract class BufferedIterator extends QueryIteratorBase {
 
     @Override
     protected boolean hasNextBinding() {
-        if (warmup) {
+        if (warmup || (internalBuffer.isEmpty() && canProduceBindings())) {
             this.fillBuffer();
             warmup = false;
         }
