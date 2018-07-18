@@ -13,8 +13,8 @@ if [ "$#" -ne 3 ]; then
   exit
 fi
 
-# SERVER="http://172.16.8.50:8000/bgp/watdiv10m"
-SERVER="http://localhost:8000/sparql/bsbm1k"
+# SERVER="http://172.16.8.50:8000/sparql/bsbm1k"
+SERVER="http://172.16.8.50:8000/sparql/watdiv"
 
 mkdir -p $OUTPUT/results/
 mkdir -p $OUTPUT/errors/

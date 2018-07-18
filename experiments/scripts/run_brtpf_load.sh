@@ -14,9 +14,9 @@ fi
 SERVER="http://localhost:8000/brtpf/watdiv10m"
 
 while true; do
-  for qfile in `ls $QUERIES/* | sort -R`; do
-    x=`basename $qfile`
-    qname="${x%.*}"
-    ./bin/brtpf-client.js $SERVER -f $qfile -s > /dev/null 2> /dev/null
-  done
+  #for qfile in `ls $QUERIES/* | sort -R`; do
+    #x=`basename $qfile`
+    #qname="${x%.*}"
+    bin/sage-jena-1.0-SNAPSHOT/bin/sage-jena -u $SERVER -f $QUERIES > /dev/null 2> /dev/null
+  #done
 done
