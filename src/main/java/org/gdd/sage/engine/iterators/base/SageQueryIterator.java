@@ -45,6 +45,8 @@ public abstract class SageQueryIterator extends BufferedIterator {
         if (qr.hasError()) {
             return new ArrayList<>();
         }
+        nextLink = qr.getNext();
+        hasNextPage = qr.hasNext();
         return qr.getBindings();
     }
 

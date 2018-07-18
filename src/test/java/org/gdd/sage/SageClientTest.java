@@ -189,4 +189,37 @@ public class SageClientTest {
         QueryExecutor executor = new DescribeQueryExecutor("ttl");
         executor.execute(dataset, query);
     }
+
+    @Ignore
+    @Test
+    public void watdivQuery() {
+        String url = "http://172.16.8.50:8000/sparql/watdiv";
+        String queryString = "SELECT * WHERE {\n" +
+                "  ?v0 <http://ogp.me/ns#tag> <http://db.uwaterloo.ca/~galuc/wsdbm/Topic149> .\n" +
+                "  ?v0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?v4 .\n" +
+                "  ?v2 <http://db.uwaterloo.ca/~galuc/wsdbm/hasGenre> ?v0 .\n" +
+                "  ?v2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?v3 .\n" +
+                "  ?v2 <http://purl.org/stuff/rev#hasReview> ?v5 .\n" +
+                "  ?v5 <http://purl.org/stuff/rev#rating> ?v6 .\n" +
+                "  ?v5 <http://purl.org/stuff/rev#reviewer> ?v7 .\n" +
+                "  ?v5 <http://purl.org/stuff/rev#text> ?v8 .\n" +
+                "  ?v5 <http://purl.org/stuff/rev#title> ?v9 .\n" +
+                "  ?v5 <http://purl.org/stuff/rev#totalVotes> ?v10 .\n" +
+                "}\n";
+        Query query = QueryFactory.create(queryString);
+        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
+        factory.buildFederation();
+        query = factory.getLocalizedQuery();
+        Dataset dataset = factory.getFederationDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext());
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(querySolution -> {
+                System.out.println(querySolution);
+                solutions.add(querySolution);
+            });
+            assertEquals("It should find 37 solutions bindings", 37, solutions.size());
+        }
+    }
 }
