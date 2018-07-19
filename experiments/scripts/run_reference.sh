@@ -13,7 +13,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 # SERVER="http://172.16.8.50:8000/tpf/watdiv10m"
-SERVER="http://localhost:8000/tpf/watdiv10m"
+SERVER="http://172.16.8.50:5000/watdiv10M"
 
 mkdir -p $OUTPUT/results/
 mkdir -p $OUTPUT/errors/
@@ -21,7 +21,7 @@ mkdir -p $OUTPUT/errors/
 RESFILE="${OUTPUT}/execution_times_ref.csv"
 
 # init results file with headers
-echo "query,time,httpCalls,errors" > $RESFILE
+echo "query,time,httpCalls,serverTime,errors" > $RESFILE
 
 for qfile in $QUERIES/*; do
   x=`basename $qfile`

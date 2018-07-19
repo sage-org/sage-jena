@@ -40,6 +40,19 @@ def compute_throughput(basePath, clients, nbRuns=3):
     return compute_avg_value(processor)(basePath, clients, nbRuns)
 
 
+def compute_throughput3(basePath, clients, nbRuns=3):
+    def mapper(df):
+        t = df['time']
+        # if x >= 120.0:
+        #     return 120.0
+        return t + (df['httpCalls'] * 0.05)
+
+    def processor(df):
+        times = list(map(mapper, df))
+        return (len(df) * 3600) / np.sum(times)
+    return compute_avg_value(processor)(basePath, clients, nbRuns)
+
+
 def compute_throughput2(basePath, quota, clients, nbRuns=3):
     def mapper(x):
         # if x >= 120.0:
@@ -53,11 +66,13 @@ def compute_throughput2(basePath, quota, clients, nbRuns=3):
 
 
 clients = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+clients2 = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 95, 100]
 
 # Query throughput
 vnq = compute_throughput('../results/watdiv-virtuoso-load', clients)
 sim_vnq = compute_throughput2('./virtuo-nq', 120000, clients)
 sage_75ms = compute_throughput('../results/watdiv-sage-75ms', clients)
+sage_75ms_new = compute_throughput3('./', clients2, 1)
 sim_75ms = compute_throughput2('./sage-75ms', 75, clients)
 
 plt.rcParams["figure.figsize"] = [5, 5]
@@ -66,9 +81,10 @@ fig = plt.figure()
 plt.rc('text', usetex=True)
 ax = plt.axes(yscale='log')
 ax.grid()
-plt.plot(clients, vnq, linestyle='-', marker='X', color='b', label='VNQ')
-plt.plot(clients, sim_vnq, linestyle='-', marker='o', color='g', label='VNQ simul')
-plt.plot(clients, sage_75ms, linestyle='-', marker='X', color='c', label='SaGe-75')
+plt.plot(clients, vnq, linestyle='-', marker='X', color='r', label='VNQ')
+# plt.plot(clients, sim_vnq, linestyle='-', marker='o', color='g', label='VNQ simul')
+plt.plot(clients, sage_75ms, linestyle='-', marker='X', color='c', label='SaGe-75 old')
+plt.plot(clients2, sage_75ms_new, linestyle='-', marker='o', color='b', label='SaGe-75 new')
 plt.plot(clients, sim_75ms, linestyle='-', marker='o', color='r', label='SaGe-75 simul')
 plt.legend()
 plt.xlabel('Number of clients', fontsize=17)

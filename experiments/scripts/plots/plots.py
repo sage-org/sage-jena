@@ -1,8 +1,11 @@
 import numpy as np
-from math import isnan
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from functools import reduce
+
+
+def add_latency(http_calls):
+    LATENCY = 0.050  # in seconds
+    return http_calls * LATENCY
 
 
 def compute_avg_value(fn):
@@ -32,13 +35,15 @@ def compute_avg_value2(basePath, quota, nbClients, nbRuns, fn):
 
 
 def compute_throughput(basePath, clients, nbRuns=3):
-    def mapper(x):
-        if x >= 120.0:
+    def mapper(df):
+        t = df['time']
+        if t >= 120.0:
             return 120.0
-        return x
+        # manually add network latency
+        return t + add_latency(df['httpCalls'])
 
     def processor(df):
-        times = list(map(mapper, df['time']))
+        times = list(map(mapper, df))
         return (len(df) * 3600) / np.sum(times)
     return compute_avg_value(processor)(basePath, clients, nbRuns)
 

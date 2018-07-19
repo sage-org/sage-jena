@@ -11,7 +11,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # SERVER="http://172.16.8.50:8000/tpf/watdiv10m"
-SERVER="http://localhost:8000/tpf/watdiv10m"
+SERVER="http://172.16.8.50:5000/watdiv10M"
 
 while true; do
   for qfile in `ls $QUERIES/* | sort -R`; do

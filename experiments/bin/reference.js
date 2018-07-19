@@ -29,7 +29,19 @@ const fs = require('fs')
 const path = require('path')
 const program = require('commander')
 const ldf = require('ldf-client')
+const Request = require('./Request.js')
 ldf.Logger.setLevel('WARNING')
+
+class Spy {
+  constructor() {
+    this.nbCalls = 0
+    this.responseTimes = []
+  }
+
+  get avgResponseTime () {
+    return this.responseTimes.reduce((x, y) => x + y, 0) / this.responseTimes.length
+  }
+}
 
 // Command line interface to execute queries
 program
@@ -66,12 +78,8 @@ if (program.query) {
 config.fragmentsClient = new ldf.FragmentsClient(server, config)
 
 // Spy used to measure the nb of HTTP calls
-let nbCalls = 0
-config.fragmentsClient._httpClient.do_get = config.fragmentsClient._httpClient.get
-config.fragmentsClient._httpClient.get = function (...args) {
-  nbCalls++
-  return config.fragmentsClient._httpClient.do_get(...args)
-}
+const spy = new Spy()
+config.fragmentsClient._httpClient._request = Request(spy)
 
 const iterator = ldf.SparqlIterator(query, config)
 iterator.on('error', error => {
@@ -84,7 +92,7 @@ iterator.on('end', () => {
   if (!program.silent) {
     const endTime = Date.now()
     const time = endTime - startTime
-    fs.appendFileSync(program.measure, `${time / 1000},${nbCalls}`)
+    fs.appendFileSync(program.measure, `${time / 1000},${spy.nbCalls},${spy.avgResponseTime}`)
   }
 })
 const startTime = Date.now()
