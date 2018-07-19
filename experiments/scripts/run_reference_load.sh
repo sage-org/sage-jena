@@ -14,9 +14,9 @@ fi
 SERVER="http://172.16.8.50:5000/watdiv10M"
 
 while true; do
-  for qfile in `ls $QUERIES/* | sort -R`; do
-    x=`basename $qfile`
-    qname="${x%.*}"
-    ./bin/reference.js $SERVER -f $qfile -s > /dev/null 2> /dev/null
-  done
+  # for qfile in `ls $QUERIES/* | sort -R`; do
+  #   x=`basename $qfile`
+  #   qname="${x%.*}"
+    ./bin/reference.js $SERVER -f $QUERIES -s > /dev/null 2> /dev/null
+  # done
 done

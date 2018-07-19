@@ -18,7 +18,7 @@ SERVER="http://172.16.8.50:5000/watdiv10M"
 mkdir -p $OUTPUT/results/
 mkdir -p $OUTPUT/errors/
 
-RESFILE="${OUTPUT}/execution_times_ref.csv"
+RESFILE="${OUTPUT}/execution_times_tpf.csv"
 
 # init results file with headers
 echo "query,time,httpCalls,serverTime,errors" > $RESFILE
@@ -35,4 +35,4 @@ for qfile in $QUERIES/*; do
 done
 
 # remove tmp folders
-rm -rf $OUTPUT/errors/
+rm -rf $OUTPUT/errors/ $OUPUT/results
