@@ -1,1 +1,0 @@
-SELECT * WHERE {  ?v0 <http://ogp.me/ns#tag> <http://db.uwaterloo.ca/~galuc/wsdbm/Topic202> .  ?v0 <http://schema.org/caption> ?v2 .  ?v0 <http://schema.org/expires> ?v3 .  ?v4 <http://db.uwaterloo.ca/~galuc/wsdbm/purchaseFor> ?v0 .  ?v4 <http://db.uwaterloo.ca/~galuc/wsdbm/purchaseDate> ?v5 .  }

@@ -1,1 +1,0 @@
-SELECT * WHERE {  ?v0 <http://xmlns.com/foaf/age> <http://db.uwaterloo.ca/~galuc/wsdbm/AgeGroup5> .  ?v0 <http://xmlns.com/foaf/givenName> ?v2 .  ?v0 <http://schema.org/email> ?v3 .  ?v0 <http://schema.org/telephone> ?v4 .  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/subscribes> ?v5 .  ?v0 <http://db.uwaterloo.ca/~galuc/wsdbm/userId> ?v6 .  }

@@ -1,1 +1,0 @@
-SELECT * WHERE {  ?v0 <http://ogp.me/ns#tag> <http://db.uwaterloo.ca/~galuc/wsdbm/Topic74> .  ?v0 <http://purl.org/stuff/rev#hasReview> ?v2 .  ?v2 <http://purl.org/stuff/rev#text> ?v3 .  ?v2 <http://purl.org/stuff/rev#title> ?v4 .  ?v2 <http://purl.org/stuff/rev#totalVotes> ?v5 .  }

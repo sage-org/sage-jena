@@ -1,1 +1,0 @@
-SELECT * WHERE {  <http://db.uwaterloo.ca/~galuc/wsdbm/Offer33654> <http://schema.org/eligibleRegion> ?v1 .  ?v0 <http://www.geonames.org/ontology#parentCountry> ?v1 .  ?v3 <http://schema.org/nationality> ?v1 .  ?v3 <http://schema.org/jobTitle> ?v4 .  ?v3 <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?v5 .  }

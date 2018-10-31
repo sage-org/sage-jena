@@ -81,6 +81,8 @@ public class SageDefaultClient implements SageRemoteClient {
             request.getHeaders().setUserAgent("Sage-Jena client/Java 1.8");
             request.setParser(new JsonObjectParser(JSON_FACTORY));
             request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(new ExponentialBackOff()));
+            request.setConnectTimeout(0);
+            request.setReadTimeout(0);
         });
         this.spy = spy;
     }

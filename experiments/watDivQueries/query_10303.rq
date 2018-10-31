@@ -1,1 +1,0 @@
-SELECT * WHERE {  ?v0 <http://purl.org/goodrelations/offers> <http://db.uwaterloo.ca/~galuc/wsdbm/Offer41815> .  ?v0 <http://schema.org/telephone> ?v2 .  }

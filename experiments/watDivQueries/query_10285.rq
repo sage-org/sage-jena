@@ -1,1 +1,0 @@
-SELECT * WHERE {  <http://db.uwaterloo.ca/~galuc/wsdbm/SubGenre43> <http://ogp.me/ns#tag> ?v1 .  ?v0 <http://ogp.me/ns#tag> ?v1 .  ?v0 <http://schema.org/description> ?v3 .  }

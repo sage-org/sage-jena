@@ -1,1 +1,0 @@
-SELECT * WHERE {  ?v0 <http://xmlns.com/foaf/age> <http://db.uwaterloo.ca/~galuc/wsdbm/AgeGroup7> .  ?v2 <http://schema.org/author> ?v0 .  ?v0 <http://schema.org/telephone> ?v3 .  }

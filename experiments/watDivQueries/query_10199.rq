@@ -1,1 +1,0 @@
-SELECT * WHERE {  ?v0 <http://purl.org/goodrelations/includes> <http://db.uwaterloo.ca/~galuc/wsdbm/Product1715> .  ?v0 <http://purl.org/goodrelations/price> ?v2 .  ?v0 <http://schema.org/eligibleQuantity> ?v3 .  ?v0 <http://schema.org/priceValidUntil> ?v4 .  }

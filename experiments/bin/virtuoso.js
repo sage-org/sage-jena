@@ -62,9 +62,9 @@ const config = {
   method: 'GET',
   url: server,
   qs: {
-    'default-graph-uri': 'http://localhost:8000/watdiv10m',
+    'default-graph-uri': 'http://localhost:8890/watdiv10m',
     query: query,
-    format: 'application/sparql-results+json',
+    format: 'text/csv',
     timeout: 5 * 60 * 1000
   }
 }
@@ -76,11 +76,11 @@ request(config, (error, res, body) => {
   if (error) {
     process.stderr.write('ERROR: An error occurred during query execution.\n')
     process.stderr.write(error.stack)
+    if (!program.silent) {
+      fs.appendFileSync(program.measure, `${time / 1000},1`)
+    }
   } else {
-    const bindings = JSON.parse(body).results.bindings
-    bindings.forEach(b => {
-      process.stdout.write(`${JSON.stringify(b)}\n`)
-    })
+    process.stdout.write(`${body}\n`)
     if (!program.silent) {
       fs.appendFileSync(program.measure, `${time / 1000},1`)
     }
