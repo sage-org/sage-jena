@@ -47,9 +47,9 @@ public class SageStageGenerator implements StageGenerator {
                 return sageGraph.basicGraphPatternFind(pattern);
             } else if (isOptional) {
                 // use a bind join approach to evaluate Left join/Optionals
-                return new OptionalBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE);
+                return new OptionalBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
             }
-            return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE);
+            return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
         }
         return above.execute(pattern, input, execCxt);
     }

@@ -1,17 +1,15 @@
 package org.gdd.sage.engine.iterators.boundjoin;
 
-import com.google.common.collect.Lists;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Substitute;
-import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingHashMap;
-import org.gdd.sage.engine.iterators.base.BufferedIterator;
+import org.gdd.sage.engine.iterators.base.BlockBufferedIterator;
 import org.gdd.sage.http.SageRemoteClient;
 import org.gdd.sage.http.data.QueryResults;
 import org.slf4j.Logger;
@@ -22,17 +20,12 @@ import java.util.*;
  * An iterator which evaluates a Bound Join between an input iterator and a BGP
  * @author Thomas Minier
  */
-public class BoundJoinIterator extends BufferedIterator {
+public class BoundJoinIterator extends BlockBufferedIterator {
     protected SageRemoteClient client;
     protected Optional<String> nextLink;
     private BasicPattern bgp;
     protected boolean hasNextPage;
-    private QueryIterator source;
-    protected List<Binding> bindingBucket;
-    protected List<BasicPattern> bgpBucket;
-    private Map<Integer, Binding> rewritingMap;
-    private int bucketSize;
-    protected Logger logger;
+    private Logger logger;
 
     /**
      * Constructor
@@ -41,45 +34,12 @@ public class BoundJoinIterator extends BufferedIterator {
      * @param bgp    - Basic Graph pattern to join with
      * @param bucketSize - Size of the bound join bucket (15 is the "default" admitted value)
      */
-    public BoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bucketSize) {
-        super();
+    public BoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bucketSize, ExecutionContext context) {
+        super(source, bucketSize, context);
         this.client = client;
         this.bgp = bgp;
-        this.source = source;
         this.nextLink = Optional.empty();
-        this.hasNextPage = false;
-        this.bindingBucket = new ArrayList<>();
-        this.bgpBucket = new ArrayList<>();
-        this.rewritingMap = new HashMap<>();
-        this.bucketSize = bucketSize;
         logger = ARQ.getExecLogger();
-    }
-
-    @Override
-    protected boolean canProduceBindings() {
-        try {
-            return source.hasNext() || hasNextPage;
-        } catch (NoSuchElementException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Find a rewriting key in a list of variables
-     * For example, in [ ?s, ?o_1 ], the rewriting key is 1
-     * @param vars List of SPARQL variables to analyze
-     * @return The rewriting key found, or -1 if no key was found
-     */
-    private int findKey(List<Var> vars) {
-        int key = -1;
-        for(Var v: vars) {
-            for(int k = 1; k <= bucketSize; k++) {
-                if (v.getVarName().endsWith("_" + k)) {
-                    return k;
-                }
-            }
-        }
-        return key;
     }
 
     /**
@@ -104,26 +64,6 @@ public class BoundJoinIterator extends BufferedIterator {
         return new Triple(subj, pred, obj);
     }
 
-    /**
-     * Undo the bound join rewriting on solutions bindings, e.g., rewrite all variables "?o_1" to "?o"
-     * @param key Rewriting key used
-     * @param input Binding to process
-     * @param vars List of the binding variables
-     * @return
-     */
-    private BindingHashMap revertBinding (int key, Binding input, List<Var> vars) {
-        BindingHashMap newBinding = new BindingHashMap();
-        for(Var v: vars) {
-            String vName = v.getVarName();
-            if (vName.endsWith("_" + key)) {
-                int index = vName.indexOf("_" + key);
-                newBinding.add(Var.alloc(vName.substring(0, index)), input.get(v));
-            } else {
-                newBinding.add(v, input.get(v));
-            }
-        }
-        return newBinding;
-    }
 
     /**
      * Do something with bound join query results
@@ -138,78 +78,35 @@ public class BoundJoinIterator extends BufferedIterator {
         return solutions;
     }
 
-    /**
-     * Undo the rewriting on solutions bindings, and then merge each of them with the corresponding input binding
-     * @param input Solutions bindings to process
-     * @return
-     */
-    protected List<Binding> rewriteSolutions(List<Binding> input, boolean isContainmentQuery) {
-        List<Binding> solutions = new LinkedList<>();
-        if (input.size() == 1 && input.get(0).isEmpty()) {
-            input.clear();
-        }
-        if (input.isEmpty() && isContainmentQuery) {
-            hasNextPage = false;
-            nextLink = Optional.empty();
-            solutions.addAll(bindingBucket);
-        } else if (!input.isEmpty()) {
-            for(Binding oldBinding: input) {
-                List<Var> vars = Lists.newArrayList(oldBinding.vars());
-                int key = findKey(vars);
-                // rewrite binding, and then merge it with the corresponding one in the bucket
-                BindingHashMap newBinding = revertBinding(key, oldBinding, vars);
-                if (rewritingMap.containsKey(key)) {
-                    newBinding.addAll(rewritingMap.get(key));
-                }
-                solutions.add(newBinding);
-            }
-        }
-        return solutions;
+    protected QueryIterator createIterator(List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
+        return new RewriteIterator(client, bag, block, rewritingMap, isContainmentQuery);
     }
 
-    @Override
-    protected List<Binding> produceBindings() {
-        List<Binding> solutions = new ArrayList<>();
-        boolean isContainmentQuery = false;
-        // if no next page, try to read from source to build a buffer of bounded BGps
-        if (!nextLink.isPresent()) {
-            bindingBucket.clear();
-            bgpBucket.clear();
-            rewritingMap.clear();
-            try {
-                while (source.hasNext() && bgpBucket.size() < bucketSize) {
-                    Binding b = source.next();
-                    BasicPattern boundedBGP = new BasicPattern();
-                    // key used for the rewriting
-                    int key = bgpBucket.size() + 1;
-                    for (Triple t: bgp) {
-                        Triple boundedTriple = Substitute.substitute(t, b);
-                        isContainmentQuery = (!boundedTriple.getSubject().isVariable()) && (!boundedTriple.getPredicate().isVariable()) && (!boundedTriple.getObject().isVariable());
-                        // perform rewriting and register it
-                        boundedTriple = rewriteTriple(key, boundedTriple);
-                        rewritingMap.put(key, b);
-                        // add rewritten triple to BGP
-                        boundedBGP.add(boundedTriple);
-                    }
-                    bgpBucket.add(boundedBGP);
-                    bindingBucket.add(b);
-                }
-            } catch (NoSuchElementException e) {
-                // silently do nothing
-            }
-        }
 
-        if (!bgpBucket.isEmpty()) {
-            // send union query to sage server
-            QueryResults queryResults = client.query(bgpBucket, nextLink);
-            if (queryResults.hasError()) {
-                // an error has occurred, report it
-                hasNextPage = false;
-                logger.error(queryResults.getError());
-            } else {
-                solutions.addAll(rewriteSolutions(reviewResults(queryResults), isContainmentQuery));
+    @Override
+    protected QueryIterator processBlock(List<Binding> block) {
+        // data structures used for bind join
+        List<BasicPattern> bgpBucket = new LinkedList<>();
+        Map<Integer, Binding> rewritingMap = new HashMap<>();
+
+        boolean isContainmentQuery = false;
+
+        // key used for the rewriting
+        int key = 0;
+        for(Binding b: block) {
+            BasicPattern boundedBGP = new BasicPattern();
+            for (Triple t: bgp) {
+                Triple boundedTriple = Substitute.substitute(t, b);
+                isContainmentQuery = (!boundedTriple.getSubject().isVariable()) && (!boundedTriple.getPredicate().isVariable()) && (!boundedTriple.getObject().isVariable());
+                // perform rewriting and register it
+                boundedTriple = rewriteTriple(key, boundedTriple);
+                rewritingMap.put(key, b);
+                // add rewritten triple to BGP
+                boundedBGP.add(boundedTriple);
             }
+            bgpBucket.add(boundedBGP);
+            key++;
         }
-        return solutions;
+        return createIterator(bgpBucket, block, rewritingMap, isContainmentQuery);
     }
 }

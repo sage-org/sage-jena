@@ -1,14 +1,6 @@
 package org.gdd.sage;
 
-import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.sparql.algebra.Algebra;
-import org.apache.jena.sparql.algebra.op.OpBGP;
-import org.apache.jena.sparql.syntax.ElementGroup;
-import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.gdd.sage.cli.DescribeQueryExecutor;
 import org.gdd.sage.cli.QueryExecutor;
 import org.gdd.sage.engine.SageExecutionContext;
@@ -142,6 +134,35 @@ public class SageClientTest {
                 solutions.add(querySolution);
             });
             assertEquals("It should find 218 solutions bindings", 218, solutions.size());
+        }
+    }
+
+    @Ignore
+    @Test
+    public void saraQuery() {
+        String url = "http://sage.univ-nantes.fr/sparql/swdf-2017";
+        String queryString = "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
+                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                "Select * where {" +
+                "?s owl:sameAs ?x ." +
+                "SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-2016-04> {" +
+                "?x rdf:type ?y ." +
+                "}" +
+                "} limit 1";
+        Query query = QueryFactory.create(queryString);
+        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
+        factory.buildFederation();
+        query = factory.getLocalizedQuery();
+        Dataset dataset = factory.getFederationDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext());
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(querySolution -> {
+                System.out.println(querySolution);
+                solutions.add(querySolution);
+            });
+            assertEquals("It should find 1 solutions bindings", 1, solutions.size());
         }
     }
 

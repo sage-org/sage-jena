@@ -1,13 +1,13 @@
 package org.gdd.sage.engine.iterators.boundjoin;
 
 import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
 import org.gdd.sage.http.SageRemoteClient;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * A special Bound Join for Left joins/Optional clauses
@@ -21,18 +21,12 @@ public class OptionalBoundJoinIterator extends BoundJoinIterator {
      * @param bgp        - Basic Graph pattern to left join with
      * @param bufferSize - Size of the bound join buffer (15 is the "default" admitted value)
      */
-    public OptionalBoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize) {
-        super(source, client, bgp, bufferSize);
+    public OptionalBoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize, ExecutionContext context) {
+        super(source, client, bgp, bufferSize, context);
     }
 
     @Override
-    protected List<Binding> rewriteSolutions(List<Binding> input, boolean isContainmentQuery) {
-        if (input.isEmpty()) {
-            // optional part: avoid rewriting and simply return the bucket of bindings
-            hasNextPage = false;
-            nextLink = Optional.empty();
-            return bindingBucket;
-        }
-        return super.rewriteSolutions(input, isContainmentQuery);
+    protected QueryIterator createIterator(List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
+        return new OptionalRewriteIterator(client, bag, block, rewritingMap, isContainmentQuery);
     }
 }

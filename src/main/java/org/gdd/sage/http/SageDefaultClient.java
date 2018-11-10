@@ -195,7 +195,7 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     private Node parseNode(String node) {
         Node value;
-        // URI case
+        // Literal case
         if (node.startsWith("\""))  {
             String literal = node.trim();
             // typed literal case (HDT may parse datatype without the surrounding "<>")
