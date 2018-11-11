@@ -16,7 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class RewriteIterator extends BufferedIterator {
+/**
+ * Evaluates an Union of bounded BGP (as produced by a Bound join) using a SaGe server
+ * @author Thomas Minier
+ */
+public class BoundIterator extends BufferedIterator {
     private SageRemoteClient client;
     protected Optional<String> nextLink;
     protected boolean hasNextPage;
@@ -28,7 +32,7 @@ public class RewriteIterator extends BufferedIterator {
 
     private Logger logger;
 
-    public RewriteIterator(SageRemoteClient client, List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
+    public BoundIterator(SageRemoteClient client, List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
         this.client = client;
         this.nextLink = Optional.empty();
         this.bag = bag;

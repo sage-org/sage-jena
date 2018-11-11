@@ -13,7 +13,7 @@ import java.util.Map;
  * A special Bound Join for Left joins/Optional clauses
  * @author Thomas Minier
  */
-public class OptionalBoundJoinIterator extends BoundJoinIterator {
+public class OptBoundJoinIterator extends BoundJoinIterator {
     /**
      * Constructor
      * @param source     - Input for the left join
@@ -21,12 +21,12 @@ public class OptionalBoundJoinIterator extends BoundJoinIterator {
      * @param bgp        - Basic Graph pattern to left join with
      * @param bufferSize - Size of the bound join buffer (15 is the "default" admitted value)
      */
-    public OptionalBoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize, ExecutionContext context) {
+    public OptBoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bufferSize, ExecutionContext context) {
         super(source, client, bgp, bufferSize, context);
     }
 
     @Override
     protected QueryIterator createIterator(List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
-        return new OptionalRewriteIterator(client, bag, block, rewritingMap, isContainmentQuery);
+        return new OptBoundIterator(client, bag, block, rewritingMap, isContainmentQuery);
     }
 }

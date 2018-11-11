@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class OptionalRewriteIterator extends RewriteIterator {
-    public OptionalRewriteIterator(SageRemoteClient client, List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
+/**
+ * Same as a BoundIterator, but used for Optional/Left-join evaluation
+ * @author Thomas Minier
+ */
+public class OptBoundIterator extends BoundIterator {
+    public OptBoundIterator(SageRemoteClient client, List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
         super(client, bag, block, rewritingMap, isContainmentQuery);
     }
 

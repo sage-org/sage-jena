@@ -7,7 +7,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
-import org.gdd.sage.engine.iterators.boundjoin.OptionalBoundJoinIterator;
+import org.gdd.sage.engine.iterators.boundjoin.OptBoundJoinIterator;
 import org.gdd.sage.model.SageGraph;
 
 /**
@@ -47,7 +47,7 @@ public class SageStageGenerator implements StageGenerator {
                 return sageGraph.basicGraphPatternFind(pattern);
             } else if (isOptional) {
                 // use a bind join approach to evaluate Left join/Optionals
-                return new OptionalBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
+                return new OptBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
             }
             return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
         }

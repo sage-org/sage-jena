@@ -79,7 +79,7 @@ public class BoundJoinIterator extends BlockBufferedIterator {
     }
 
     protected QueryIterator createIterator(List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
-        return new RewriteIterator(client, bag, block, rewritingMap, isContainmentQuery);
+        return new BoundIterator(client, bag, block, rewritingMap, isContainmentQuery);
     }
 
 
