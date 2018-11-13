@@ -48,7 +48,7 @@ public class ServiceFederatedQueryFactory implements FederatedQueryFactory {
     @Override
     public void buildFederation() {
         // setup Sage Optimizer
-        Optimize.setFactory(SageOptimizer::new);
+        //Optimize.setFactory(SageOptimizer::new);
         // localize query and get all SERVICE uris
         Op queryTree = Algebra.compile(query);
         ServiceTransformer transformer = new ServiceTransformer();
