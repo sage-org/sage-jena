@@ -16,9 +16,8 @@ import static org.junit.Assert.*;
 
 public class SageClientTest {
 
-    @Ignore
     @Test
-    public void bsbmQuery() {
+    public void optionalBSBM() {
         String url = "http://sage.univ-nantes.fr/sparql/bsbm1M";
         String queryString = "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\n" +
                 "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
@@ -54,7 +53,6 @@ public class SageClientTest {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
             results.forEachRemaining(querySolution -> {
-                System.out.println(querySolution);
                 assertTrue("?propertyTextual4 should be bounded", querySolution.contains("propertyTextual4"));
                 assertFalse("?propertyTextual5 should not be bounded", querySolution.contains("propertyTextual5"));
                 assertFalse("?propertyNumeric4 should not be bounded", querySolution.contains("propertyNumeric4"));
@@ -67,7 +65,7 @@ public class SageClientTest {
     @Ignore
     @Test
     public void noSuchElementQuery() {
-        String url = "http://172.16.8.50:8000/sparql/bsbm1k";
+        String url = "http://sage.univ-nantes.fr/sparql/bsbm1M";
         String queryString = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
                 "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                 "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
@@ -86,7 +84,7 @@ public class SageClientTest {
                 "\tFILTER (?simProperty2 < (?origProperty2 + 170) && ?simProperty2 > (?origProperty2 - 170))\n" +
                 "}\n" +
                 "ORDER BY DESC(?productLabel)\n" +
-                "LIMIT 5\n";
+                "LIMIT 1\n";
         Query query = QueryFactory.create(queryString);
         FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
         factory.buildFederation();
@@ -104,7 +102,7 @@ public class SageClientTest {
         }
     }
 
-    @Ignore
+
     @Test
     public void federatedQuery() {
         String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
@@ -129,26 +127,25 @@ public class SageClientTest {
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
-            results.forEachRemaining(querySolution -> {
-                System.out.println(querySolution);
-                solutions.add(querySolution);
-            });
+            results.forEachRemaining(solutions::add);
             assertEquals("It should find 218 solutions bindings", 218, solutions.size());
         }
     }
 
-    @Ignore
     @Test
-    public void saraQuery() {
-        String url = "http://sage.univ-nantes.fr/sparql/swdf-2017";
-        String queryString = "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
-                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                "Select * where {" +
-                "?s owl:sameAs ?x ." +
-                "SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-2016-04> {" +
-                "?x rdf:type ?y ." +
-                "}" +
-                "} limit 1";
+    public void federatedHashJoin() {
+        String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
+        String queryString = "PREFIX dbp: <http://dbpedia.org/property/>\n" +
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "\n" +
+                "SELECT ?title\n" +
+                "WHERE {\n" +
+                "  ?movie dbp:starring [ rdfs:label 'Natalie Portman'@en ].\n" +
+                "  SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-2015-04en> {\n" +
+                "    ?movie rdfs:label \"Where the Heart Is (2000 film)\"@en, ?title.\n" +
+                "  }\n" +
+                "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
+                "}\n";
         Query query = QueryFactory.create(queryString);
         FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
         factory.buildFederation();
@@ -158,15 +155,11 @@ public class SageClientTest {
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
-            results.forEachRemaining(querySolution -> {
-                System.out.println(querySolution);
-                solutions.add(querySolution);
-            });
-            assertEquals("It should find 1 solutions bindings", 1, solutions.size());
+            results.forEachRemaining(solutions::add);
+            assertEquals("It should find 11 solutions bindings", 11, solutions.size());
         }
     }
 
-    @Ignore
     @Test
     public void weirdOptional() {
         String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
@@ -186,10 +179,7 @@ public class SageClientTest {
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
-            results.forEachRemaining(querySolution -> {
-                System.out.println(querySolution);
-                solutions.add(querySolution);
-            });
+            results.forEachRemaining(solutions::add);
             assertEquals("It should find 40 solutions bindings", 40, solutions.size());
         }
     }
