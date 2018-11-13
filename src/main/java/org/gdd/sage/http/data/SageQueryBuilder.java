@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.expr.Expr;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +66,17 @@ public class SageQueryBuilder {
         for(ArrayNode n: unionList) {
             u.addArray().addAll(n);
         }
+        return this;
+    }
+
+    /**
+     * Set the Filter clause of the query
+     * @param filter - A Filter expression
+     * @return The SageQueryBuilder instance, used for chaining calls
+     */
+    public SageQueryBuilder withFilter(Expr filter) {
+        ArrayNode u = queryNode.putArray("filter");
+        u.addArray().add(filter.toString());
         return this;
     }
 

@@ -1,6 +1,7 @@
 package org.gdd.sage.http;
 
 import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.expr.Expr;
 import org.gdd.sage.http.data.QueryResults;
 
 import java.util.List;
@@ -29,6 +30,10 @@ public interface SageRemoteClient {
      * @return Query results. If the next link is null, then the Union has been completely evaluated.
      */
     QueryResults query(List<BasicPattern> patterns, Optional<String> next);
+
+    QueryResults query(BasicPattern bgp, Expr filter, Optional<String> next);
+
+    QueryResults query(BasicPattern bgp, Expr filter);
 
     /**
      * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link

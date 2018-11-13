@@ -6,7 +6,6 @@ import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.iterator.QueryIterConvert;
 import org.apache.jena.sparql.engine.iterator.QueryIterPeek;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.engine.join.JoinKey;
@@ -57,13 +56,13 @@ public class SageStageGenerator implements StageGenerator {
                 return new OptBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
             }
             // if we can download the right pattern in one call, use a hash join instead of a bound join
-            QueryResults rightRes = sageGraph.getClient().query(pattern);
+            /*QueryResults rightRes = sageGraph.getClient().query(pattern);
             if (!rightRes.hasNext()) {
                 QueryIterPeek leftIter = QueryIterPeek.create(input, execCxt);
                 QueryIterator rightIter = new QueryIterPlainWrapper(rightRes.getBindings().iterator());
                 JoinKey joinKey = JoinKey.create(Lists.newArrayList(leftIter.peek().vars()), Lists.newArrayList(rightRes.getBindings().get(0).vars()));
                 return QueryIterHashJoin.create(joinKey, leftIter, rightIter, execCxt);
-            }
+            }*/
             return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
         }
         return above.execute(pattern, input, execCxt);

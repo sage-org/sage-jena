@@ -18,6 +18,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.data.SageQueryBuilder;
@@ -95,6 +96,21 @@ public class SageDefaultClient implements SageRemoteClient {
         return serverURL.toString();
     }
 
+    private QueryResults doQuery(SageQueryBuilder builder) {
+        String jsonQuery = builder.build();
+        double startTime = System.nanoTime();
+        try {
+            HttpResponse response = sendQuery(jsonQuery).get();
+            double endTime = System.nanoTime();
+            spy.reportHttpQuery((endTime - startTime) / 1e9);
+            return decodeResponse(response);
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            double endTime = System.nanoTime();
+            spy.reportHttpQuery((endTime - startTime) / 1e9);
+            return QueryResults.withError(e.getMessage());
+        }
+    }
+
     /**
      * Evaluate a Basic Graph Pattern against a SaGe server, with a next link
      * @param bgp - BGP to evaluate
@@ -108,19 +124,26 @@ public class SageDefaultClient implements SageRemoteClient {
         if (next.isPresent()) {
             queryBuilder = queryBuilder.withNextLink(next.get());
         }
+        return doQuery(queryBuilder);
+    }
 
-        String jsonQuery = queryBuilder.build();
-        double startTime = System.nanoTime();
-        try {
-            HttpResponse response = sendQuery(jsonQuery).get();
-            double endTime = System.nanoTime();
-            spy.reportHttpQuery((endTime - startTime) / 1e9);
-            return decodeResponse(response);
-        } catch (InterruptedException | ExecutionException | IOException e) {
-            double endTime = System.nanoTime();
-            spy.reportHttpQuery((endTime - startTime) / 1e9);
-            return QueryResults.withError(e.getMessage());
+    /**
+     * Evaluate a Basic Graph Pattern with filter against a SaGe server
+     * @param bgp - BGP to evaluate
+     * @param filter - Filter expression
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    public QueryResults query(BasicPattern bgp, Expr filter, Optional<String> next) {
+        SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
+                .withType("bgp")
+                .withBasicGraphPattern(bgp)
+                .withFilter(filter);
+        if (next.isPresent()) {
+            queryBuilder = queryBuilder.withNextLink(next.get());
         }
+
+        return doQuery(queryBuilder);
     }
 
     /**
@@ -137,18 +160,7 @@ public class SageDefaultClient implements SageRemoteClient {
             queryBuilder = queryBuilder.withNextLink(next.get());
         }
 
-        String jsonQuery = queryBuilder.build();
-        double startTime = System.nanoTime();
-        try {
-            HttpResponse response = sendQuery(jsonQuery).get();
-            double endTime = System.nanoTime();
-            spy.reportHttpQuery((endTime - startTime) / 1e9);
-            return decodeResponse(response);
-        } catch (InterruptedException | ExecutionException | IOException e) {
-            double endTime = System.nanoTime();
-            spy.reportHttpQuery((endTime - startTime) / 1e9);
-            return QueryResults.withError(e.getMessage());
-        }
+        return doQuery(queryBuilder);
     }
 
     /**
@@ -158,6 +170,16 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public QueryResults query(BasicPattern bgp) {
         return query(bgp, Optional.empty());
+    }
+
+    /**
+     * Evaluate a Basic Graph Pattern with filter against a SaGe server
+     * @param bgp - BGP to evaluate
+     * @param filter - Filter expression
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    public QueryResults query(BasicPattern bgp, Expr filter) {
+        return query(bgp, filter, Optional.empty());
     }
 
     /**

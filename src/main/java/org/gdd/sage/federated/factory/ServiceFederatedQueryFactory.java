@@ -1,15 +1,19 @@
 package org.gdd.sage.federated.factory;
 
 import org.apache.jena.graph.Graph;
+import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.Transformer;
+import org.apache.jena.sparql.algebra.optimize.Optimize;
 import org.gdd.sage.federated.FederatedDatasetBuilder;
 import org.gdd.sage.federated.selection.ServiceTransformer;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
+import org.gdd.sage.optimizer.SageOptimizer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -43,6 +47,8 @@ public class ServiceFederatedQueryFactory implements FederatedQueryFactory {
 
     @Override
     public void buildFederation() {
+        // setup Sage Optimizer
+        Optimize.setFactory(SageOptimizer::new);
         // localize query and get all SERVICE uris
         Op queryTree = Algebra.compile(query);
         ServiceTransformer transformer = new ServiceTransformer();

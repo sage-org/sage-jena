@@ -36,6 +36,11 @@ public class StreamingOpExecutor extends OpExecutor {
         super(execCxt);
     }
 
+    @Override
+    protected QueryIterator exec(Op op, QueryIterator input) {
+        return super.exec(op, input);
+    }
+
     /**
      * Exxecute a Left Join/Optional with a pure pipeline logic
      * @param left - Left operator

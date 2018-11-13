@@ -34,7 +34,17 @@ public abstract class BlockBufferedIterator extends QueryIteratorBase {
 
     @Override
     protected boolean hasNextBinding() {
-        return source.hasNext() || currentIterator.hasNext();
+        if (currentIterator.hasNext()) {
+            return true;
+        }
+        while (!currentIterator.hasNext() && source.hasNext()) {
+            bucket.clear();
+            while (source.hasNext() && bucket.size() < bucketSize) {
+                bucket.add(source.nextBinding());
+            }
+            currentIterator = processBlock(bucket);
+        }
+        return currentIterator.hasNext();
     }
 
     @Override

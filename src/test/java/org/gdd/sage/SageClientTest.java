@@ -102,7 +102,7 @@ public class SageClientTest {
         }
     }
 
-
+    @Ignore
     @Test
     public void federatedQuery() {
         String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
