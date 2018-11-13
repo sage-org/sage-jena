@@ -62,7 +62,7 @@ public class SageClientTest {
         }
     }
 
-    @Ignore
+
     @Test
     public void noSuchElementQuery() {
         String url = "http://sage.univ-nantes.fr/sparql/bsbm1M";
@@ -102,7 +102,7 @@ public class SageClientTest {
         }
     }
 
-    @Ignore
+
     @Test
     public void federatedQuery() {
         String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
