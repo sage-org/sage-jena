@@ -56,13 +56,11 @@ public class SageStageGenerator implements StageGenerator {
                 return new OptBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
             }
             // if we can download the right pattern in one call, use a hash join instead of a bound join
-            /*QueryResults rightRes = sageGraph.getClient().query(pattern);
+            QueryResults rightRes = sageGraph.getClient().query(pattern);
             if (!rightRes.hasNext()) {
-                QueryIterPeek leftIter = QueryIterPeek.create(input, execCxt);
                 QueryIterator rightIter = new QueryIterPlainWrapper(rightRes.getBindings().iterator());
-                JoinKey joinKey = JoinKey.create(Lists.newArrayList(leftIter.peek().vars()), Lists.newArrayList(rightRes.getBindings().get(0).vars()));
-                return QueryIterHashJoin.create(joinKey, leftIter, rightIter, execCxt);
-            }*/
+                return QueryIterHashJoin.create(input, rightIter, execCxt);
+            }
             return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
         }
         return above.execute(pattern, input, execCxt);
