@@ -62,7 +62,7 @@ public class SageClientTest {
         }
     }
 
-
+    @Ignore
     @Test
     public void noSuchElementQuery() {
         String url = "http://sage.univ-nantes.fr/sparql/bsbm1M";

@@ -30,7 +30,7 @@ public abstract class BufferedIterator extends QueryIteratorBase {
 
     @Override
     protected boolean hasNextBinding() {
-        if (warmup || (internalBuffer.isEmpty() && canProduceBindings())) {
+        while (warmup || (internalBuffer.isEmpty() && canProduceBindings())) {
             this.fillBuffer();
             warmup = false;
         }
@@ -43,7 +43,7 @@ public abstract class BufferedIterator extends QueryIteratorBase {
     @Override
     protected Binding moveToNextBinding() {
         // pull from internal buffer is possible, otherwise fetch more bindings from server
-        if (internalBuffer.isEmpty()) {
+        while (internalBuffer.isEmpty() && canProduceBindings()) {
             fillBuffer();
         }
         return internalBuffer.pollFirst();

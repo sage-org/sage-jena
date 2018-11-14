@@ -40,7 +40,7 @@ public abstract class BlockBufferedIterator extends QueryIteratorBase {
         while (!currentIterator.hasNext() && source.hasNext()) {
             bucket.clear();
             while (source.hasNext() && bucket.size() < bucketSize) {
-                bucket.add(source.nextBinding());
+                bucket.add(source.next());
             }
             currentIterator = processBlock(bucket);
         }
