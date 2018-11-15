@@ -102,6 +102,31 @@ public class SageClientTest {
         }
     }
 
+    @Test
+    public void filterQuery() {
+        String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
+        String queryString = "PREFIX dbp: <http://dbpedia.org/property/>\n" +
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "\n" +
+                "SELECT *\n" +
+                "WHERE {\n" +
+                "    ?movie rdfs:label ?title.\n" +
+                "  FILTER LANGMATCHES(LANG(?title), 'EN')\n" +
+                "} LIMIT 10\n";
+        Query query = QueryFactory.create(queryString);
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(solutions::add);
+            assertEquals("It should find 10 solutions bindings", 10, solutions.size());
+        }
+    }
+
 
     @Test
     public void federatedQuery() {
@@ -123,7 +148,7 @@ public class SageClientTest {
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext());
+        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();

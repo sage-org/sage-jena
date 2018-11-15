@@ -14,6 +14,7 @@ import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a remote RDF graph hosted at a Sage server
@@ -76,6 +77,18 @@ public class SageGraph extends GraphBase {
      * @return An iterator over solution bindings for the BGP
      */
     public QueryIterator basicGraphPatternFind(BasicPattern bgp) {
+        return new SageBGPIterator(httpClient, bgp);
+    }
+
+    /**
+     * Evaluate a Basic Graph Pattern using the SaGe server
+     * @param bgp - BGP to evaluate
+     * @return An iterator over solution bindings for the BGP
+     */
+    public QueryIterator basicGraphPatternFind(BasicPattern bgp, String filter) {
+        if (filter.isEmpty()) {
+            return new SageBGPIterator(httpClient, bgp);
+        }
         return new SageBGPIterator(httpClient, bgp);
     }
 

@@ -7,11 +7,14 @@ import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
 import org.gdd.sage.core.SageDatasetBuilder;
+import org.gdd.sage.core.analyzer.FilterAnalyzer;
+import org.gdd.sage.core.analyzer.FilterRegistry;
 import org.gdd.sage.core.analyzer.ServiceAnalyzer;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -26,6 +29,7 @@ public class SageQueryFactory implements ISageQueryFactory {
     private Dataset federation;
     private Set<String> uris;
     private ExecutionStats spy;
+    private FilterRegistry filters;
 
     public SageQueryFactory(String defaultUrl, Query query) {
         this.defaultUrl = defaultUrl;
@@ -47,7 +51,13 @@ public class SageQueryFactory implements ISageQueryFactory {
         Op queryTree = Algebra.compile(query);
         ServiceAnalyzer transformer = new ServiceAnalyzer();
         Transformer.transform(transformer, queryTree);
+
         uris.addAll(transformer.getUris());
+
+        // collect filters by variable
+        FilterAnalyzer fAnalyzer = new FilterAnalyzer();
+        Transformer.transform(fAnalyzer, queryTree);
+        filters = fAnalyzer.getFilters();
 
         // build the federated dataset
         Graph defaultGraph = new SageGraph(defaultUrl, spy);
@@ -66,5 +76,9 @@ public class SageQueryFactory implements ISageQueryFactory {
     @Override
     public Dataset getDataset() {
         return federation;
+    }
+
+    public FilterRegistry getFilters() {
+        return filters;
     }
 }
