@@ -1,4 +1,4 @@
-package org.gdd.sage.federated;
+package org.gdd.sage.core;
 
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.Dataset;
@@ -9,36 +9,36 @@ import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
 
 /**
- * Builder used to create a new federated Dataset of Sage server
+ * Builder used to create a new Dataset of Sage servers
  * @author Thomas Minier
  */
-public class FederatedDatasetBuilder {
+public class SageDatasetBuilder {
     private Dataset federation;
 
-    private FederatedDatasetBuilder(Graph defaultGraph) {
+    private SageDatasetBuilder(Graph defaultGraph) {
         federation = new DatasetImpl(ModelFactory.createModelForGraph(defaultGraph));
     }
 
-    private FederatedDatasetBuilder(Model defaultModel) {
+    private SageDatasetBuilder(Model defaultModel) {
         federation = new DatasetImpl(defaultModel);
     }
 
     /**
-     * Create a new FederatedDatasetBuilder with a default RDF Graph
+     * Create a new SageDatasetBuilder with a default RDF Graph
      * @param defaultGraph - The RDF graph used as a the default graph
-     * @return A FederatedDatasetBuilder ready to be configured
+     * @return A SageDatasetBuilder ready to be configured
      */
-    public static FederatedDatasetBuilder create(Graph defaultGraph) {
-        return new FederatedDatasetBuilder(defaultGraph);
+    public static SageDatasetBuilder create(Graph defaultGraph) {
+        return new SageDatasetBuilder(defaultGraph);
     }
 
     /**
-     * Create a new FederatedDatasetBuilder with a default Model
+     * Create a new SageDatasetBuilder with a default Model
      * @param defaultModel - The Model used as a the default model
-     * @return A FederatedDatasetBuilder ready to be configured
+     * @return A SageDatasetBuilder ready to be configured
      */
-    public static FederatedDatasetBuilder create(Model defaultModel) {
-        return new FederatedDatasetBuilder(defaultModel);
+    public static SageDatasetBuilder create(Model defaultModel) {
+        return new SageDatasetBuilder(defaultModel);
     }
 
     /**
@@ -52,9 +52,9 @@ public class FederatedDatasetBuilder {
     /**
      * Register a Sage server in the federation
      * @param url - URL of the Sage server. It will also be used as its reference URI.
-     * @return The FederatedDatasetBuilder, for chaining
+     * @return The SageDatasetBuilder, for chaining
      */
-    public FederatedDatasetBuilder withSageServer(String url, ExecutionStats spy) {
+    public SageDatasetBuilder withSageServer(String url, ExecutionStats spy) {
         Model model = ModelFactory.createModelForGraph(new SageGraph(url, spy));
         federation.addNamedModel(url, model);
         return this;
@@ -64,9 +64,9 @@ public class FederatedDatasetBuilder {
      * Register a named model in the federation
      * @param uri - The name of the model to add
      * @param model - Model to add
-     * @return The FederatedDatasetBuilder, for chaining
+     * @return The SageDatasetBuilder, for chaining
      */
-    public FederatedDatasetBuilder withNamedModel(String uri, Model model) {
+    public SageDatasetBuilder withNamedModel(String uri, Model model) {
         federation.addNamedModel(uri, model);
         return this;
     }
@@ -75,9 +75,9 @@ public class FederatedDatasetBuilder {
      * Register a named graph in the federation
      * @param uri - The name of the graph to add
      * @param graph - Graph to add
-     * @return The FederatedDatasetBuilder, for chaining
+     * @return The SageDatasetBuilder, for chaining
      */
-    public FederatedDatasetBuilder withNamedGraph(String uri, Graph graph) {
+    public SageDatasetBuilder withNamedGraph(String uri, Graph graph) {
         return withNamedModel(uri, ModelFactory.createModelForGraph(graph));
     }
 }

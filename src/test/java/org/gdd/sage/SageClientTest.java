@@ -4,8 +4,8 @@ import org.apache.jena.query.*;
 import org.gdd.sage.cli.DescribeQueryExecutor;
 import org.gdd.sage.cli.QueryExecutor;
 import org.gdd.sage.engine.SageExecutionContext;
-import org.gdd.sage.federated.factory.FederatedQueryFactory;
-import org.gdd.sage.federated.factory.ServiceFederatedQueryFactory;
+import org.gdd.sage.core.factory.ISageQueryFactory;
+import org.gdd.sage.core.factory.SageQueryFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -44,10 +44,10 @@ public class SageClientTest {
                 "    OPTIONAL { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer6/Product216> bsbm:productPropertyNumeric4 ?propertyNumeric4 }\n" +
                 "}\n";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
@@ -86,10 +86,10 @@ public class SageClientTest {
                 "ORDER BY DESC(?productLabel)\n" +
                 "LIMIT 1\n";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
@@ -119,10 +119,10 @@ public class SageClientTest {
                 "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
                 "}\n";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
@@ -147,10 +147,10 @@ public class SageClientTest {
                 "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
                 "}\n";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
@@ -171,10 +171,10 @@ public class SageClientTest {
                 "  OPTIONAL { ?movie <http://dbpedia.org/ontology/musicComposer> <http://dbpedia.org/resource/Paul_Buckmaster> }\n" +
                 "}";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
@@ -192,10 +192,10 @@ public class SageClientTest {
                 "DESCRIBE ?x\n" +
                 "WHERE { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review4194> rev:reviewer ?x }";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         QueryExecutor executor = new DescribeQueryExecutor("ttl");
         executor.execute(dataset, query);
@@ -214,10 +214,10 @@ public class SageClientTest {
                 "?v0 <http://purl.org/goodrelations/serialNumber> ?v2 ." +
                 " ?v0 <http://purl.org/goodrelations/validFrom> ?v3 .  }\n";
         Query query = QueryFactory.create(queryString);
-        FederatedQueryFactory factory = new ServiceFederatedQueryFactory(url, query);
-        factory.buildFederation();
-        query = factory.getLocalizedQuery();
-        Dataset dataset = factory.getFederationDataset();
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
         SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();

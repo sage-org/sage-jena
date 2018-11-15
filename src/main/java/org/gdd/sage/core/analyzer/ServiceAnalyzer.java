@@ -1,4 +1,4 @@
-package org.gdd.sage.federated.selection;
+package org.gdd.sage.core.analyzer;
 
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.TransformBase;
@@ -11,10 +11,10 @@ import java.util.Set;
  * Collect all URIS from SERVICE clauses, and perform data localization on each BGP in each SERVICE clause
  * @author Thomas Minier
  */
-public class ServiceTransformer extends TransformBase {
+public class ServiceAnalyzer extends TransformBase {
     private Set<String> uris;
 
-    public ServiceTransformer() {
+    public ServiceAnalyzer() {
         super();
         uris = new HashSet<>();
     }
