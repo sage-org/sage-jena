@@ -16,6 +16,7 @@ import java.util.Optional;
 public class SageBGPIterator extends SageQueryIterator {
 
     protected BasicPattern bgp;
+    private String filter;
 
     /**
      * Constructor
@@ -25,10 +26,25 @@ public class SageBGPIterator extends SageQueryIterator {
     public SageBGPIterator(SageRemoteClient client, BasicPattern bgp) {
         super(client);
         this.bgp = bgp;
+        filter = "";
+    }
+
+    /**
+     * Constructor
+     * @param client - HTTP client used to query the SaGe server
+     * @param bgp - Basic Graph pattern to evaluate
+     */
+    public SageBGPIterator(SageRemoteClient client, BasicPattern bgp, String filter) {
+        super(client);
+        this.bgp = bgp;
+        this.filter = filter;
     }
 
     @Override
     protected QueryResults query(Optional<String> nextLink) {
-        return client.query(bgp, nextLink);
+        if (filter.isEmpty()) {
+            return client.query(bgp, nextLink);
+        }
+        return client.query(bgp, filter, nextLink);
     }
 }

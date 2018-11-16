@@ -134,7 +134,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param next - Optional link used to resume query evaluation
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public QueryResults query(BasicPattern bgp, Expr filter, Optional<String> next) {
+    public QueryResults query(BasicPattern bgp, String filter, Optional<String> next) {
         SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
                 .withType("bgp")
                 .withBasicGraphPattern(bgp)
@@ -142,7 +142,6 @@ public class SageDefaultClient implements SageRemoteClient {
         if (next.isPresent()) {
             queryBuilder = queryBuilder.withNextLink(next.get());
         }
-
         return doQuery(queryBuilder);
     }
 
@@ -178,7 +177,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param filter - Filter expression
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public QueryResults query(BasicPattern bgp, Expr filter) {
+    public QueryResults query(BasicPattern bgp, String filter) {
         return query(bgp, filter, Optional.empty());
     }
 

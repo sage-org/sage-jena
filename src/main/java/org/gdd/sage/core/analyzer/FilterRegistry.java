@@ -12,11 +12,13 @@ public class FilterRegistry {
     }
 
     public void put(Set<String> variables, Expr expression) {
+        FilterFormatter formatter = new FilterFormatter();
+        expression.visit(formatter);
         if (!content.containsKey(variables)) {
             content.put(variables, new LinkedHashSet<>());
         }
         Set<String> prev = content.get(variables);
-        prev.add(expression.toString());
+        prev.add(formatter.getValue());
         content.put(variables, prev);
     }
 

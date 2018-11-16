@@ -108,10 +108,11 @@ public class SageClientTest {
         String queryString = "PREFIX dbp: <http://dbpedia.org/property/>\n" +
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
                 "\n" +
-                "SELECT *\n" +
+                "SELECT ?titleEng ?title\n" +
                 "WHERE {\n" +
-                "    ?movie rdfs:label ?title.\n" +
-                "  FILTER LANGMATCHES(LANG(?title), 'EN')\n" +
+                "    ?movie rdfs:label ?titleEng, ?title.\n" +
+                "  FILTER LANGMATCHES(LANG(?titleEng), 'EN')\n" +
+                "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
                 "} LIMIT 10\n";
         Query query = QueryFactory.create(queryString);
         ISageQueryFactory factory = new SageQueryFactory(url, query);
@@ -123,6 +124,7 @@ public class SageClientTest {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
             results.forEachRemaining(solutions::add);
+            System.out.println(solutions);
             assertEquals("It should find 10 solutions bindings", 10, solutions.size());
         }
     }
@@ -154,6 +156,30 @@ public class SageClientTest {
             List<QuerySolution> solutions = new ArrayList<>();
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 218 solutions bindings", 218, solutions.size());
+        }
+    }
+
+    @Test
+    public void federatedQuery2() {
+        String url = "http://sage.univ-nantes.fr/sparql/swdf-2012";
+        String queryString = "SELECT * WHERE {\n" +
+                "   ?s <http://www.w3.org/2002/07/owl#sameAs> ?x .\n" +
+                "   ?x <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o1 .\n" +
+                "   SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-3-5-1> {\n" +
+                "       ?x <http://dbpedia.org/ontology/thumbnail> ?o2 ." +
+                "   }\n" +
+                "}";
+        Query query = QueryFactory.create(queryString);
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(solutions::add);
+            assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
     }
 

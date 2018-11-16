@@ -4,7 +4,6 @@ import org.apache.jena.graph.Node_Variable;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.TransformBase;
 import org.apache.jena.sparql.algebra.op.OpFilter;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.ExprList;
 
 import java.util.*;

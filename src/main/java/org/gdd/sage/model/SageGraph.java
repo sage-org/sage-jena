@@ -89,7 +89,7 @@ public class SageGraph extends GraphBase {
         if (filter.isEmpty()) {
             return new SageBGPIterator(httpClient, bgp);
         }
-        return new SageBGPIterator(httpClient, bgp);
+        return new SageBGPIterator(httpClient, bgp, filter);
     }
 
     /**

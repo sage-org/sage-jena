@@ -74,9 +74,9 @@ public class SageQueryBuilder {
      * @param filter - A Filter expression
      * @return The SageQueryBuilder instance, used for chaining calls
      */
-    public SageQueryBuilder withFilter(Expr filter) {
-        ArrayNode u = queryNode.putArray("filter");
-        u.addArray().add(filter.toString());
+    public SageQueryBuilder withFilter(String filter) {
+        ArrayNode u = queryNode.putArray("filters");
+        u.add(filter);
         return this;
     }
 

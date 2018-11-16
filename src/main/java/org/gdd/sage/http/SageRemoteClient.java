@@ -31,9 +31,9 @@ public interface SageRemoteClient {
      */
     QueryResults query(List<BasicPattern> patterns, Optional<String> next);
 
-    QueryResults query(BasicPattern bgp, Expr filter, Optional<String> next);
+    QueryResults query(BasicPattern bgp, String filter, Optional<String> next);
 
-    QueryResults query(BasicPattern bgp, Expr filter);
+    QueryResults query(BasicPattern bgp, String filter);
 
     /**
      * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
