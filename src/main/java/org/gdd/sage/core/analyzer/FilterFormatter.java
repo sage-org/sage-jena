@@ -53,6 +53,12 @@ public class FilterFormatter implements ExprVisitor {
             case "or":
                 stack.push('(' + stack.pop() + " || " + stack.pop() + ')');
                 break;
+            case "eq":
+                stack.push('(' + stack.pop() + " = " + stack.pop() + ')');
+                break;
+            case "neq":
+                stack.push('(' + stack.pop() + " != " + stack.pop() + ')');
+                break;
             default:
                 stack.push('('  + funName +'(' + stack.pop() + ',' + stack.pop() + "))");
                 break;
