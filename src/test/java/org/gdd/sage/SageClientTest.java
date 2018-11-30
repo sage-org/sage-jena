@@ -206,6 +206,27 @@ public class SageClientTest {
     }
 
     @Test
+    public void federatedQuery5() {
+        String url = "http://sage.univ-nantes.fr/sparql/swdf-2012";
+        String queryString = "SELECT * WHERE { ?s <http://www.w3.org/2002/07/owl#sameAs> ?x .  SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-3-5-1> {  ?x <http://dbpedia.org/ontology/knownFor> ?o . }  } LIMIT 1";
+        Query query = QueryFactory.create(queryString);
+        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        factory.buildDataset();
+        query = factory.getQuery();
+        Dataset dataset = factory.getDataset();
+        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
+        try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
+            ResultSet results = qexec.execSelect();
+            List<QuerySolution> solutions = new ArrayList<>();
+            results.forEachRemaining(solution -> {
+                System.out.println(solution);
+                solutions.add(solution);
+            });
+            assertEquals("It should find 0 solutions bindings", 0, solutions.size());
+        }
+    }
+
+    @Test
     public void federatedHashJoin() {
         String url = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
         String queryString = "PREFIX dbp: <http://dbpedia.org/property/>\n" +
