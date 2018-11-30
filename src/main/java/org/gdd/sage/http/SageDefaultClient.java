@@ -137,8 +137,8 @@ public class SageDefaultClient implements SageRemoteClient {
     public QueryResults query(BasicPattern bgp, String filter, Optional<String> next) {
         SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
                 .withType("bgp")
-                .withBasicGraphPattern(bgp)
-                .withFilter(filter);
+                .withBasicGraphPattern(bgp);
+                //.withFilter(filter);
         if (next.isPresent()) {
             queryBuilder = queryBuilder.withNextLink(next.get());
         }
