@@ -1,9 +1,12 @@
 package org.gdd.sage.model;
 
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Substitute;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -59,10 +62,27 @@ public class SageGraph extends GraphBase {
 
     @Override
     protected ExtendedIterator<Triple> graphBaseFind(Triple triple) {
+        // Jena may inject strange "ANY" that are not labelled as variable when evaluating property paths
+        // so we need to sanitize the triple pattern before evaluation
+        Node s = triple.getSubject();
+        Node p = triple.getPredicate();
+        Node o = triple.getObject();
+        if (s.toString().equals("ANY")) {
+            s = Var.alloc("ANY_S");
+        }
+        if (p.toString().equals("ANY")) {
+            p = Var.alloc("ANY_P");
+        }
+        if (o.toString().equals("ANY")) {
+            o = Var.alloc("ANY_O");
+        }
+        // evaluate formatted triple pattern
+        Triple t = new Triple(s, p, o);
         BasicPattern bgp = new BasicPattern();
-        bgp.add(triple);
+        bgp.add(t);
         QueryIterator queryIterator = new SageBGPIterator(httpClient, bgp);
-        return WrappedIterator.create(queryIterator).mapWith(binding -> Substitute.substitute(triple, binding));
+        return WrappedIterator.create(queryIterator)
+                .mapWith(binding -> Substitute.substitute(t, binding));
     }
 
     @Override
