@@ -1,25 +1,19 @@
 package org.gdd.sage.engine;
 
-import com.google.common.collect.Lists;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.ARQInternalErrorException;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.op.OpConditional;
-import org.apache.jena.sparql.algebra.op.OpGraph;
 import org.apache.jena.sparql.algebra.op.OpLeftJoin;
 import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingHashMap;
-import org.apache.jena.sparql.engine.iterator.QueryIterProcessBinding;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.QC;
+import org.gdd.sage.engine.iterators.OptionalIterator;
 
 /**
  * An OpExecutor that streams intermediate results for OpGraph and OpService operators,
@@ -50,9 +44,7 @@ public class StreamingOpExecutor extends OpExecutor {
      */
     private QueryIterator executeOptional(Op left, Op right, QueryIterator input) {
         QueryIterator leftIter = QC.execute(left, input, execCxt);
-        ExecutionContext newCxt = new ExecutionContext(execCxt);
-        newCxt.getContext().set(SageSymbols.OPTIONAL_SYMBOL, true);
-        return QC.execute(right, leftIter, newCxt);
+        return OptionalIterator.create(leftIter, right, execCxt);
     }
 
     @Override

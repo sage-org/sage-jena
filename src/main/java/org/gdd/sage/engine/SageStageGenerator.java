@@ -1,26 +1,18 @@
 package org.gdd.sage.engine;
 
-import com.google.common.collect.Lists;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node_Variable;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
-import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.iterator.QueryIterPeek;
-import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
-import org.apache.jena.sparql.engine.join.JoinKey;
-import org.apache.jena.sparql.engine.join.QueryIterHashJoin;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.gdd.sage.core.SageUtils;
 import org.gdd.sage.core.analyzer.FilterRegistry;
 import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
-import org.gdd.sage.engine.iterators.boundjoin.OptBoundJoinIterator;
-import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.model.SageGraph;
 
-import java.util.*;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -75,15 +67,10 @@ public class SageStageGenerator implements StageGenerator {
         // This stage generator only support evaluation of a Sage Graph
         if (g instanceof SageGraph) {
             SageGraph sageGraph = (SageGraph) g;
-            // detect if we need to perform a join or a left join
-            boolean isOptional = execCxt.getContext().isTrue(SageSymbols.OPTIONAL_SYMBOL);
 
             // no input bindings => simply evaluate the BGP
-            if (input.isJoinIdentity() && !isOptional) {
+            if (input.isJoinIdentity()) {
                 return sageGraph.basicGraphPatternFind(pattern, relevantFilters);
-            } else if (isOptional) {
-                // use a bind join approach to evaluate Left join/Optionals
-                return new OptBoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
             }
 
             // if we can download the right pattern in one call, use a hash join instead of a bound join
@@ -92,6 +79,7 @@ public class SageStageGenerator implements StageGenerator {
                 QueryIterator rightIter = new QueryIterPlainWrapper(rightRes.getBindings().iterator());
                 return QueryIterHashJoin.create(input, rightIter, execCxt);
             }*/
+            // otherwise, use a bind join
             return new BoundJoinIterator(input, sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
         }
 

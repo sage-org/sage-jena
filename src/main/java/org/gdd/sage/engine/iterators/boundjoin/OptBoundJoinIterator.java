@@ -4,6 +4,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.engine.iterators.OptionalIterator;
 import org.gdd.sage.http.SageRemoteClient;
 
 import java.util.List;
@@ -11,8 +12,10 @@ import java.util.Map;
 
 /**
  * A special Bound Join for Left joins/Optional clauses
+ * @deprecated Please use the {@link OptionalIterator} for evaluating OPTIONAL clauses.
  * @author Thomas Minier
  */
+@Deprecated
 public class OptBoundJoinIterator extends BoundJoinIterator {
     /**
      * Constructor
