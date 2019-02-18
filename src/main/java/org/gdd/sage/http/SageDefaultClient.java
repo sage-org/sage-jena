@@ -1,5 +1,6 @@
 package org.gdd.sage.http;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.*;
@@ -19,7 +20,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +40,7 @@ import java.util.stream.Collectors;
  * @author Thomas Minier
  */
 public class SageDefaultClient implements SageRemoteClient {
-    private GenericUrl serverURL;
+    private String serverURL;
     private ExecutorService threadPool;
     private ObjectMapper mapper;
     private HttpRequestFactory requestFactory;
@@ -50,12 +49,53 @@ public class SageDefaultClient implements SageRemoteClient {
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String HTTP_JSON_CONTENT_TYPE = "application/json";
 
+    private class JSONPayload {
+        private String query;
+        private String defaultGraph;
+        private String next = null;
+
+        public JSONPayload(String defaultGraph, String query) {
+            this.query = query;
+            this.defaultGraph = defaultGraph;
+        }
+
+        public JSONPayload(String defaultGraph, String query, String next) {
+            this.query = query;
+            this.defaultGraph = defaultGraph;
+            this.next = next;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public String getDefaultGraph() {
+            return defaultGraph;
+        }
+
+        public void setDefaultGraph(String defaultGraph) {
+            this.defaultGraph = defaultGraph;
+        }
+
+        public String getNext() {
+            return next;
+        }
+
+        public void setNext(String next) {
+            this.next = next;
+        }
+    }
+
     /**
      * Constructor
-     * @param url - URL of the SaGe server
+     * @param serverURL - URL of the SaGe server SPARQL service, e.g.,
      */
-    public SageDefaultClient(String url) {
-        serverURL = new GenericUrl(url);
+    public SageDefaultClient(String serverURL) {
+        this.serverURL = serverURL;
         threadPool = Executors.newCachedThreadPool();
         mapper = new ObjectMapper();
         requestFactory = HTTP_TRANSPORT.createRequestFactory(request -> {
@@ -70,10 +110,10 @@ public class SageDefaultClient implements SageRemoteClient {
 
     /**
      * Constructor
-     * @param url - URL of the SaGe server
+     * @param serverURL - URL of the SaGe server
      */
-    public SageDefaultClient(String url, ExecutionStats spy) {
-        serverURL = new GenericUrl(url);
+    public SageDefaultClient(String serverURL, ExecutionStats spy) {
+        this.serverURL = serverURL;
         threadPool = Executors.newCachedThreadPool();
         mapper = new ObjectMapper();
         requestFactory = HTTP_TRANSPORT.createRequestFactory(request -> {
@@ -93,14 +133,39 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return The URL of the remote sage server
      */
     public String getServerURL() {
-        return serverURL.toString();
+        return serverURL;
     }
 
-    private QueryResults doQuery(SageQueryBuilder builder) {
-        String jsonQuery = builder.build();
+    private String buildJSONPayload(String graphURI, String query, Optional<String> next) {
+        JSONPayload payload;
+        if (next.isPresent()) {
+            payload = new JSONPayload(graphURI, query, next.get());
+        } else {
+            payload = new JSONPayload(graphURI, query);
+        }
+        try {
+            return mapper.writeValueAsString(payload);
+        } catch (JsonProcessingException e) {
+            return "";
+        }
+    }
+
+    /**
+     * Send a SPARQL query to the SaGe server
+     * @param query - SPARQL query to send
+     * @param graphURI - URI of the default graph
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    private QueryResults sendQuery(String graphURI, String query, Optional<String> next) {
+        // build GET url
+        GenericUrl url = new GenericUrl(serverURL);
+        String payload = buildJSONPayload(graphURI, query, next);
+        HttpContent postContent = new ByteArrayContent(HTTP_JSON_CONTENT_TYPE, payload.getBytes());
         double startTime = System.nanoTime();
         try {
-            HttpResponse response = sendQuery(jsonQuery).get();
+            HttpRequest request = requestFactory.buildPostRequest(url, postContent);
+            HttpResponse response = request.executeAsync(threadPool).get();
             double endTime = System.nanoTime();
             spy.reportHttpQuery((endTime - startTime) / 1e9);
             return decodeResponse(response);
@@ -112,82 +177,71 @@ public class SageDefaultClient implements SageRemoteClient {
     }
 
     /**
-     * Evaluate a Basic Graph Pattern against a SaGe server, with a next link
-     * @param bgp - BGP to evaluate
-     * @param next - Optional link used to resume query evaluation
-     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
-     */
-    public QueryResults query(BasicPattern bgp, Optional<String> next) {
-        SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
-                .withType("bgp")
-                .withBasicGraphPattern(bgp);
-        if (next.isPresent()) {
-            queryBuilder = queryBuilder.withNextLink(next.get());
-        }
-        return doQuery(queryBuilder);
-    }
-
-    /**
-     * Evaluate a Basic Graph Pattern with filter against a SaGe server
-     * @param bgp - BGP to evaluate
-     * @param filter - Filter expression
-     * @param next - Optional link used to resume query evaluation
-     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
-     */
-    public QueryResults query(BasicPattern bgp, String filter, Optional<String> next) {
-        SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
-                .withType("bgp")
-                .withBasicGraphPattern(bgp);
-                //.withFilter(filter);
-        if (next.isPresent()) {
-            queryBuilder = queryBuilder.withNextLink(next.get());
-        }
-        return doQuery(queryBuilder);
-    }
-
-    /**
-     * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
-     * @param patterns - List of BGPs to evaluate
-     * @param next - Optional link used to resume query evaluation
-     * @return Query results. If the next link is null, then the Union has been completely evaluated.
-     */
-    public QueryResults query(List<BasicPattern> patterns, Optional<String> next) {
-        SageQueryBuilder queryBuilder = SageQueryBuilder.builder()
-                .withType("union")
-                .withUnion(patterns);
-        if (next.isPresent()) {
-            queryBuilder = queryBuilder.withNextLink(next.get());
-        }
-
-        return doQuery(queryBuilder);
-    }
-
-    /**
      * Evaluate a Basic Graph Pattern against a SaGe server, without a next link
+     * @param graphURI - Default Graph URI
      * @param bgp - BGP to evaluate
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public QueryResults query(BasicPattern bgp) {
-        return query(bgp, Optional.empty());
+    public QueryResults query(String graphURI, BasicPattern bgp) {
+        return query(graphURI, bgp, Optional.empty());
+    }
+
+    /**
+     * Evaluate a Basic Graph Pattern against a SaGe server, with a next link
+     * @param graphURI - Default Graph URI
+     * @param bgp - BGP to evaluate
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    public QueryResults query(String graphURI, BasicPattern bgp, Optional<String> next) {
+        String query = SageQueryBuilder.buildBGPQuery(bgp);
+        return sendQuery(graphURI, query, next);
     }
 
     /**
      * Evaluate a Basic Graph Pattern with filter against a SaGe server
+     * @param graphURI - Default Graph URI
      * @param bgp - BGP to evaluate
-     * @param filter - Filter expression
+     * @param filters - Filter expression
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public QueryResults query(BasicPattern bgp, String filter) {
-        return query(bgp, filter, Optional.empty());
+    public QueryResults query(String graphURI, BasicPattern bgp, List<Expr> filters) {
+        return query(graphURI, bgp, filters, Optional.empty());
+    }
+
+    /**
+     * Evaluate a Basic Graph Pattern with filter against a SaGe server
+     * @param graphURI - Default Graph URI
+     * @param bgp - BGP to evaluate
+     * @param filters - Filter expressions
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    public QueryResults query(String graphURI, BasicPattern bgp, List<Expr> filters, Optional<String> next) {
+        String query = SageQueryBuilder.buildBGPQuery(bgp, filters);
+        return sendQuery(graphURI, query, next);
     }
 
     /**
      * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
+     * @param graphURI - Default Graph URI
      * @param patterns - List of BGPs to evaluate
      * @return Query results. If the next link is null, then the Union has been completely evaluated.
      */
-    public QueryResults query(List<BasicPattern> patterns) {
-        return query(patterns, Optional.empty());
+    public QueryResults query(String graphURI, List<BasicPattern> patterns) {
+        return query(graphURI, patterns, Optional.empty());
+    }
+
+    /**
+     * Evaluate an Union of Basic Graph Patterns against a SaGe server, with a next link
+     * @param graphURI - Default Graph URI
+     * @param patterns - List of BGPs to evaluate
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
+     */
+    public QueryResults query(String graphURI, List<BasicPattern> patterns, Optional<String> next) {
+        String query = SageQueryBuilder.buildUnionQuery(patterns);
+        return sendQuery(graphURI, query, next);
     }
 
     /**
@@ -195,18 +249,6 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public void close() {
         threadPool.shutdown();
-    }
-
-    /**
-     * Send an HTTP POST query to the SaGe Server
-     * @param jsonQuery - JSOn query
-     * @return The HTTP Response received from the server
-     * @throws IOException
-     */
-    private Future<HttpResponse> sendQuery(String jsonQuery) throws IOException {
-        HttpContent postContent = new ByteArrayContent(HTTP_JSON_CONTENT_TYPE, jsonQuery.getBytes());
-        HttpRequest request = requestFactory.buildPostRequest(serverURL, postContent);
-        return request.executeAsync(threadPool);
     }
 
     /**
@@ -232,7 +274,7 @@ public class SageDefaultClient implements SageRemoteClient {
                 int index = literal.lastIndexOf("\"@");
                 value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
             } else {
-                value = NodeFactoryExtra.parseNode(literal);
+                value = NodeFactory.createLiteral(literal);
             }
         } else {
             value = NodeFactory.createURI(node);

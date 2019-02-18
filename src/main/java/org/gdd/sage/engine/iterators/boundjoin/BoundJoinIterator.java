@@ -21,6 +21,7 @@ import java.util.*;
  * @author Thomas Minier
  */
 public class BoundJoinIterator extends BlockBufferedIterator {
+    private String graphURI;
     protected SageRemoteClient client;
     protected Optional<String> nextLink;
     private BasicPattern bgp;
@@ -34,8 +35,9 @@ public class BoundJoinIterator extends BlockBufferedIterator {
      * @param bgp    - Basic Graph pattern to join with
      * @param bucketSize - Size of the bound join bucket (15 is the "default" admitted value)
      */
-    public BoundJoinIterator(QueryIterator source, SageRemoteClient client, BasicPattern bgp, int bucketSize, ExecutionContext context) {
+    public BoundJoinIterator(QueryIterator source, String graphURI, SageRemoteClient client, BasicPattern bgp, int bucketSize, ExecutionContext context) {
         super(source, bucketSize, context);
+        this.graphURI = graphURI;
         this.client = client;
         this.bgp = bgp;
         this.nextLink = Optional.empty();
@@ -79,7 +81,7 @@ public class BoundJoinIterator extends BlockBufferedIterator {
     }
 
     protected QueryIterator createIterator(List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
-        return new BoundIterator(client, bag, block, rewritingMap, isContainmentQuery);
+        return new BoundIterator(graphURI, client, bag, block, rewritingMap, isContainmentQuery);
     }
 
 

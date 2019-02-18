@@ -6,7 +6,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.gdd.sage.core.SageUtils;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 import org.junit.Before;
@@ -22,7 +21,7 @@ public class SageUnionIteratorTest {
 
     @Before
     public void setUp() {
-        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql/dbpedia-2016-04");
+        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
     }
 
     public static Node dbr(String suffix) {
@@ -48,7 +47,7 @@ public class SageUnionIteratorTest {
         union.add(bgp_1);
         union.add(bgp_2);
 
-        SageUnionIterator iterator = new SageUnionIterator(httpClient, union);
+        SageUnionIterator iterator = new SageUnionIterator("http://sage.univ-nantes.fr/sparql/dbpedia-2016-04", httpClient, union);
         assertTrue("An iterator with matching results should not be empty", iterator.hasNext());
 
         Binding results = iterator.next();
@@ -81,7 +80,7 @@ public class SageUnionIteratorTest {
         union.add(bgp_1);
         union.add(bgp_2);
 
-        SageUnionIterator iterator = new SageUnionIterator(httpClient, union);
+        SageUnionIterator iterator = new SageUnionIterator("http://sage.univ-nantes.fr/sparql/dbpedia-2016-04", httpClient, union);
         assertFalse("An iterator with no matching results should be empty", iterator.hasNext());
     }
 }

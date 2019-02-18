@@ -21,6 +21,7 @@ import java.util.Optional;
  * @author Thomas Minier
  */
 public class BoundIterator extends BufferedIterator {
+    private String graphURI;
     private SageRemoteClient client;
     protected Optional<String> nextLink;
     protected boolean hasNextPage;
@@ -32,7 +33,8 @@ public class BoundIterator extends BufferedIterator {
 
     private Logger logger;
 
-    public BoundIterator(SageRemoteClient client, List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
+    public BoundIterator(String graphURI, SageRemoteClient client, List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
+        this.graphURI = graphURI;
         this.client = client;
         this.nextLink = Optional.empty();
         this.bag = bag;
@@ -134,7 +136,7 @@ public class BoundIterator extends BufferedIterator {
     @Override
     protected List<Binding> produceBindings() {
         List<Binding> solutions = new LinkedList<>();
-        QueryResults queryResults = client.query(bag, nextLink);
+        QueryResults queryResults = client.query(graphURI, bag, nextLink);
         if (queryResults.hasError()) {
             // an error has occurred, report it
             hasNextPage = false;

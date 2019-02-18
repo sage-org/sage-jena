@@ -28,6 +28,6 @@ public class SageExecutionContext {
     public static void configureDefault(Context execContext, ISageQueryFactory factory) {
         OpExecutorFactory opFactory = new StreamingOpExecutorFactory();
         QC.setFactory(execContext, opFactory);
-        StageBuilder.setGenerator(execContext, SageStageGenerator.createWithFilters(factory.getFilters()));
+        StageBuilder.setGenerator(execContext, SageStageGenerator.createDefault());
     }
 }

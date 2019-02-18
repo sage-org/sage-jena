@@ -3,16 +3,16 @@ package org.gdd.sage;
 import org.apache.jena.query.*;
 import org.gdd.sage.cli.DescribeQueryExecutor;
 import org.gdd.sage.cli.QueryExecutor;
-import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.core.factory.ISageQueryFactory;
 import org.gdd.sage.core.factory.SageQueryFactory;
+import org.gdd.sage.engine.SageExecutionContext;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class SageClientTest {
 
@@ -239,7 +239,7 @@ public class SageClientTest {
     @Ignore
     @Test
     public void watdivQuery() {
-        String url = "http://172.16.8.50:8000/sparql/watdiv";
+        String url = "http://localhost:8000/sparql/watdiv";
         String queryString = "SELECT * WHERE { " +
                 "?v5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://db.uwaterloo.ca/~galuc/wsdbm/Role1> . " +
                 "?v1 <http://schema.org/editor> ?v5 .  ?v5 <http://db.uwaterloo.ca/~galuc/wsdbm/gender> ?v8 . " +
@@ -247,7 +247,7 @@ public class SageClientTest {
                 "?v1 <http://ogp.me/ns#title> ?v4 . " +
                 "?v1 <http://schema.org/expires> ?v7 . " +
                 "?v0 <http://purl.org/goodrelations/serialNumber> ?v2 ." +
-                " ?v0 <http://purl.org/goodrelations/validFrom> ?v3 .  }\n";
+                "?v0 <http://purl.org/goodrelations/validFrom> ?v3 .  }\n";
         Query query = QueryFactory.create(queryString);
         ISageQueryFactory factory = new SageQueryFactory(url, query);
         factory.buildDataset();

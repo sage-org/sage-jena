@@ -16,13 +16,13 @@ public class SageUnionIterator extends SageQueryIterator {
 
     private List<BasicPattern> patterns;
 
-    public SageUnionIterator(SageRemoteClient client, List<BasicPattern> patterns) {
-        super(client);
+    public SageUnionIterator(String graphURI, SageRemoteClient client, List<BasicPattern> patterns) {
+        super(graphURI, client);
         this.patterns = patterns;
     }
 
     @Override
     protected QueryResults query(Optional<String> nextLink) {
-        return client.query(patterns, nextLink);
+        return getClient().query(getGraphURI(), patterns, nextLink);
     }
 }

@@ -12,27 +12,32 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.iterators.SageBGPIterator;
 import org.gdd.sage.engine.iterators.SageUnionIterator;
+import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a remote RDF graph hosted at a Sage server
  * @author Thomas Minier
  */
 public class SageGraph extends GraphBase {
+    private String graphURI;
     private SageRemoteClient httpClient;
 
     /**
      * Constructor
-     * @param url - URL of the SaGe server
+     * @param url - URL of the dataset/graph
      */
     public SageGraph(String url) {
         super();
-        this.httpClient = new SageDefaultClient(url);
+        graphURI = url;
+        // format URL
+        int index = url.lastIndexOf("/sparql/");
+        String serverURL = url.substring(0, index + 7);
+        this.httpClient = new SageDefaultClient(serverURL);
     }
 
     /**
@@ -41,15 +46,19 @@ public class SageGraph extends GraphBase {
      */
     public SageGraph(String url, ExecutionStats spy) {
         super();
-        this.httpClient = new SageDefaultClient(url, spy);
+        graphURI = url;
+        // format URL
+        int index = url.lastIndexOf("/sparql/");
+        String serverURL = url.substring(0, index + 7);
+        this.httpClient = new SageDefaultClient(serverURL, spy);
     }
 
     /**
      * Get the URL of the remote sage server
      * @return The URL of the remote sage server
      */
-    public String getServerURL() {
-        return httpClient.getServerURL();
+    public String getGraphURI() {
+        return graphURI;
     }
 
     /**
@@ -80,7 +89,7 @@ public class SageGraph extends GraphBase {
         Triple t = new Triple(s, p, o);
         BasicPattern bgp = new BasicPattern();
         bgp.add(t);
-        QueryIterator queryIterator = new SageBGPIterator(httpClient, bgp);
+        QueryIterator queryIterator = new SageBGPIterator(getGraphURI(), httpClient, bgp);
         return WrappedIterator.create(queryIterator)
                 .mapWith(binding -> Substitute.substitute(t, binding));
     }
@@ -97,7 +106,7 @@ public class SageGraph extends GraphBase {
      * @return An iterator over solution bindings for the BGP
      */
     public QueryIterator basicGraphPatternFind(BasicPattern bgp) {
-        return new SageBGPIterator(httpClient, bgp);
+        return new SageBGPIterator(getGraphURI(), httpClient, bgp);
     }
 
     /**
@@ -105,12 +114,12 @@ public class SageGraph extends GraphBase {
      * @param bgp - BGP to evaluate
      * @return An iterator over solution bindings for the BGP
      */
-    public QueryIterator basicGraphPatternFind(BasicPattern bgp, String filter) {
+    /*public QueryIterator basicGraphPatternFind(BasicPattern bgp, String filter) {
         if (filter.isEmpty()) {
-            return new SageBGPIterator(httpClient, bgp);
+            return new SageBGPIterator(getGraphURI(), httpClient, bgp);
         }
-        return new SageBGPIterator(httpClient, bgp, filter);
-    }
+        return new SageBGPIterator(getGraphURI(), httpClient, bgp, filter);
+    }*/
 
     /**
      * Evaluate an Union of BGPs using the SaGe server
@@ -118,6 +127,6 @@ public class SageGraph extends GraphBase {
      * @return An iterator over solution bindings for the Union
      */
     public QueryIterator unionFind(List<BasicPattern> patterns) {
-        return new SageUnionIterator(httpClient, patterns);
+        return new SageUnionIterator(getGraphURI(), httpClient, patterns);
     }
 }

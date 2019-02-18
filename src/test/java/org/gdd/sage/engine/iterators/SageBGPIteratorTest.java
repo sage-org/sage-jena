@@ -15,10 +15,11 @@ import static org.junit.Assert.*;
 
 public class SageBGPIteratorTest {
     private SageRemoteClient httpClient;
+    private final String GRAPH_URI = "http://sage.univ-nantes.fr/sparql/dbpedia-2015-04en";
 
     @Before
     public void setUp() {
-        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql/dbpedia-2015-04en");
+        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
     }
 
     private static Node getRDFType() {
@@ -37,7 +38,7 @@ public class SageBGPIteratorTest {
         Triple tp_2 = Triple.create(joinPos, SageBGPIteratorTest.getRDFType(), SageBGPIteratorTest.getYagoURI("PeopleExecutedByCrucifixion"));
         bgp.add(tp_1);
         bgp.add(tp_2);
-        SageBGPIterator iterator = new SageBGPIterator(httpClient, bgp);
+        SageBGPIterator iterator = new SageBGPIterator(GRAPH_URI, httpClient, bgp);
         assertTrue("An iterator over a non-empty set of results should have next results", iterator.hasNext());
         Binding results = iterator.next();
         assertTrue("The results fetched should be an URI", results.get(joinPos).isURI());
@@ -51,7 +52,7 @@ public class SageBGPIteratorTest {
         BasicPattern bgp = new BasicPattern();
         Triple tp = Triple.create(Var.alloc("person"), SageBGPIteratorTest.getRDFType(), SageBGPIteratorTest.getYagoURI("BarackObama"));
         bgp.add(tp);
-        SageBGPIterator iterator = new SageBGPIterator(httpClient, bgp);
+        SageBGPIterator iterator = new SageBGPIterator(GRAPH_URI, httpClient, bgp);
         assertFalse("An iterator over a BGP with no matches should be empty", iterator.hasNext());
     }
 

@@ -15,10 +15,19 @@ import java.util.Optional;
  * @author Thomas Minier
  */
 public abstract class SageQueryIterator extends BufferedIterator {
-    protected SageRemoteClient client;
+    private String graphURI;
+    private SageRemoteClient client;
     protected Optional<String> nextLink;
     protected boolean hasNextPage = false;
     protected Logger logger;
+
+    public String getGraphURI() {
+        return graphURI;
+    }
+
+    public SageRemoteClient getClient() {
+        return client;
+    }
 
     /**
      * This method will be called each time the iterator needs to send another query to the server,
@@ -28,7 +37,8 @@ public abstract class SageQueryIterator extends BufferedIterator {
      */
     protected abstract QueryResults query (Optional<String> nextLink);
 
-    public SageQueryIterator(SageRemoteClient client) {
+    public SageQueryIterator(String graphURI, SageRemoteClient client) {
+        this.graphURI = graphURI;
         this.client = client;
         this.nextLink = Optional.empty();
         logger = ARQ.getExecLogger();
