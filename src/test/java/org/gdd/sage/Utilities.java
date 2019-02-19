@@ -21,7 +21,15 @@ public class Utilities {
         return NodeFactory.createURI("http://dbpedia.org/class/yago/" + suffix);
     }
 
+    public static Node dbo(String suffix) {
+        return NodeFactory.createURI("http://dbpedia.org/ontology/" + suffix);
+    }
+
     public static Node dbr(String suffix) {
         return NodeFactory.createURI("http://dbpedia.org/resource/" + suffix);
+    }
+
+    public static Node dbp(String suffix) {
+        return NodeFactory.createURI("http://dbpedia.org/property/" + suffix);
     }
 }
