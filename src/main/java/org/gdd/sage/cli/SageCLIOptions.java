@@ -50,7 +50,7 @@ public class SageCLIOptions {
         options.addOption(formatOpt);
         options.addOption(measureOpt);
         // boolean options
-        options.addOption("time", false, "Time the query execution");
+        options.addOption("time", false, "Display the the query execution time at the end");
         options.addOption("h", "help", false, "Show help");
     }
 
