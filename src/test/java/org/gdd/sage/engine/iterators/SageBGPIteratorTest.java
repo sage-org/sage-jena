@@ -1,11 +1,10 @@
 package org.gdd.sage.engine.iterators;
 
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.Utilities;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 import org.junit.Before;
@@ -22,20 +21,12 @@ public class SageBGPIteratorTest {
         httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
     }
 
-    private static Node getRDFType() {
-        return NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-    }
-
-    private static Node getYagoURI(String suffix) {
-        return NodeFactory.createURI("http://dbpedia.org/class/yago/" + suffix);
-    }
-
     @Test
     public void testReadBGPWithResults() {
         BasicPattern bgp = new BasicPattern();
         Var joinPos = Var.alloc("person");
-        Triple tp_1 = Triple.create(joinPos, SageBGPIteratorTest.getRDFType(), SageBGPIteratorTest.getYagoURI("Carpenters"));
-        Triple tp_2 = Triple.create(joinPos, SageBGPIteratorTest.getRDFType(), SageBGPIteratorTest.getYagoURI("PeopleExecutedByCrucifixion"));
+        Triple tp_1 = Triple.create(joinPos, Utilities.rdf("type"), Utilities.yago("Carpenters"));
+        Triple tp_2 = Triple.create(joinPos, Utilities.rdf("type"), Utilities.yago("PeopleExecutedByCrucifixion"));
         bgp.add(tp_1);
         bgp.add(tp_2);
         SageBGPIterator iterator = new SageBGPIterator(GRAPH_URI, httpClient, bgp);
@@ -50,7 +41,7 @@ public class SageBGPIteratorTest {
     @Test
     public void TestNoResults() {
         BasicPattern bgp = new BasicPattern();
-        Triple tp = Triple.create(Var.alloc("person"), SageBGPIteratorTest.getRDFType(), SageBGPIteratorTest.getYagoURI("BarackObama"));
+        Triple tp = Triple.create(Var.alloc("person"), Utilities.rdf("type"), Utilities.yago("BarackObama"));
         bgp.add(tp);
         SageBGPIterator iterator = new SageBGPIterator(GRAPH_URI, httpClient, bgp);
         assertFalse("An iterator over a BGP with no matches should be empty", iterator.hasNext());

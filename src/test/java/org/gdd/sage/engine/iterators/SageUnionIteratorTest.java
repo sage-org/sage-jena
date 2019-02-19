@@ -1,11 +1,10 @@
 package org.gdd.sage.engine.iterators;
 
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.Utilities;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 import org.junit.Before;
@@ -24,24 +23,16 @@ public class SageUnionIteratorTest {
         httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
     }
 
-    public static Node dbr(String suffix) {
-        return NodeFactory.createURI("http://dbpedia.org/resource/" + suffix);
-    }
-
-    public static Node rdfs(String suffix) {
-        return NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#" + suffix);
-    }
-
     @Test
     public void testUnionWithResults() {
         // search for the label of Michale Jackson
         BasicPattern bgp_1 = new BasicPattern();
         Var label_mj = Var.alloc("label_mj");
-        bgp_1.add(Triple.create(SageUnionIteratorTest.dbr("Michael_Jackson"), SageUnionIteratorTest.rdfs("label"), label_mj));
+        bgp_1.add(Triple.create(Utilities.dbr("Michael_Jackson"), Utilities.rdfs("label"), label_mj));
         // search for the label of Brad Pitt
         BasicPattern bgp_2 = new BasicPattern();
         Var label_bp = Var.alloc("label_bp");
-        bgp_2.add(Triple.create(SageUnionIteratorTest.dbr("Brad_Pitt"), SageUnionIteratorTest.rdfs("label"), label_bp));
+        bgp_2.add(Triple.create(Utilities.dbr("Brad_Pitt"), Utilities.rdfs("label"), label_bp));
 
         List<BasicPattern> union = new ArrayList<>();
         union.add(bgp_1);
@@ -70,11 +61,11 @@ public class SageUnionIteratorTest {
         // search for the label of Michale Jackson
         BasicPattern bgp_1 = new BasicPattern();
         Var label_mj = Var.alloc("label_1");
-        bgp_1.add(Triple.create(SageUnionIteratorTest.dbr("Michael_Jacksonnn"), SageUnionIteratorTest.rdfs("label"), label_mj));
+        bgp_1.add(Triple.create(Utilities.dbr("Michael_Jacksonnn"), Utilities.rdfs("label"), label_mj));
         // search for the label of Brad Pitt
         BasicPattern bgp_2 = new BasicPattern();
         Var label_bp = Var.alloc("label_2");
-        bgp_2.add(Triple.create(SageUnionIteratorTest.dbr("Brad_Pitttt"), SageUnionIteratorTest.rdfs("label"), label_bp));
+        bgp_2.add(Triple.create(Utilities.dbr("Brad_Pitttt"), Utilities.rdfs("label"), label_bp));
 
         List<BasicPattern> union = new ArrayList<>();
         union.add(bgp_1);

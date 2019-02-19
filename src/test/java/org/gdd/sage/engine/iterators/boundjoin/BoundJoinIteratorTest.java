@@ -1,12 +1,11 @@
 package org.gdd.sage.engine.iterators.boundjoin;
 
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.Utilities;
 import org.gdd.sage.engine.iterators.SageBGPIterator;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
@@ -24,13 +23,9 @@ public class BoundJoinIteratorTest {
         httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
     }
 
-    public static Node getYagoURI(String suffix) {
-        return NodeFactory.createURI("http://dbpedia.org/class/yago/" + suffix);
-    }
-
     public static QueryIterator getSource(String graphURI, SageRemoteClient httpClient) {
         BasicPattern bgp = new BasicPattern();
-        Triple tp = Triple.create(Var.alloc("person"), NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), getYagoURI("Carpenters"));
+        Triple tp = Triple.create(Var.alloc("person"), Utilities.rdf("type"), Utilities.yago("Carpenters"));
         bgp.add(tp);
         return new SageBGPIterator(graphURI, httpClient, bgp);
     }
@@ -42,7 +37,7 @@ public class BoundJoinIteratorTest {
         BasicPattern bgp = new BasicPattern();
         Var joinPos = Var.alloc("person");
         Var label = Var.alloc("label");
-        Triple tp = Triple.create(joinPos, NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#label"), label);
+        Triple tp = Triple.create(joinPos, Utilities.rdfs("label"), label);
         bgp.add(tp);
 
         QueryIterator iterator = new BoundJoinIterator(source, GRAPH_URI, httpClient, bgp, bucketSize, null);
@@ -65,7 +60,7 @@ public class BoundJoinIteratorTest {
         BasicPattern bgp = new BasicPattern();
         Var joinPos = Var.alloc("person");
         Var label = Var.alloc("label");
-        Triple tp = Triple.create(joinPos, NodeFactory.createURI("http://www.w3.org/2000/01/rdf-schema#toto"), label);
+        Triple tp = Triple.create(joinPos, Utilities.example("toto"), label);
         bgp.add(tp);
 
         QueryIterator iterator = new BoundJoinIterator(source, GRAPH_URI, httpClient, bgp, bucketSize, null);
