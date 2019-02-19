@@ -1,4 +1,4 @@
-package org.gdd.sage.engine.iterators;
+package org.gdd.sage.engine.iterators.optional;
 
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.graph.Node;

@@ -15,16 +15,18 @@ public class SageStatisticsDeserializer extends JsonDeserializer<SageStatistics>
         double exportTime = node.get("export").asDouble();
         double importTime = node.get("import").asDouble();
         SageStatistics sageStatistics = new SageStatistics(exportTime, importTime);
-        // FIX ME the following code throws an exception when the "cardinalities" field is empty
-        /*ArrayNode cardsNode = (ArrayNode) node.get("cardinalities");
-        for(JsonNode cardNode: cardsNode) {
-            JsonNode tripleNode = cardNode.get("triple");
-            sageStatistics.addTriple(
-                    tripleNode.get("subject").asText(),
-                    tripleNode.get("predicate").asText(),
-                    tripleNode.get("object").asText(),
-                    cardNode.get("cardinality").asInt());
-        }*/
+        // ensure that the "cardinalities" field is an array
+        if (node.get("cardinalities").isArray()) {
+            ArrayNode cardsNode = (ArrayNode) node.get("cardinalities");
+            for(JsonNode cardNode: cardsNode) {
+                JsonNode tripleNode = cardNode.get("triple");
+                sageStatistics.addTriple(
+                        tripleNode.get("subject").asText(),
+                        tripleNode.get("predicate").asText(),
+                        tripleNode.get("object").asText(),
+                        cardNode.get("cardinality").asInt());
+            }
+        }
         return sageStatistics;
     }
 }

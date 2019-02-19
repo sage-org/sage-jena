@@ -13,7 +13,7 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.QC;
-import org.gdd.sage.engine.iterators.OptionalIterator;
+import org.gdd.sage.engine.iterators.optional.OptionalIterator;
 
 /**
  * An OpExecutor that streams intermediate results for OpGraph and OpService operators,
