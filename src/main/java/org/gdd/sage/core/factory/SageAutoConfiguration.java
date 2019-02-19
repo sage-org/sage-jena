@@ -14,16 +14,15 @@ import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * Factory used to build the execution environment for xecuting a SPARQL query with a Sage server
+ * Factory used to build the execution environment for executing a SPARQL query with a Sage server
  * For a query with SERVICE clauses, this factory generate the associated localized query and the
  * DatasetGraph that holds the graphs of the federation.
  * @author Thomas Minier
  */
-public class SageQueryFactory implements ISageQueryFactory {
+public class SageAutoConfiguration implements SageConfigurationFactory {
     private String defaultUrl;
     private Query query;
     private Dataset federation;
@@ -31,14 +30,14 @@ public class SageQueryFactory implements ISageQueryFactory {
     private ExecutionStats spy;
     private FilterRegistry filters;
 
-    public SageQueryFactory(String defaultUrl, Query query) {
+    public SageAutoConfiguration(String defaultUrl, Query query) {
         this.defaultUrl = defaultUrl;
         this.query = query;
         this.uris = new HashSet<>();
         spy = new ExecutionStats();
     }
 
-    public SageQueryFactory(String defaultUrl, Query query, ExecutionStats spy) {
+    public SageAutoConfiguration(String defaultUrl, Query query, ExecutionStats spy) {
         this.defaultUrl = defaultUrl;
         this.query = query;
         this.uris = new HashSet<>();

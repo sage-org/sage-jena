@@ -7,8 +7,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.gdd.sage.engine.SageExecutionContext;
-import org.gdd.sage.core.factory.ISageQueryFactory;
-import org.gdd.sage.core.factory.SageQueryFactory;
+import org.gdd.sage.core.factory.SageAutoConfiguration;
 import org.gdd.sage.http.ExecutionStats;
 import org.slf4j.Logger;
 
@@ -58,7 +57,7 @@ public class CLI {
                 // Init Sage dataset (maybe federated)
                 ExecutionStats spy = new ExecutionStats();
                 Query query = QueryFactory.create(queryString);
-                ISageQueryFactory factory = new SageQueryFactory(url, query, spy);
+                SageAutoConfiguration factory = new SageAutoConfiguration(url, query, spy);
                 factory.buildDataset();
                 query = factory.getQuery();
                 Dataset federation = factory.getDataset();

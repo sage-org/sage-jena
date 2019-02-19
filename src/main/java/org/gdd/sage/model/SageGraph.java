@@ -1,7 +1,6 @@
 package org.gdd.sage.model;
 
 import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.sparql.core.BasicPattern;
@@ -12,7 +11,6 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.iterators.SageBGPIterator;
 import org.gdd.sage.engine.iterators.SageUnionIterator;
-import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;

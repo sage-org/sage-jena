@@ -3,8 +3,7 @@ package org.gdd.sage;
 import org.apache.jena.query.*;
 import org.gdd.sage.cli.DescribeQueryExecutor;
 import org.gdd.sage.cli.QueryExecutor;
-import org.gdd.sage.core.factory.ISageQueryFactory;
-import org.gdd.sage.core.factory.SageQueryFactory;
+import org.gdd.sage.core.factory.SageAutoConfiguration;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class SageClientTest {
                 "  OPTIONAL { ?person dbp:dateOfDeath ?deathDate. }\n" +
                 "}";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -56,7 +55,7 @@ public class SageClientTest {
                 "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
                 "} LIMIT 10\n";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -86,7 +85,7 @@ public class SageClientTest {
                 "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
                 "}\n";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -110,7 +109,7 @@ public class SageClientTest {
                 "   }\n" +
                 "}";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -133,7 +132,7 @@ public class SageClientTest {
                 "?x <http://dbpedia.org/ontology/thumbnail> ?o2 . }\n" +
                 "} LIMIT 1\n";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -151,7 +150,7 @@ public class SageClientTest {
         String url = "http://sage.univ-nantes.fr/sparql/swdf-2012";
         String queryString = "SELECT * WHERE { ?s <http://www.w3.org/2002/07/owl#sameAs> ?x .  SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-3-5-1> {  ?x <http://dbpedia.org/ontology/knownFor> ?o . }  } LIMIT 1";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -182,7 +181,7 @@ public class SageClientTest {
                 "  FILTER (!LANGMATCHES(LANG(?title), 'EN'))\n" +
                 "}\n";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -206,7 +205,7 @@ public class SageClientTest {
                 "  OPTIONAL { ?movie <http://dbpedia.org/ontology/musicComposer> <http://dbpedia.org/resource/Paul_Buckmaster> }\n" +
                 "}";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -227,7 +226,7 @@ public class SageClientTest {
                 "DESCRIBE ?x\n" +
                 "WHERE { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review4194> rev:reviewer ?x }";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
@@ -249,7 +248,7 @@ public class SageClientTest {
                 "?v0 <http://purl.org/goodrelations/serialNumber> ?v2 ." +
                 "?v0 <http://purl.org/goodrelations/validFrom> ?v3 .  }\n";
         Query query = QueryFactory.create(queryString);
-        ISageQueryFactory factory = new SageQueryFactory(url, query);
+        SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
