@@ -40,6 +40,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 32 solutions bindings", 32, solutions.size());
         }
+        dataset.close();
     }
 
     @Test
@@ -66,6 +67,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 10 solutions bindings", 10, solutions.size());
         }
+        dataset.close();
     }
 
 
@@ -96,6 +98,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 218 solutions bindings", 218, solutions.size());
         }
+        dataset.close();
     }
 
     @Test
@@ -120,6 +123,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
+        dataset.close();
     }
 
     @Test
@@ -143,6 +147,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
+        dataset.close();
     }
 
     @Test
@@ -164,6 +169,7 @@ public class SageClientTest {
             });
             assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
+        dataset.close();
     }
 
     @Test
@@ -192,6 +198,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 11 solutions bindings", 11, solutions.size());
         }
+        dataset.close();
     }
 
     @Ignore
@@ -217,6 +224,7 @@ public class SageClientTest {
             results.forEachRemaining(solutions::add);
             assertEquals("It should find 40 solutions bindings", 40, solutions.size());
         }
+        dataset.close();
     }
 
     @Ignore
@@ -234,6 +242,7 @@ public class SageClientTest {
         SageExecutionContext.configureDefault(ARQ.getContext());
         QueryExecutor executor = new DescribeQueryExecutor("ttl");
         executor.execute(dataset, query);
+        dataset.close();
     }
 
     @Ignore
@@ -263,5 +272,6 @@ public class SageClientTest {
             });
             assertEquals("It should find 6 solutions bindings", 6, solutions.size());
         }
+        dataset.close();
     }
 }

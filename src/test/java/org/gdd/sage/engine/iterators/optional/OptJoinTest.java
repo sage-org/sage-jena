@@ -11,6 +11,7 @@ import org.gdd.sage.engine.iterators.SageBGPIterator;
 import org.gdd.sage.engine.iterators.base.UnionIterator;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,6 +29,11 @@ public class OptJoinTest {
     @Before
     public void setUp() {
         httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        httpClient.close();
     }
 
     public static BasicPattern getLeftNode() {

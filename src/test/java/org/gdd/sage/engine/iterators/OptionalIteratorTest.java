@@ -14,6 +14,7 @@ import org.gdd.sage.Utilities;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -27,6 +28,11 @@ public class OptionalIteratorTest {
     @Before
     public void setUp() {
         httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        httpClient.close();
     }
 
     public static QueryIterator getSource(String graphURI, SageRemoteClient httpClient) {

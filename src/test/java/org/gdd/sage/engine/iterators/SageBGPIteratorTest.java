@@ -7,6 +7,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.gdd.sage.Utilities;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,6 +20,11 @@ public class SageBGPIteratorTest {
     @Before
     public void setUp() {
         httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        httpClient.close();
     }
 
     @Test
