@@ -11,13 +11,6 @@ public class SageCLIOptions {
     private Options options;
 
     public SageCLIOptions() {
-        Option urlOpt = Option.builder("u")
-                .longOpt("url")
-                .argName("url")
-                .hasArg()
-                .desc("URL of the SaGe server")
-                .build();
-
         Option queryOpt = Option.builder("q")
                 .longOpt("query")
                 .argName("sparql-query")
@@ -48,7 +41,6 @@ public class SageCLIOptions {
 
         // register options
         options = new Options();
-        options.addOption(urlOpt);
         options.addOption(queryOpt);
         options.addOption(fileOpt);
         options.addOption(formatOpt);

@@ -6,6 +6,8 @@ import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
+import org.gdd.sage.core.factory.SageConfigurationFactory;
+import org.gdd.sage.core.factory.SageFederatedConfiguration;
 import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.core.factory.SageAutoConfiguration;
 import org.gdd.sage.http.ExecutionStats;
@@ -17,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,13 +35,17 @@ public class CLI {
             CommandLine cmd = options.parseArgs(args);
             if (cmd.hasOption("help")) {
                 options.printHelp();
-            } else if ((!cmd.hasOption("url")) && ((!cmd.hasOption("query")) || (!cmd.hasOption("file")))) {
-                logger.error("Missing required parameters." +
-                        "Parameters --url and --query of --file are required." +
-                        "\nSee sage-query --help for more informations");
+            } else if (cmd.getArgList().isEmpty()) {
+                System.err.println("Missing required arguments. You must pass the URL of at least one RDF Graph to query.\n" +
+                        "See sage-jena --help for more informations");
+                System.exit(1);
+            } else if (((!cmd.hasOption("query")) && (!cmd.hasOption("file")))) {
+                System.err.println("Missing required options.\n" +
+                        "Parameters --query or --file are required.\n" +
+                        "See sage-jena --help for more informations");
                 System.exit(1);
             } else {
-                String url = cmd.getOptionValue("url");
+                List<String> urls = cmd.getArgList();
                 String queryString;
                 String format = "xml";
                 if (cmd.hasOption("format")) {
@@ -58,17 +65,29 @@ public class CLI {
                 } else {
                     queryString = cmd.getOptionValue("query");
                 }
-                // Init Sage dataset (maybe federated)
+
                 ExecutionStats spy = new ExecutionStats();
                 Query query = QueryFactory.create(queryString);
-                SageAutoConfiguration factory = new SageAutoConfiguration(url, query, spy);
+
+                // get the auto-configuration factory based on query execution context (federated or not)
+                SageConfigurationFactory factory;
+                if (urls.size() > 1) {
+                    factory = new SageFederatedConfiguration(urls, query, spy);
+                } else {
+                    factory = new SageAutoConfiguration(urls.get(0), query, spy);
+                }
+
+                // Init Sage dataset (maybe federated)
                 factory.buildDataset();
                 query = factory.getQuery();
                 Dataset federation = factory.getDataset();
+
                 // Plug-in the custom ARQ engine for Sage graphs
                 SageExecutionContext.configureDefault(ARQ.getContext());
+
                 // Evaluate SPARQL query
                 QueryExecutor executor;
+
                 if (query.isSelectType()) {
                     executor = new SelectQueryExecutor(format);
                 } else if (query.isAskType()) {

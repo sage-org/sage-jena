@@ -20,8 +20,14 @@ Unzip it, and use `bin/sage-jena` to evaluate SPARQL queries using a Sage server
 
 # Usage
 
+## Example usage
+
+`bin/sage-jena http://sage.univ-nantes.fr/sparql/dbpedia-2016-04 -q "SELECT * WHERE { ?s ?p ?o } LIMIT 100"`
+
+## Reference
+
 ```
-usage: bin/sage-jena
+usage: bin/sage-jena <graph-url> [options]
  -f,--file <file>            File containing a SPARQL query to execute
     --format <format>        Results format (Result set: text, XML, JSON,
                              CSV, TSV; Graph: RDF serialization)
@@ -29,5 +35,6 @@ usage: bin/sage-jena
  -q,--query <sparql-query>   SPARQL query to execute (passed in
                              command-line)
  -time                       Time the query execution
- -u,--url <url>              URL of the SaGe server
 ```
+
+
