@@ -5,7 +5,8 @@ import org.apache.jena.graph.Triple;
 import java.util.Objects;
 
 /**
- * A Triple pattern localized with a RDF graph URI
+ * A Triple pattern localized with a RDF graph URI.
+ * @author Thomas Minier
  */
 class LocalizedPattern implements Comparable<LocalizedPattern> {
     private String source;

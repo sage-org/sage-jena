@@ -14,20 +14,36 @@ import org.apache.jena.sparql.algebra.op.OpJoin;
 import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.algebra.op.OpUnion;
 import org.apache.jena.sparql.core.BasicPattern;
+import org.gdd.sage.federated.strategy.AskStrategy;
+import org.gdd.sage.federated.strategy.SourceSelectionStrategy;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
 
 import java.util.*;
 
 /**
- * Performs an ASK-based source selection to localize all basic graph pattern in a SPARQL query.
+ * Performs an source selection and a query decomposition to turn a SPARQL query into a federated SPARQL query.
  * This class also applies the "exclusive groups" and "join distribution over unions" optimizations.
+ * @author Thomas Minier
  */
 public class SourceSelection extends TransformBase {
     private Map<String, SageRemoteClient> httpClients;
+    private SourceSelectionStrategy selectionStrategy;
 
+    /**
+     * Default constructor
+     */
     public SourceSelection() {
         httpClients = new HashMap<>();
+        selectionStrategy = new AskStrategy();
+    }
+
+    /**
+     * Constructor with parametric source selection strategy
+     * @param selectionStrategy - The source selection strategy to use
+     */
+    public SourceSelection(SourceSelectionStrategy selectionStrategy) {
+        httpClients = new HashMap<>();
+        this.selectionStrategy = selectionStrategy;
     }
 
     /**
@@ -67,20 +83,6 @@ public class SourceSelection extends TransformBase {
     public Op localize(Query query) {
         Op plan = Algebra.compile(query);
         return Transformer.transform(this, plan);
-    }
-
-    /**
-     * Perform an ASK-based source selection, to determine if a triple pattern has matching RDF triples in a RDF graph.
-     * @param pattern - Triple pattern to test
-     * @param graphURI - RDF graph to test
-     * @param httpClient - HTTP client used to perform the ASK query
-     * @return True if the pattern has matching results in this RDF graph, False otherwise
-     */
-    private boolean ask(Triple pattern, String graphURI, SageRemoteClient httpClient) {
-        BasicPattern bgp = new BasicPattern();
-        bgp.add(pattern);
-        QueryResults queryResults = httpClient.query(graphURI, bgp);
-        return !queryResults.getBindings().isEmpty();
     }
 
     /**
@@ -135,7 +137,7 @@ public class SourceSelection extends TransformBase {
         for(Triple pattern: opBGP.getPattern().getList()) {
             Set<LocalizedPattern> relevantSources = new HashSet<>();
             for(Map.Entry<String, SageRemoteClient> source: httpClients.entrySet()) {
-                if(ask(pattern, source.getKey(), source.getValue())) {
+                if(selectionStrategy.isRelevant(pattern, source.getKey(), source.getValue())) {
                     relevantSources.add(new LocalizedPattern(source.getKey(), pattern));
                 }
             }
