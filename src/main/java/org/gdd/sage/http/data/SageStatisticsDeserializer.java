@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.io.IOException;
 
+/**
+ * Jackson deserializer for the JSON statistics found in a page of results
+ * @author Thomas Minier
+ */
 public class SageStatisticsDeserializer extends JsonDeserializer<SageStatistics> {
     @Override
     public SageStatistics deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {

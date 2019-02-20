@@ -5,6 +5,10 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Results from the execution of a SPARQL query
+ * @author Thomas Minier
+ */
 public class QueryResults {
     private List<Binding> bindings;
     private Optional<String> next;

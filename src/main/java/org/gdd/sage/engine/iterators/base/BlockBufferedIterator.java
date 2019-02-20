@@ -11,6 +11,10 @@ import org.apache.jena.sparql.serializer.SerializationContext;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * A BufferedIterator that process block of mappings instead of single mappings.
+ * @author Thomas Minier
+ */
 public abstract class BlockBufferedIterator extends QueryIteratorBase {
     private QueryIterator source;
     private List<Binding> bucket;

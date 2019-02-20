@@ -5,6 +5,10 @@ import org.apache.jena.graph.Triple;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Statistics found in a page of results
+ * @author Thomas Minier
+ */
 public class SageStatistics {
     private double exportTime;
     private double importTime;

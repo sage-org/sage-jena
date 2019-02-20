@@ -6,6 +6,10 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.iterator.QueryIteratorBase;
 import org.apache.jena.sparql.serializer.SerializationContext;
 
+/**
+ * Utility iterator: makes the union of two other iterators
+ * @author Thomas Minier
+ */
 public class UnionIterator extends QueryIteratorBase {
     private QueryIterator left;
     private QueryIterator right;

@@ -7,6 +7,10 @@ import org.gdd.sage.http.data.QueryResults;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Generic interface for an HTTP client that sends SPARQL queries to a Sage server.
+ * @author Thomas Minier
+ */
 public interface SageRemoteClient {
     /**
      * Evaluate a Basic Graph Pattern against a SaGe server, without a next link

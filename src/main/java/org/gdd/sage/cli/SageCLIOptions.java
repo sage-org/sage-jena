@@ -2,6 +2,10 @@ package org.gdd.sage.cli;
 
 import org.apache.commons.cli.*;
 
+/**
+ * CLI options sued by the Sage CLI.
+ * @author Thomas Minier
+ */
 public class SageCLIOptions {
 
     private Options options;

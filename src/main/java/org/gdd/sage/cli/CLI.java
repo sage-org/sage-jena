@@ -19,6 +19,10 @@ import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.util.Optional;
 
+/**
+ * Main class for the Sage command-line interface
+ * @author Thomas Minier
+ */
 public class CLI {
 
     public static void main(String[] args) {

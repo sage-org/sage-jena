@@ -9,6 +9,7 @@ import org.gdd.sage.core.factory.SageAutoConfiguration;
 /**
  * Used to configure the default Sage Execution context, by registering a {@link StreamingOpExecutor} as OpExecutor
  * and a {@link SageStageGenerator} as StageGenerator
+ * @author Thomas Minier
  */
 public class SageExecutionContext {
     /**

@@ -24,6 +24,7 @@ import java.util.LinkedList;
  * 2) Evaluates the OPTIONAL clause with each input binding.
  * 3) If an input binding has results with the left-join, remove it from the local buffer.
  * 4) When all input bindings have been evaluated, forward all bindings that didn't yield results using the buffer
+ * @author Thomas Minier
  */
 public class OptionalIterator extends QueryIteratorBase {
     private QueryIterator internalIterator;

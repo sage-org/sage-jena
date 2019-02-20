@@ -18,7 +18,7 @@ import org.gdd.sage.http.SageRemoteClient;
 import java.util.List;
 
 /**
- * Represents a remote RDF graph hosted at a Sage server
+ * Represents a remote RDF graph hosted by a Sage server
  * @author Thomas Minier
  */
 public class SageGraph extends GraphBase {

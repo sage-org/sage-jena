@@ -9,6 +9,10 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
+/**
+ * An iterator with an internal buffer, capable of producing several solutions per cycle.
+ * @author Thomas Minier
+ */
 public abstract class BufferedIterator extends QueryIteratorBase {
 
     protected Deque<Binding> internalBuffer;
