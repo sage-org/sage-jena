@@ -1,33 +1,35 @@
 package org.gdd.sage.core;
 
 import org.apache.jena.graph.Triple;
-import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+/**
+ * Utilities functions
+ * @author Thomas Minier
+ */
 public class SageUtils {
 
-    public static List<Var> getVariables(Triple triple) {
-        List<Var> variables = new LinkedList<>();
-        if (triple.getSubject().isVariable()) {
-            variables.add((Var) triple.getSubject());
-        }
-        if (triple.getPredicate().isVariable()) {
-            variables.add((Var) triple.getPredicate());
-        }
-        if (triple.getObject().isVariable()) {
-            variables.add((Var) triple.getObject());
-        }
-        return variables;
-    }
+    private SageUtils() {}
 
-    public static List<Var> getVariables(BasicPattern bgp) {
-        List<Var> variables = new LinkedList<>();
-        for(Triple triple: bgp.getList()) {
-            variables.addAll(getVariables(triple));
+    /**
+     * Get the set of SPARQL variables in a triple pattern
+     * @param pattern - Triple pattern to analyze
+     * @return The set of SPARQL variables in the triple pattern
+     */
+    public static Set<Var> getVariables(Triple pattern) {
+        Set<Var> res = new HashSet<>();
+        if(pattern.getSubject().isVariable() && !pattern.getSubject().toString().startsWith("??")) {
+            res.add((Var) pattern.getSubject());
         }
-        return variables;
+        if(pattern.getPredicate().isVariable() && pattern.getPredicate().toString().startsWith("??")) {
+            res.add((Var) pattern.getPredicate());
+        }
+        if(pattern.getObject().isVariable() && !pattern.getObject().toString().startsWith("??")) {
+            res.add((Var) pattern.getObject());
+        }
+        return res;
     }
 }

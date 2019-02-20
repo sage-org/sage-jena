@@ -15,9 +15,10 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.iterator.QueryIterConcat;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.QC;
-import org.gdd.sage.engine.iterators.base.UnionIterator;
+import org.gdd.sage.core.SageUtils;
 import org.gdd.sage.engine.iterators.optional.OptJoin;
 import org.gdd.sage.engine.iterators.optional.OptionalIterator;
 
@@ -45,25 +46,6 @@ public class StreamingOpExecutor extends OpExecutor {
     }
 
     /**
-     * Get the set of SPARQL variables in a triple pattern
-     * @param pattern - Triple pattern to analyze
-     * @return The set of SPARQL variables in the triple pattern
-     */
-    private Set<Var> getVariables(Triple pattern) {
-        Set<Var> res = new HashSet<>();
-        if(pattern.getSubject().isVariable() && !pattern.getSubject().toString().startsWith("??")) {
-            res.add((Var) pattern.getSubject());
-        }
-        if(pattern.getPredicate().isVariable() && pattern.getPredicate().toString().startsWith("??")) {
-            res.add((Var) pattern.getPredicate());
-        }
-        if(pattern.getObject().isVariable() && !pattern.getObject().toString().startsWith("??")) {
-            res.add((Var) pattern.getObject());
-        }
-        return res;
-    }
-
-    /**
      * Exxecute a Left Join/Optional with a pure pipeline logic
      * @param left - Left operator
      * @param right - Right operator
@@ -84,18 +66,18 @@ public class StreamingOpExecutor extends OpExecutor {
             // SPARQL variables in P_1
             Set<Var> leftVariables = new HashSet<>();
             for(Triple pattern: leftBGP.getList()) {
-                leftVariables.addAll(getVariables(pattern));
+                leftVariables.addAll(SageUtils.getVariables(pattern));
             }
             // SPARQL variables in P_1 JOIN P_2
             Set<Var> joinVariables = new HashSet<>(leftVariables);
             for(Triple pattern: rightBGP.getList()) {
-                joinVariables.addAll(getVariables(pattern));
+                joinVariables.addAll(SageUtils.getVariables(pattern));
             }
 
             // build iterators to evaluate the OptJoin
-            QueryIterator leftSource = QC.execute(new OpBGP(join), input, execCxt);
-            QueryIterator rightSource = QC.execute(new OpBGP(leftBGP), input, execCxt);
-            QueryIterator source = new UnionIterator(leftSource, rightSource);
+            QueryIterConcat source = new QueryIterConcat(execCxt);
+            source.add(QC.execute(new OpBGP(join), input, execCxt));
+            source.add(QC.execute(new OpBGP(leftBGP), input, execCxt));
             return new OptJoin(source, leftVariables, joinVariables);
         }
         // otherwise, use a regular OptionalIterator
