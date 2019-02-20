@@ -2,6 +2,7 @@ package org.gdd.sage.federated;
 
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.op.OpBGP;
 import org.apache.jena.sparql.algebra.op.OpJoin;
 import org.apache.jena.sparql.algebra.op.OpService;
@@ -35,8 +36,9 @@ public class SourceSelectionTest {
 
     @Test
     public void testLocalizeSimpleBGP() {
-        String query = "SELECT * WHERE { <http://dbpedia.org/resource/Albert_Einstein> <http://www.w3.org/2002/07/owl#sameAs> ?cc . ?s <http://www.w3.org/2000/01/rdf-schema#label> ?name. }";
+        String query = "SELECT * WHERE { <http://dbpedia.org/resource/Albert_Einstein> <http://www.w3.org/2002/07/owl#sameAs> ?cc . ?cc <http://www.w3.org/2000/01/rdf-schema#label> ?name. }";
         Op root = sourceSelection.localize(query);
+        System.out.println(OpAsQuery.asQuery(root).serialize());
 
         assertTrue("The plan root must be an UNION", root instanceof OpUnion);
         OpUnion union = (OpUnion) root;
@@ -65,7 +67,7 @@ public class SourceSelectionTest {
         bgp = (OpBGP) rightService.getSubOp();
         assertEquals("The BGP must be of size 1", 1, bgp.getPattern().size());
         pattern = bgp.getPattern().get(0);
-        assertEquals("The pattern's subject must be ?s", "?s", pattern.getSubject().toString());
+        assertEquals("The pattern's subject must be ?cc", "?cc", pattern.getSubject().toString());
         assertEquals("The pattern's predicate must be <http://www.w3.org/2000/01/rdf-schema#label>", "http://www.w3.org/2000/01/rdf-schema#label", pattern.getPredicate().toString());
         assertEquals("The pattern's object must be ?name", "?name", pattern.getObject().toString());
 
@@ -85,7 +87,7 @@ public class SourceSelectionTest {
 
         // verify second pattern
         pattern = bgp.getPattern().get(1);
-        assertEquals("The pattern's subject must be ?s", "?s", pattern.getSubject().toString());
+        assertEquals("The pattern's subject must be ?cc", "?cc", pattern.getSubject().toString());
         assertEquals("The pattern's predicate must be <http://www.w3.org/2000/01/rdf-schema#label>", "http://www.w3.org/2000/01/rdf-schema#label", pattern.getPredicate().toString());
         assertEquals("The pattern's object must be ?name", "?name", pattern.getObject().toString());
     }
