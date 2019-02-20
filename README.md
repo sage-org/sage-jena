@@ -20,12 +20,6 @@ Unzip it, and use `bin/sage-jena` to evaluate SPARQL queries using a Sage server
 
 # Usage
 
-## Example usage
-
-`bin/sage-jena http://sage.univ-nantes.fr/sparql/dbpedia-2016-04 -q "SELECT * WHERE { ?s ?p ?o } LIMIT 100"`
-
-## Reference
-
 ```
 usage: bin/sage-jena <graph-url> [options]
  -f,--file <file>            File containing a SPARQL query to execute
@@ -37,4 +31,25 @@ usage: bin/sage-jena <graph-url> [options]
  -time                       Time the query execution
 ```
 
+## Example: simple query
+
+The following example finds the first 100 RDf triples in the DBpedia 2016 dataset
+
+```
+bin/sage-jena http://sage.univ-nantes.fr/sparql/dbpedia-2016-04 -q "SELECT * WHERE { ?s ?p ?o } LIMIT 100"
+```
+
+## Example: federated SPARQL query
+
+The next example shows how to execute a federated SPARQL in the FedX/Anapasid style.   
+You simply have ot provide a set of RDF graphs urls and a SPARQL query, and
+then **the query engine will automatically rewrite the query** by using source selection and query decomposition techniques.
+
+```bash
+# store the query in a variable (to simplify the example)
+export QUERY="SELECT * WHERE { <http://dbpedia.org/resource/Albert_Einstein> <http://www.w3.org/2002/07/owl#sameAs> ?cc . ?cc <http://www.w3.org/2000/01/rdf-schema#label> ?name. }"
+
+# execute the query
+bin/sage-jena http://sage.univ-nantes.fr/sparql/dbpedia-2016-04 http://sage.univ-nantes.fr/sparql/sameAs -q "$QUERY"
+```
 
