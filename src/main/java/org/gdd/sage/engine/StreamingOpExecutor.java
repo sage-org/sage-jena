@@ -5,25 +5,24 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.ARQInternalErrorException;
 import org.apache.jena.sparql.algebra.Op;
-import org.apache.jena.sparql.algebra.op.OpBGP;
-import org.apache.jena.sparql.algebra.op.OpConditional;
-import org.apache.jena.sparql.algebra.op.OpLeftJoin;
-import org.apache.jena.sparql.algebra.op.OpService;
+import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.iterator.QueryIterConcat;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.QC;
 import org.gdd.sage.core.SageUtils;
 import org.gdd.sage.engine.iterators.optional.OptJoin;
 import org.gdd.sage.engine.iterators.optional.OptionalIterator;
+import org.gdd.sage.engine.iterators.parallel.ParallelUnionIterator;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * An OpExecutor that streams intermediate results for OpGraph and OpService operators,
@@ -35,9 +34,12 @@ import java.util.Set;
  * @author Thomas Minier
  */
 public class StreamingOpExecutor extends OpExecutor {
+    private final ExecutorService threadPool;
 
     StreamingOpExecutor(ExecutionContext execCxt) {
         super(execCxt);
+        // TODO replace with a fixed size thread pool???
+        threadPool = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -75,9 +77,9 @@ public class StreamingOpExecutor extends OpExecutor {
             }
 
             // build iterators to evaluate the OptJoin
-            QueryIterConcat source = new QueryIterConcat(execCxt);
-            source.add(QC.execute(new OpBGP(join), input, execCxt));
-            source.add(QC.execute(new OpBGP(leftBGP), input, execCxt));
+            QueryIterator leftIterator = QC.execute(new OpBGP(join), input, execCxt);
+            QueryIterator rightIterator = QC.execute(new OpBGP(leftBGP), input, execCxt);
+            QueryIterator source = new ParallelUnionIterator(threadPool, leftIterator, rightIterator);
             return new OptJoin(source, leftVariables, joinVariables);
         }
         // otherwise, use a regular OptionalIterator
@@ -94,7 +96,7 @@ public class StreamingOpExecutor extends OpExecutor {
         } else if (Quad.isDefaultGraph(graphNode)) {
             return exec(opService.getSubOp(), input);
         } else if (!dataset.containsGraph(graphNode)) {
-            throw new ARQInternalErrorException("Dataset does not contains the named graph <" + graphNode + ">");
+            throw new ARQInternalErrorException("The RDF Dataset does not contains the named graph <" + graphNode + ">");
         }
         Graph currentGraph = dataset.getGraph(graphNode);
         ExecutionContext graphContext = new ExecutionContext(execCxt, currentGraph);
@@ -109,5 +111,15 @@ public class StreamingOpExecutor extends OpExecutor {
     @Override
     protected QueryIterator execute(OpLeftJoin opLeftJoin, QueryIterator input) {
         return executeOptional(opLeftJoin.getLeft(), opLeftJoin.getRight(), input);
+    }
+
+    @Override
+    protected QueryIterator execute(OpUnion opUnion, QueryIterator input) {
+        if (input.isJoinIdentity()) {
+            QueryIterator leftIterator = QC.execute(opUnion.getLeft(), input, execCxt);
+            QueryIterator rightIterator = QC.execute(opUnion.getRight(), input, execCxt);
+            return new ParallelUnionIterator(threadPool, leftIterator, rightIterator);
+        }
+        return super.execute(opUnion, input);
     }
 }
