@@ -59,7 +59,7 @@ public class SageUnionIteratorTest {
         assertEquals("The second set of results should maps ?label_bj to \"Brad Pitt\"@en", "\"Brad Pitt\"@en", results.get(label_bp).toString());
         assertFalse("The first set of results should not maps ?label_mj", results.contains(label_mj));
 
-        assertFalse("An iterator with no reminaing results should be empty", iterator.hasNext());
+        assertFalse("An iterator with no remaining results should be empty", iterator.hasNext());
     }
 
     @Test
