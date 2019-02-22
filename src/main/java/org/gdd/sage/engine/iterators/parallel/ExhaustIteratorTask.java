@@ -13,12 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ExhaustIteratorTask implements Runnable {
     private QueryIterator source;
     private final BlockingDeque<Binding> buffer;
-    private final AtomicInteger barrier;
+    private final AtomicInteger activeThreadsCounter;
 
-    public ExhaustIteratorTask(QueryIterator source, BlockingDeque<Binding> buffer, AtomicInteger barrier) {
+    public ExhaustIteratorTask(QueryIterator source, BlockingDeque<Binding> buffer, AtomicInteger activeThreadsCounter) {
         this.source = source;
         this.buffer = buffer;
-        this.barrier = barrier;
+        this.activeThreadsCounter = activeThreadsCounter;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class ExhaustIteratorTask implements Runnable {
                 buffer.notifyAll();
             }
         }
-        barrier.getAndIncrement();
+        activeThreadsCounter.getAndDecrement();
         synchronized (buffer) {
             buffer.notifyAll();
         }

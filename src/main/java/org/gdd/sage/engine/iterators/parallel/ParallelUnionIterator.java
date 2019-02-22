@@ -14,19 +14,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ParallelUnionIterator extends ParallelBufferedIterator {
     private QueryIterator left;
     private QueryIterator right;
-    private final AtomicInteger nbTasksCompleted;
+    private final AtomicInteger activeThreadsCounter;
 
     public ParallelUnionIterator(ExecutorService threadPool, QueryIterator left, QueryIterator right) {
         super(threadPool);
         this.left = left;
         this.right = right;
-        nbTasksCompleted = new AtomicInteger();
+        activeThreadsCounter = new AtomicInteger(2);
     }
 
     @Override
     protected void startTasks() {
-        getThreadPool().submit(new ExhaustIteratorTask(left, getSharedBuffer(), nbTasksCompleted));
-        getThreadPool().submit(new ExhaustIteratorTask(right, getSharedBuffer(), nbTasksCompleted));
+        getThreadPool().submit(new ExhaustIteratorTask(left, getSharedBuffer(), activeThreadsCounter));
+        getThreadPool().submit(new ExhaustIteratorTask(right, getSharedBuffer(), activeThreadsCounter));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ParallelUnionIterator extends ParallelBufferedIterator {
 
     @Override
     protected boolean allTasksCompleted() {
-        return nbTasksCompleted.get() == 2;
+        return activeThreadsCounter.get() == 0;
     }
 
     @Override

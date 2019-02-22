@@ -3,7 +3,6 @@ package org.gdd.sage.engine.iterators.boundjoin;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.engine.ExecutionContext;
@@ -11,8 +10,6 @@ import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.gdd.sage.engine.iterators.base.BlockBufferedIterator;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
-import org.slf4j.Logger;
 
 import java.util.*;
 
@@ -23,10 +20,7 @@ import java.util.*;
 public class BoundJoinIterator extends BlockBufferedIterator {
     private String graphURI;
     protected SageRemoteClient client;
-    protected Optional<String> nextLink;
     private BasicPattern bgp;
-    protected boolean hasNextPage;
-    private Logger logger;
 
     /**
      * Constructor
@@ -40,8 +34,6 @@ public class BoundJoinIterator extends BlockBufferedIterator {
         this.graphURI = graphURI;
         this.client = client;
         this.bgp = bgp;
-        this.nextLink = Optional.empty();
-        logger = ARQ.getExecLogger();
     }
 
     /**
@@ -65,25 +57,6 @@ public class BoundJoinIterator extends BlockBufferedIterator {
         }
         return new Triple(subj, pred, obj);
     }
-
-
-    /**
-     * Do something with bound join query results
-     * @param results - Query results fetched from the Sage server
-     */
-    private List<Binding> reviewResults(QueryResults results) {
-        List<Binding> solutions = results.getBindings();
-        if (!solutions.isEmpty()) {
-            nextLink = results.getNext();
-            hasNextPage = results.hasNext();
-        }
-        return solutions;
-    }
-
-    protected QueryIterator createIterator(List<BasicPattern> bag, List<Binding> block, Map<Integer, Binding> rewritingMap, boolean isContainmentQuery) {
-        return new BoundIterator(graphURI, client, bag, block, rewritingMap, isContainmentQuery);
-    }
-
 
     @Override
     protected QueryIterator processBlock(List<Binding> block) {
@@ -109,6 +82,6 @@ public class BoundJoinIterator extends BlockBufferedIterator {
             bgpBucket.add(boundedBGP);
             key++;
         }
-        return createIterator(bgpBucket, block, rewritingMap, isContainmentQuery);
+        return new BoundIterator(graphURI, client, bgpBucket, block, rewritingMap, isContainmentQuery);
     }
 }

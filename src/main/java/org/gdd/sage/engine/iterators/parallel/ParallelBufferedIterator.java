@@ -75,7 +75,7 @@ public abstract class ParallelBufferedIterator extends QueryIteratorBase {
                 try {
                     sharedBuffer.wait();
                 } catch (InterruptedException e) {
-                    return false;
+                    break;
                 }
             }
         }
