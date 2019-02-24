@@ -1,9 +1,11 @@
 package org.gdd.sage.core;
 
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -29,6 +31,19 @@ public class SageUtils {
         }
         if(pattern.getObject().isVariable() && !pattern.getObject().toString().startsWith("??")) {
             res.add((Var) pattern.getObject());
+        }
+        return res;
+    }
+
+    /**
+     * Get the set of SPARQL variables in a Basic graph pattern
+     * @param bgp - Basic graph pattern to analyze
+     * @return The set of SPARQL variables in the triple pattern
+     */
+    public static Set<Var> getVariables(BasicPattern bgp) {
+        Set<Var> res = new LinkedHashSet<>();
+        for(Triple pattern: bgp) {
+            res.addAll(getVariables(pattern));
         }
         return res;
     }

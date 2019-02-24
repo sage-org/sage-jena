@@ -20,6 +20,10 @@ public class SageOpExecutorFactory implements OpExecutorFactory {
         threadPool = Executors.newCachedThreadPool();
     }
 
+    public void close() {
+        threadPool.shutdown();
+    }
+
     @Override
     public OpExecutor create(ExecutionContext execCxt) {
         StageBuilder.setGenerator(execCxt.getContext(), SageStageGenerator.createDefault(threadPool));

@@ -40,6 +40,7 @@ public class SageClientTest {
             assertEquals("It should find 32 solutions bindings", 32, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Test
@@ -67,6 +68,7 @@ public class SageClientTest {
             assertEquals("It should find 10 solutions bindings", 10, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
 
@@ -98,6 +100,7 @@ public class SageClientTest {
             assertEquals("It should find 218 solutions bindings", 218, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Test
@@ -123,6 +126,7 @@ public class SageClientTest {
             assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Test
@@ -147,6 +151,7 @@ public class SageClientTest {
             assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Test
@@ -169,6 +174,7 @@ public class SageClientTest {
             assertEquals("It should find 0 solutions bindings", 0, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Test
@@ -198,6 +204,7 @@ public class SageClientTest {
             assertEquals("It should find 11 solutions bindings", 11, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Ignore
@@ -224,6 +231,7 @@ public class SageClientTest {
             assertEquals("It should find 40 solutions bindings", 40, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 
     @Ignore
@@ -242,6 +250,7 @@ public class SageClientTest {
         QueryExecutor executor = new DescribeQueryExecutor("ttl");
         executor.execute(dataset, query);
         dataset.close();
+        factory.close();
     }
 
     @Ignore
@@ -272,5 +281,6 @@ public class SageClientTest {
             assertEquals("It should find 6 solutions bindings", 6, solutions.size());
         }
         dataset.close();
+        factory.close();
     }
 }

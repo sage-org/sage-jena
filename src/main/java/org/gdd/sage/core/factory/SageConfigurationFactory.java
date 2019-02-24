@@ -17,6 +17,11 @@ public interface SageConfigurationFactory {
      */
     void buildDataset();
 
+    /**
+     * Close the execution environment
+     */
+    void close();
+
     Query getQuery();
 
     Dataset getDataset();

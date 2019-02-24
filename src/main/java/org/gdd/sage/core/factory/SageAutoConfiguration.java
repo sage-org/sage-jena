@@ -30,6 +30,7 @@ public class SageAutoConfiguration implements SageConfigurationFactory {
     private Dataset federation;
     private Set<String> uris;
     private ExecutionStats spy;
+    private SageOpExecutorFactory opFactory = new SageOpExecutorFactory();
 
     public SageAutoConfiguration(String defaultUrl, Query query) {
         this.defaultUrl = defaultUrl;
@@ -46,8 +47,12 @@ public class SageAutoConfiguration implements SageConfigurationFactory {
     }
 
     @Override
+    public void close() {
+        opFactory.close();
+    }
+
+    @Override
     public void configure() {
-        OpExecutorFactory opFactory = new SageOpExecutorFactory();
         QC.setFactory(ARQ.getContext(), opFactory);
     }
 

@@ -26,6 +26,7 @@ public class SageFederatedConfiguration implements SageConfigurationFactory {
     private Query query;
     private Dataset federation;
     private ExecutionStats spy;
+    private SageOpExecutorFactory opFactory = new SageOpExecutorFactory();
 
     /**
      * Constructor
@@ -53,8 +54,12 @@ public class SageFederatedConfiguration implements SageConfigurationFactory {
     }
 
     @Override
+    public void close() {
+        opFactory.close();
+    }
+
+    @Override
     public void configure() {
-        OpExecutorFactory opFactory = new SageOpExecutorFactory();
         QC.setFactory(ARQ.getContext(), opFactory);
     }
 

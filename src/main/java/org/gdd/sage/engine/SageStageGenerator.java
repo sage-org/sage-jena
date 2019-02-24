@@ -1,16 +1,25 @@
 package org.gdd.sage.engine;
 
+import com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.StageGenerator;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
+import org.gdd.sage.core.SageUtils;
 import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
 import org.gdd.sage.engine.iterators.boundjoin.ParallelBoundJoinIterator;
 import org.gdd.sage.model.SageGraph;
 
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -77,13 +86,32 @@ public class SageStageGenerator implements StageGenerator {
             // no input bindings => simply evaluate the BGP
             if (input.isJoinIdentity()) {
                 // compute which filters can be packed with the BGP
-                // TODO
-                return sageGraph.basicGraphPatternFind(pattern);
+                return sageGraph.basicGraphPatternFind(pattern, findRelevantFilters(filters, pattern));
             }
 
             // otherwise, use a bind join
             return new ParallelBoundJoinIterator(input, sageGraph.getGraphURI(), sageGraph.getClient(), pattern, threadPool, BIND_JOIN_BUCKET_SIZE);
         }
         return above.execute(pattern, input, execCxt);
+    }
+
+    /**
+     * Find all filters that can be applied to a Basic Graph Pattern
+     * @param filters - List of filters to analyze
+     * @param bgp - Basic graph pattern
+     * @return The list of all filters that can be applied to the Basic Graph Pattern
+     */
+    private List<Expr> findRelevantFilters(ExprList filters, BasicPattern bgp) {
+        List<Expr> relevantFilters = new LinkedList<>();
+        Set<Var> bgpVariables = SageUtils.getVariables(bgp);
+        for(Expr filter: filters.getList()) {
+            Set<Var> filterVariables = filter.getVarsMentioned();
+            // test if filterVariables is a subset of bgpVariables, i.e., filterVariables - bgpVariables = empty set
+            if(Sets.difference(filterVariables, bgpVariables).isEmpty()) {
+                relevantFilters.add(filter);
+            }
+        }
+        System.out.println(relevantFilters);
+        return relevantFilters;
     }
 }

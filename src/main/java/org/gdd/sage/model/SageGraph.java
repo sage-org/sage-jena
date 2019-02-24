@@ -7,9 +7,11 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.gdd.sage.engine.iterators.SageBGPIterator;
+import org.gdd.sage.engine.iterators.SageFilterBGPIterator;
 import org.gdd.sage.engine.iterators.SageUnionIterator;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.http.SageDefaultClient;
@@ -108,16 +110,17 @@ public class SageGraph extends GraphBase {
     }
 
     /**
-     * Evaluate a Basic Graph Pattern using the SaGe server
+     * Evaluate a Basic Graph Pattern with a list of filters using the SaGe server
      * @param bgp - BGP to evaluate
-     * @return An iterator over solution bindings for the BGP
+     * @param filters - List of filters
+     * @return An iterator over solution bindings for the BGP + the filters
      */
-    /*public QueryIterator basicGraphPatternFind(BasicPattern bgp, String filter) {
-        if (filter.isEmpty()) {
+    public QueryIterator basicGraphPatternFind(BasicPattern bgp, List<Expr> filters) {
+        if (filters.isEmpty()) {
             return new SageBGPIterator(getGraphURI(), httpClient, bgp);
         }
-        return new SageBGPIterator(getGraphURI(), httpClient, bgp, filter);
-    }*/
+        return new SageFilterBGPIterator(getGraphURI(), httpClient, bgp, filters);
+    }
 
     /**
      * Evaluate an Union of BGPs using the SaGe server
