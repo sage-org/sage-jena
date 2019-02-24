@@ -8,6 +8,7 @@ import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.apache.jena.sparql.expr.ExprList;
 import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
+import org.gdd.sage.engine.iterators.boundjoin.ParallelBoundJoinIterator;
 import org.gdd.sage.model.SageGraph;
 
 import java.util.concurrent.ExecutorService;
@@ -57,7 +58,7 @@ public class SageStageGenerator implements StageGenerator {
                 return QueryIterHashJoin.create(input, rightIter, execCxt);
             }*/
             // otherwise, use a bind join
-            return new BoundJoinIterator(input, sageGraph.getGraphURI(), sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
+            return new ParallelBoundJoinIterator(input, sageGraph.getGraphURI(), sageGraph.getClient(), pattern, threadPool, BIND_JOIN_BUCKET_SIZE);
         }
 
         // delegate execution of the unsupported Graph to the StageGenerator above
@@ -81,7 +82,7 @@ public class SageStageGenerator implements StageGenerator {
             }
 
             // otherwise, use a bind join
-            return new BoundJoinIterator(input, sageGraph.getGraphURI(), sageGraph.getClient(), pattern, BIND_JOIN_BUCKET_SIZE, execCxt);
+            return new ParallelBoundJoinIterator(input, sageGraph.getGraphURI(), sageGraph.getClient(), pattern, threadPool, BIND_JOIN_BUCKET_SIZE);
         }
         return above.execute(pattern, input, execCxt);
     }
