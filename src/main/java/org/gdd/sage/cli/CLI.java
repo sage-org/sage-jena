@@ -111,6 +111,7 @@ public class CLI {
                     Files.write(Paths.get(cmd.getOptionValue("measure")), measure.getBytes(), StandardOpenOption.APPEND);
                 }
                 federation.close();
+                factory.close();
             }
         } catch (ParseException e) {
             logger.error(e.getMessage());
