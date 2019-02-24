@@ -1,11 +1,14 @@
 package org.gdd.sage.core.factory;
 
+import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
+import org.apache.jena.sparql.engine.main.OpExecutorFactory;
+import org.apache.jena.sparql.engine.main.QC;
 import org.gdd.sage.core.SageDatasetBuilder;
-import org.gdd.sage.core.analyzer.FilterRegistry;
+import org.gdd.sage.engine.SageOpExecutorFactory;
 import org.gdd.sage.federated.SourceSelection;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
@@ -13,7 +16,7 @@ import org.gdd.sage.model.SageGraph;
 import java.util.List;
 
 /**
- * Factory used to build the execution environment for executing a federated SPARQL query over a set of sources,
+ * Build the execution environment for executing a federated SPARQL query over a set of sources,
  * with a phase of source selection beforehand.
  * @author Thomas Minier
  */
@@ -50,6 +53,12 @@ public class SageFederatedConfiguration implements SageConfigurationFactory {
     }
 
     @Override
+    public void configure() {
+        OpExecutorFactory opFactory = new SageOpExecutorFactory();
+        QC.setFactory(ARQ.getContext(), opFactory);
+    }
+
+    @Override
     public void buildDataset() {
         // build the federated dataset
         SageGraph defaultGraph = new SageGraph(defaultUrl, spy);
@@ -81,10 +90,5 @@ public class SageFederatedConfiguration implements SageConfigurationFactory {
     @Override
     public Dataset getDataset() {
         return federation;
-    }
-
-    @Override
-    public FilterRegistry getFilters() {
-        return null;
     }
 }

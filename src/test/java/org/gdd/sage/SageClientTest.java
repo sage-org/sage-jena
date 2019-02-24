@@ -4,7 +4,6 @@ import org.apache.jena.query.*;
 import org.gdd.sage.cli.DescribeQueryExecutor;
 import org.gdd.sage.cli.QueryExecutor;
 import org.gdd.sage.core.factory.SageAutoConfiguration;
-import org.gdd.sage.engine.SageExecutionContext;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -30,10 +29,10 @@ public class SageClientTest {
                 "}";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -57,10 +56,10 @@ public class SageClientTest {
                 "} LIMIT 10\n";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -88,10 +87,10 @@ public class SageClientTest {
                 "}\n";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -113,10 +112,10 @@ public class SageClientTest {
                 "}";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -137,10 +136,10 @@ public class SageClientTest {
                 "} LIMIT 1\n";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -156,10 +155,10 @@ public class SageClientTest {
         String queryString = "SELECT * WHERE { ?s <http://www.w3.org/2002/07/owl#sameAs> ?x .  SERVICE <http://sage.univ-nantes.fr/sparql/dbpedia-3-5-1> {  ?x <http://dbpedia.org/ontology/knownFor> ?o . }  } LIMIT 1";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext(), factory);
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -188,10 +187,10 @@ public class SageClientTest {
                 "}\n";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -214,10 +213,10 @@ public class SageClientTest {
                 "}";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();
@@ -236,10 +235,10 @@ public class SageClientTest {
                 "WHERE { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review4194> rev:reviewer ?x }";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext());
         QueryExecutor executor = new DescribeQueryExecutor("ttl");
         executor.execute(dataset, query);
         dataset.close();
@@ -259,10 +258,10 @@ public class SageClientTest {
                 "?v0 <http://purl.org/goodrelations/validFrom> ?v3 .  }\n";
         Query query = QueryFactory.create(queryString);
         SageAutoConfiguration factory = new SageAutoConfiguration(url, query);
+        factory.configure();
         factory.buildDataset();
         query = factory.getQuery();
         Dataset dataset = factory.getDataset();
-        SageExecutionContext.configureDefault(ARQ.getContext());
         try(QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             List<QuerySolution> solutions = new ArrayList<>();

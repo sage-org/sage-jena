@@ -22,24 +22,17 @@ import org.gdd.sage.engine.iterators.parallel.ParallelUnionIterator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
- * An OpExecutor that streams intermediate results for OpGraph and OpService operators,
- * and use a Bind join approach to evaluate Optionals.
- *
- * The default ARQ implementation perform join "binding per binding" using QueryIterSingleton to wrap
- * intermediate results. While this approach performs great when using Nested Loop Joins, joins
- * algorithms like Symmetric hash join, that require streaming inputs, cannot be applied.
+ * An OpExecutor that executes SPARQL query with the Sage smart client.
  * @author Thomas Minier
  */
-public class StreamingOpExecutor extends OpExecutor {
+public class SageOpExecutor extends OpExecutor {
     private final ExecutorService threadPool;
 
-    StreamingOpExecutor(ExecutionContext execCxt) {
+    SageOpExecutor(ExecutorService threadPool, ExecutionContext execCxt) {
         super(execCxt);
-        // TODO replace with a fixed size thread pool???
-        threadPool = Executors.newCachedThreadPool();
+        this.threadPool = threadPool;
     }
 
     @Override
@@ -122,4 +115,23 @@ public class StreamingOpExecutor extends OpExecutor {
         }
         return super.execute(opUnion, input);
     }
+
+    /*@Override
+    protected QueryIterator execute(OpFilter opFilter, QueryIterator input) {
+        QueryIterator qIter;
+        ExprList filters = opFilter.getExprs();
+        // TODO for now, we limit filter packing fpr the first BGP in the plan
+        if (opFilter.getSubOp() instanceof OpBGP && input.isJoinIdentity() && stageGenerator instanceof SageStageGenerator) {
+            BasicPattern bgp = ((OpBGP) opFilter.getSubOp()).getPattern();
+            SageStageGenerator sageStageGenerator = (SageStageGenerator) stageGenerator;
+            qIter = sageStageGenerator.execute(bgp, input, execCxt, filters);
+        } else {
+            qIter = super.exec(opFilter.getSubOp(), input);
+        }
+        // add all filters, for safety purpose
+        for(Expr expr: filters.getList()) {
+            qIter = new QueryIterFilterExpr(qIter, expr, execCxt);
+        }
+        return qIter;
+    }*/
 }

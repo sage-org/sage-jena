@@ -1,15 +1,17 @@
 package org.gdd.sage.core.factory;
 
 import org.apache.jena.graph.Graph;
+import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
+import org.apache.jena.sparql.engine.main.OpExecutorFactory;
+import org.apache.jena.sparql.engine.main.QC;
 import org.gdd.sage.core.SageDatasetBuilder;
-import org.gdd.sage.core.analyzer.FilterAnalyzer;
-import org.gdd.sage.core.analyzer.FilterRegistry;
 import org.gdd.sage.core.analyzer.ServiceAnalyzer;
+import org.gdd.sage.engine.SageOpExecutorFactory;
 import org.gdd.sage.http.ExecutionStats;
 import org.gdd.sage.model.SageGraph;
 
@@ -17,9 +19,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Factory used to build the execution environment for executing a SPARQL query with a Sage server
- * For a query with SERVICE clauses, this factory generate the associated localized query and the
- * DatasetGraph that holds the graphs of the federation.
+ * Build the execution environment for executing a SPARQL query with a Sage server
+ * For a query with SERVICE clauses, this class generates the associated localized query and the
+ * {@link Dataset} that holds the graphs of the federation.
  * @author Thomas Minier
  */
 public class SageAutoConfiguration implements SageConfigurationFactory {
@@ -28,7 +30,6 @@ public class SageAutoConfiguration implements SageConfigurationFactory {
     private Dataset federation;
     private Set<String> uris;
     private ExecutionStats spy;
-    private FilterRegistry filters;
 
     public SageAutoConfiguration(String defaultUrl, Query query) {
         this.defaultUrl = defaultUrl;
@@ -45,6 +46,12 @@ public class SageAutoConfiguration implements SageConfigurationFactory {
     }
 
     @Override
+    public void configure() {
+        OpExecutorFactory opFactory = new SageOpExecutorFactory();
+        QC.setFactory(ARQ.getContext(), opFactory);
+    }
+
+    @Override
     public void buildDataset() {
         // localize query and get all SERVICE uris
         Op queryTree = Algebra.compile(query);
@@ -52,11 +59,6 @@ public class SageAutoConfiguration implements SageConfigurationFactory {
         Transformer.transform(transformer, queryTree);
 
         uris.addAll(transformer.getUris());
-
-        // collect filters by variable
-        FilterAnalyzer fAnalyzer = new FilterAnalyzer();
-        Transformer.transform(fAnalyzer, queryTree);
-        filters = fAnalyzer.getFilters();
 
         // build the federated dataset
         Graph defaultGraph = new SageGraph(defaultUrl, spy);
@@ -75,9 +77,5 @@ public class SageAutoConfiguration implements SageConfigurationFactory {
     @Override
     public Dataset getDataset() {
         return federation;
-    }
-
-    public FilterRegistry getFilters() {
-        return filters;
     }
 }

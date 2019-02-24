@@ -1,25 +1,18 @@
 package org.gdd.sage.engine.iterators;
 
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.algebra.op.OpBGP;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.main.StageBuilder;
 import org.gdd.sage.Utilities;
-import org.gdd.sage.engine.SageExecutionContext;
 import org.gdd.sage.http.SageDefaultClient;
 import org.gdd.sage.http.SageRemoteClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class OptionalIteratorTest {
     private SageRemoteClient httpClient;
@@ -49,7 +42,7 @@ public class OptionalIteratorTest {
     @Test
     public void testOptionalIterator() {
         // install Sage execution context first
-        SageExecutionContext.configureDefault(ARQ.getContext());
+        //SageExecutionContext.configureDefault(ARQ.getContext());
         // build optional iterator
         QueryIterator source = getSource(GRAPH_URI, httpClient);
         Var joinPos = Var.alloc("person");
