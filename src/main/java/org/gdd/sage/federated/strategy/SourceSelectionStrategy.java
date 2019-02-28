@@ -10,11 +10,11 @@ import org.gdd.sage.http.SageRemoteClient;
 public interface SourceSelectionStrategy {
 
     /**
-     * Determine if a triple pattern has matching RDF triples in a RDF graph.
+     * Get the number of matching RDF triples for a triple pattern in a RDF graph
      * @param pattern - Triple pattern to test
      * @param graphURI - RDF graph to test
      * @param httpClient - HTTP client used to perform the ASK query
-     * @return True if the pattern has matching results in this RDF graph, False otherwise
+     * @return The number of RDF triples matching the triple pattern in the RDF graph
      */
-    boolean isRelevant(Triple pattern, String graphURI, SageRemoteClient httpClient);
+    int getCardinality(Triple pattern, String graphURI, SageRemoteClient httpClient);
 }

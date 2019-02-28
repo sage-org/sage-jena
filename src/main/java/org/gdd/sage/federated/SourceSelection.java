@@ -1,5 +1,6 @@
 package org.gdd.sage.federated;
 
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -137,8 +138,9 @@ public class SourceSelection extends TransformBase {
         for(Triple pattern: opBGP.getPattern().getList()) {
             Set<LocalizedPattern> relevantSources = new HashSet<>();
             for(Map.Entry<String, SageRemoteClient> source: httpClients.entrySet()) {
-                if(selectionStrategy.isRelevant(pattern, source.getKey(), source.getValue())) {
-                    relevantSources.add(new LocalizedPattern(source.getKey(), pattern));
+                int cardinality = selectionStrategy.getCardinality(pattern, source.getKey(), source.getValue());
+                if (cardinality > 0) {
+                    relevantSources.add(new LocalizedPattern(source.getKey(), pattern, cardinality));
                 }
             }
             // no relevant source => pattern has no matching RDF triples => bgp has no results
@@ -156,10 +158,13 @@ public class SourceSelection extends TransformBase {
             if(isExclusiveGroup(joinGroup)) {
                 opJoin = getOpService(joinGroup.get(0).getSource(), joinGroup);
             } else {
-                LocalizedPattern p = joinGroup.get(0);
+                // sort patterns according to their cardinality
+                List<LocalizedPattern> sortedGroup = Ordering.natural().sortedCopy(joinGroup);
+                // build left-linear plan of joins
+                LocalizedPattern p = sortedGroup.get(0);
                 opJoin = getOpService(p.getSource(), p);
-                for(int ind = 1; ind < joinGroup.size(); ind++) {
-                    p = joinGroup.get(ind);
+                for(int ind = 1; ind < sortedGroup.size(); ind++) {
+                    p = sortedGroup.get(ind);
                     opJoin = OpJoin.create(opJoin, getOpService(p.getSource(), p));
                 }
             }

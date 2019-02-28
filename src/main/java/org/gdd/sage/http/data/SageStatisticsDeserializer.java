@@ -24,7 +24,7 @@ public class SageStatisticsDeserializer extends JsonDeserializer<SageStatistics>
             ArrayNode cardsNode = (ArrayNode) node.get("cardinalities");
             for(JsonNode cardNode: cardsNode) {
                 JsonNode tripleNode = cardNode.get("triple");
-                sageStatistics.addTriple(
+                sageStatistics.addTripleCardinality(
                         tripleNode.get("subject").asText(),
                         tripleNode.get("predicate").asText(),
                         tripleNode.get("object").asText(),

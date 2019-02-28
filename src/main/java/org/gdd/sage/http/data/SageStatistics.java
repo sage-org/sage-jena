@@ -12,7 +12,13 @@ import java.util.Map;
 public class SageStatistics {
     private double exportTime;
     private double importTime;
-    private Map<Triple, Integer> cardinalities;
+    private Map<String, Integer> cardinalities;
+
+    public SageStatistics(double exportTime, double importTime) {
+        this.exportTime = exportTime;
+        this.importTime = importTime;
+        this.cardinalities = new HashMap<>();
+    }
 
     public double getExportTime() {
         return exportTime;
@@ -22,18 +28,31 @@ public class SageStatistics {
         return importTime;
     }
 
-    public SageStatistics(double exportTime, double importTime) {
-        this.exportTime = exportTime;
-        this.importTime = importTime;
-        this.cardinalities = new HashMap<>();
+    public void addTripleCardinality(String subject, String predicate, String object, int cardinality) {
+        String key = buildTripleKey(subject, predicate, object);
+        if (!cardinalities.containsKey(key)) {
+            cardinalities.put(key, cardinality);
+        }
     }
 
-    public void addTriple(String subj, String pred, String obj, int cardinality) {
-        //Triple triple = new Triple(NodeFactoryExtra.parseNode(subj), NodeFactoryExtra.parseNode(pred), NodeFactoryExtra.parseNode(obj));
-        //cardinalities.put(triple, cardinality);
+    public boolean hasTripleCardinality(String subject, String predicate, String object) {
+        String key = buildTripleKey(subject, predicate, object);
+        return cardinalities.containsKey(key);
     }
 
     public int getCardinality(Triple triple) {
-        return cardinalities.get(triple);
+        return getCardinality(triple.getSubject().toString(), triple.getPredicate().toString(), triple.getObject().toString());
+    }
+
+    public int getCardinality (String subject, String predicate, String object) {
+        String key = buildTripleKey(subject, predicate, object);
+        if (cardinalities.containsKey(key)) {
+            return cardinalities.get(key);
+        }
+        return 0;
+    }
+
+    private String buildTripleKey(String subject, String predicate, String object) {
+        return "s=" + subject + ";p=" + predicate + "o=" + object;
     }
 }

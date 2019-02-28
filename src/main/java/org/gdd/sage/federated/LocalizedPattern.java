@@ -11,10 +11,12 @@ import java.util.Objects;
 class LocalizedPattern implements Comparable<LocalizedPattern> {
     private String source;
     private Triple pattern;
+    private int cardinality;
 
-    public LocalizedPattern(String source, Triple pattern) {
+    public LocalizedPattern(String source, Triple pattern, int cardinality) {
         this.source = source;
         this.pattern = pattern;
+        this.cardinality = cardinality;
     }
 
     public String getSource() {
@@ -33,33 +35,44 @@ class LocalizedPattern implements Comparable<LocalizedPattern> {
         this.pattern = pattern;
     }
 
+    public int getCardinality() {
+        return cardinality;
+    }
+
+    public void setCardinality(int cardinality) {
+        this.cardinality = cardinality;
+    }
+
     @Override
     public String toString() {
         return "LocalizedPattern{" +
-                "source=" + source +
+                "source='" + source + '\'' +
                 ", pattern=" + pattern +
+                ", cardinality=" + cardinality +
                 '}';
+    }
+
+    @Override
+    public int compareTo(LocalizedPattern o) {
+        return o.getCardinality() - getCardinality();
+        /*if (pattern.equals(o.getPattern())) {
+            return source.compareTo(o.getSource());
+        }
+        return pattern.toString().compareTo(o.getPattern().toString());*/
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        LocalizedPattern pattern1 = (LocalizedPattern) o;
-        return source.equals(pattern1.source) &&
-                pattern.equals(pattern1.pattern);
-    }
-
-    @Override
-    public int compareTo(LocalizedPattern o) {
-        if (pattern.equals(o.getPattern())) {
-            return source.compareTo(o.getSource());
-        }
-        return pattern.toString().compareTo(o.getPattern().toString());
+        LocalizedPattern that = (LocalizedPattern) o;
+        return getCardinality() == that.getCardinality() &&
+                getSource().equals(that.getSource()) &&
+                getPattern().equals(that.getPattern());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(source, pattern);
+        return Objects.hash(getSource(), getPattern(), getCardinality());
     }
 }

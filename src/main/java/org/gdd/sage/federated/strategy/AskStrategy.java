@@ -13,10 +13,13 @@ import org.gdd.sage.http.data.QueryResults;
  */
 public class AskStrategy implements SourceSelectionStrategy {
     @Override
-    public boolean isRelevant(Triple pattern, String graphURI, SageRemoteClient httpClient) {
+    public int getCardinality(Triple pattern, String graphURI, SageRemoteClient httpClient) {
         BasicPattern bgp = new BasicPattern();
         bgp.add(pattern);
         QueryResults queryResults = httpClient.query(graphURI, bgp);
-        return !queryResults.getBindings().isEmpty();
+        if (queryResults.getBindings().isEmpty()) {
+            return 0;
+        }
+        return queryResults.getStats().getCardinality(pattern);
     }
 }
