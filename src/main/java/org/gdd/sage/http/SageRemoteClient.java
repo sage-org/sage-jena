@@ -1,10 +1,12 @@
 package org.gdd.sage.http;
 
+import org.apache.jena.rdfxml.xmloutput.impl.Basic;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.expr.Expr;
 import org.gdd.sage.http.data.QueryResults;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -12,6 +14,17 @@ import java.util.Optional;
  * @author Thomas Minier
  */
 public interface SageRemoteClient {
+    /**
+     * Get the URL of the remote sage server
+     * @return The URL of the remote sage server
+     */
+    String getServerURL();
+
+    /**
+     * Free all resources used by the client
+     */
+    void close();
+
     /**
      * Evaluate a Basic Graph Pattern against a SaGe server, without a next link
      * @param graphURI - Default Graph URI
@@ -66,13 +79,19 @@ public interface SageRemoteClient {
     QueryResults query(String graphURI, List<BasicPattern> patterns, Optional<String> next);
 
     /**
-     * Free all resources used by the client
+     * Evaluate a set Graph clauses, each one wrapping a Basic Graph Patterns, against a SaGe server.
+     * @param graphURI - Default Graph URI
+     * @param graphs - Graphs clauses to evaluates, i..e, tuples (graph uri, basic graph pattern)
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
      */
-    void close();
+    QueryResults query(String graphURI, Map<String, BasicPattern> graphs);
 
     /**
-     * Get the URL of the remote sage server
-     * @return The URL of the remote sage server
+     * Evaluate a set Graph clauses, each one wrapping a Basic Graph Patterns, against a SaGe server, with a next link.
+     * @param graphURI - Default Graph URI
+     * @param graphs - Graphs clauses to evaluates, i..e, tuples (graph uri, basic graph pattern)
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
      */
-    String getServerURL();
+    QueryResults query(String graphURI, Map<String, BasicPattern> graphs, Optional<String> next);
 }

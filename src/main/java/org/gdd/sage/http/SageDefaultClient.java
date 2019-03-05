@@ -245,6 +245,28 @@ public class SageDefaultClient implements SageRemoteClient {
     }
 
     /**
+     * Evaluate a set Graph clauses, each one wrapping a Basic Graph Patterns, against a SaGe server.
+     * @param graphURI - Default Graph URI
+     * @param graphs - Graphs clauses to evaluates, i..e, tuples (graph uri, basic graph pattern)
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
+     */
+    public QueryResults query(String graphURI, Map<String, BasicPattern> graphs) {
+        return query(graphURI, graphs, Optional.empty());
+    }
+
+    /**
+     * Evaluate a set Graph clauses, each one wrapping a Basic Graph Patterns, against a SaGe server, with a next link.
+     * @param graphURI - Default Graph URI
+     * @param graphs - Graphs clauses to evaluates, i..e, tuples (graph uri, basic graph pattern)
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the Union has been completely evaluated.
+     */
+    public QueryResults query(String graphURI, Map<String, BasicPattern> graphs, Optional<String> next) {
+        String query = SageQueryBuilder.buildGraphQuery(graphs);
+        return sendQuery(graphURI, query, next);
+    }
+
+    /**
      * Free all resources used by the client
      */
     public void close() {

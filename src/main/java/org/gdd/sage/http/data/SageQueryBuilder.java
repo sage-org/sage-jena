@@ -1,19 +1,15 @@
 package org.gdd.sage.http.data;
 
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
-import org.apache.jena.sparql.algebra.op.OpBGP;
-import org.apache.jena.sparql.algebra.op.OpFilter;
-import org.apache.jena.sparql.algebra.op.OpUnion;
+import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Builder used to create SPARQL queries that can be send to a SaGe server
@@ -22,22 +18,6 @@ import java.util.Set;
 public class SageQueryBuilder {
 
     private SageQueryBuilder() {}
-
-    private static Set<Var> getVariables(BasicPattern bgp) {
-        Set<Var> variables = new LinkedHashSet<>();
-        for(Triple pattern: bgp.getList()) {
-            if (pattern.getSubject().isVariable() && !pattern.getSubject().toString().startsWith("??")) {
-                variables.add((Var) pattern.getSubject());
-            }
-            if (pattern.getPredicate().isVariable() && !pattern.getPredicate().toString().startsWith("??")) {
-                variables.add((Var) pattern.getPredicate());
-            }
-            if (pattern.getObject().isVariable() && !pattern.getObject().toString().startsWith("??")) {
-                variables.add((Var) pattern.getObject());
-            }
-        }
-        return variables;
-    }
 
     private static String serializeQuery(Op root) {
         return OpAsQuery.asQuery(root).serialize();
@@ -90,6 +70,25 @@ public class SageQueryBuilder {
         }
         // apply projection
         //op = new OpProject(op, Lists.newLinkedList(variables));
+        return SageQueryBuilder.serializeQuery(op);
+    }
+
+    /**
+     * Build a SPARQL query from a set of Graph clauses
+     * @param graphs - Set of GRAPH clauses, i.e., tuples of (graph uri, basic graph pattern)
+     * @return Generated SPARQL query
+     */
+    public static String buildGraphQuery(Map<String, BasicPattern> graphs) {
+        Op op = null;
+        for(Map.Entry<String, BasicPattern> entry: graphs.entrySet()) {
+            Op opBGP = new OpBGP(entry.getValue());
+            Op opGraph = new OpGraph(NodeFactory.createURI(entry.getKey()), opBGP);
+            if (op == null) {
+                op = opGraph;
+            } else {
+                op = OpJoin.create(op, opGraph);
+            }
+        }
         return SageQueryBuilder.serializeQuery(op);
     }
 }

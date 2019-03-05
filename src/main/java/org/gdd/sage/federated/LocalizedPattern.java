@@ -1,8 +1,16 @@
 package org.gdd.sage.federated;
 
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.op.OpBGP;
+import org.apache.jena.sparql.algebra.op.OpService;
+import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.core.Var;
+import org.gdd.sage.core.SageUtils;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A Triple pattern localized with a RDF graph URI.
@@ -23,24 +31,31 @@ class LocalizedPattern implements Comparable<LocalizedPattern> {
         return source;
     }
 
-    public void setSource(String source) {
-        this.source = source;
-    }
-
     public Triple getPattern() {
         return pattern;
-    }
-
-    public void setPattern(Triple pattern) {
-        this.pattern = pattern;
     }
 
     public int getCardinality() {
         return cardinality;
     }
 
-    public void setCardinality(int cardinality) {
-        this.cardinality = cardinality;
+    /**
+     * Get all SPARQL variables in the pattern
+     * @return All SPARQL variables in the pattern
+     */
+    public Set<Var> getVariables() {
+        return SageUtils.getVariables(pattern);
+    }
+
+    /**
+     * Transform the localized pattern into a SPARQL logical node
+     * @return The equivalent SPARQL logical node
+     */
+    public Op toOp() {
+        BasicPattern bgp = new BasicPattern();
+        bgp.add(pattern);
+        Op opBGP = new OpBGP(bgp);
+        return new OpService(NodeFactory.createURI(source), opBGP, false);
     }
 
     @Override
@@ -55,10 +70,6 @@ class LocalizedPattern implements Comparable<LocalizedPattern> {
     @Override
     public int compareTo(LocalizedPattern o) {
         return o.getCardinality() - getCardinality();
-        /*if (pattern.equals(o.getPattern())) {
-            return source.compareTo(o.getSource());
-        }
-        return pattern.toString().compareTo(o.getPattern().toString());*/
     }
 
     @Override
