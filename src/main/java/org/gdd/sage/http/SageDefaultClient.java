@@ -20,6 +20,8 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
+import org.gdd.sage.http.cache.QueryCache;
+import org.gdd.sage.http.cache.SimpleCache;
 import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
@@ -45,6 +47,7 @@ public class SageDefaultClient implements SageRemoteClient {
     private ObjectMapper mapper;
     private HttpRequestFactory requestFactory;
     private ExecutionStats spy;
+    private QueryCache cache = new SimpleCache(100);
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String HTTP_JSON_CONTENT_TYPE = "application/json";
@@ -158,7 +161,11 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
     private QueryResults sendQuery(String graphURI, String query, Optional<String> next) {
-        // build GET url
+        // check in cache first
+        if (cache.has(graphURI, query, next)) {
+            return cache.get(graphURI, query, next);
+        }
+        // build POST query
         GenericUrl url = new GenericUrl(serverURL);
         String payload = buildJSONPayload(graphURI, query, next);
         HttpContent postContent = new ByteArrayContent(HTTP_JSON_CONTENT_TYPE, payload.getBytes());
