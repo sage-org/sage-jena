@@ -2,7 +2,7 @@ package org.gdd.sage.http;
 
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.expr.Expr;
-import org.gdd.sage.engine.update.UpdateQuery;
+import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.results.QueryResults;
 import org.gdd.sage.http.results.UpdateResults;
 
@@ -102,5 +102,5 @@ public interface SageRemoteClient {
      * @param query - Query to execute
      * @return Query results, containing the RDF quads that were processed by the server
      */
-    UpdateResults update(String graphURI, UpdateQuery query);
+    UpdateResults update(String graphURI, String query);
 }

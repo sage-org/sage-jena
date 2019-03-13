@@ -1,13 +1,19 @@
 package org.gdd.sage.engine.update;
 
 import org.apache.jena.query.ARQ;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.sparql.modify.request.UpdateDataDelete;
 import org.apache.jena.sparql.modify.request.UpdateDataInsert;
+import org.apache.jena.sparql.modify.request.UpdateModify;
 import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
-import org.gdd.sage.http.SageRemoteClient;
+import org.gdd.sage.engine.update.base.UpdateQuery;
+import org.gdd.sage.engine.update.queries.DeleteInsertQuery;
+import org.gdd.sage.engine.update.queries.DeleteQuery;
+import org.gdd.sage.engine.update.queries.InsertQuery;
 import org.gdd.sage.http.results.UpdateResults;
+import org.gdd.sage.model.SageGraph;
 import org.slf4j.Logger;
 
 import java.util.LinkedList;
@@ -21,19 +27,22 @@ import java.util.List;
  */
 public class UpdateExecutor {
     private String defaultGraphURI;
-    private SageRemoteClient httpClient;
+    private Dataset dataset;
+    private SageGraph defaultGraph;
     private int bucketSize;
     private Logger logger;
 
     /**
      * Constructor
      * @param defaultGraphURI - URI of the default RDF Graph
-     * @param httpClient - HTTP client used to send SPARQL queries to the server
+     * @param dataset - RDF dataset
      * @param bucketSize - Bucket size, i.e., how many RDF triples to process are sent by query
      */
-    public UpdateExecutor(String defaultGraphURI, SageRemoteClient httpClient, int bucketSize) {
+    public UpdateExecutor(String defaultGraphURI,  Dataset dataset, int bucketSize) {
         this.defaultGraphURI = defaultGraphURI;
-        this.httpClient = httpClient;
+        this.dataset = dataset;
+        // get default graph
+        this.defaultGraph = (SageGraph) dataset.asDatasetGraph().getDefaultGraph();
         this.bucketSize = bucketSize;
         logger = ARQ.getExecLogger();
     }
@@ -55,8 +64,10 @@ public class UpdateExecutor {
             } else if (op instanceof UpdateDataDelete) {
                 UpdateDataDelete delete = (UpdateDataDelete) op;
                 updates.add(new DeleteQuery(delete.getQuads(), bucketSize));
+            } else if (op instanceof UpdateModify) {
+                UpdateModify modify = (UpdateModify) op;
+                updates.add(DeleteInsertQuery.fromOperation(modify, dataset, bucketSize));
             }
-            // TODO handle INSERT/DELETE queries
         }
 
         // execute each update operation
@@ -74,15 +85,20 @@ public class UpdateExecutor {
         // spin until the query has been fully executed
         while (update.hasNextQuery()) {
             // execute query using the HTTP client
-            UpdateResults results = httpClient.update(defaultGraphURI, update);
+            String query = update.nextQuery();
+            if (query == null) {
+                break;
+            }
+            UpdateResults results = defaultGraph.getClient().update(defaultGraphURI, query);
             // handle errors
             if (results.hasError()) {
                 logger.error(results.getError());
                 return false;
             }
             // remove quads that were processed from the update operation
-            update.deleteAll(results.getProcessedQuads());
+            update.markAsCompleted(results.getProcessedQuads());
         }
+        update.close();
         return true;
     }
 }

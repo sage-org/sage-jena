@@ -1,4 +1,4 @@
-package org.gdd.sage.engine.update;
+package org.gdd.sage.engine.update.queries;
 
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.modify.request.QuadDataAcc;
@@ -6,6 +6,7 @@ import org.apache.jena.sparql.modify.request.UpdateDataInsert;
 import org.apache.jena.update.Update;
 import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
+import org.gdd.sage.engine.update.base.UpdateQueryBase;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
  * @see {@href https://www.w3.org/TR/2013/REC-sparql11-update-20130321/#insertData}
  * @author Thomas Minier
  */
-public class InsertQuery extends UpdateQuery {
+public class InsertQuery extends UpdateQueryBase {
 
     /**
      * Constructor
@@ -44,6 +45,11 @@ public class InsertQuery extends UpdateQuery {
         return new InsertQuery(quads, bucketSize);
     }
 
+    /**
+     * Build a SPARQL UPDATE query from a bucket of quads
+     * @param quads - Bucket of quads
+     * @return The corresponding SPARQL UPDATE query
+     */
     @Override
     protected String buildQuery(List<Quad> quads) {
         UpdateDataInsert insertData = new UpdateDataInsert(new QuadDataAcc(quads));
@@ -51,4 +57,10 @@ public class InsertQuery extends UpdateQuery {
         query.add(insertData);
         return query.toString();
     }
+
+    /**
+     * Release all resources used by the object for processing
+     */
+    @Override
+    public void close() {}
 }

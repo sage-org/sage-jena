@@ -1,4 +1,4 @@
-package org.gdd.sage.engine.update;
+package org.gdd.sage.engine.update.base;
 
 import org.apache.jena.sparql.core.Quad;
 
@@ -6,10 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A generic Update query (INSERT DATA or DELETE DATA)
+ * Base class to implement UPDATE queries
  * @author Thomas Minier
  */
-public abstract class UpdateQuery {
+public abstract class UpdateQueryBase implements UpdateQuery {
     private List<Quad> quads;
     private int bucketSize;
 
@@ -18,7 +18,7 @@ public abstract class UpdateQuery {
      * @param quads - List of RDF Quads to process
      * @param bucketSize - Bucket size, i.e., how many RDF triples are sent by query
      */
-    public UpdateQuery(List<Quad> quads, int bucketSize) {
+    public UpdateQueryBase(List<Quad> quads, int bucketSize) {
         this.bucketSize = bucketSize;
         this.quads = new LinkedList<>();
         this.quads.addAll(quads);
@@ -51,6 +51,7 @@ public abstract class UpdateQuery {
      * Build the next SPARQL UPDATE query to execute
      * @return A SPARQL UPDATE query, i.e., either an INSERT DATA or DELETE DATA query
      */
+    @Override
     public String nextQuery() {
         // gather bucket and build a query from it
         int limit = bucketSize;
@@ -64,7 +65,17 @@ public abstract class UpdateQuery {
      * Test if the query has more RDF triples to process
      * @return True the query has more RDF triples to process, False otherwise
      */
+    @Override
     public boolean hasNextQuery() {
         return !quads.isEmpty();
+    }
+
+    /**
+     * Indicate that a list of quads has been processed by the server
+     * @param quads - List of quads
+     */
+    @Override
+    public void markAsCompleted(List<Quad> quads) {
+        this.deleteAll(quads);
     }
 }

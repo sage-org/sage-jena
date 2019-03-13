@@ -20,7 +20,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
-import org.gdd.sage.engine.update.UpdateQuery;
+import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.cache.QueryCache;
 import org.gdd.sage.http.cache.SimpleCache;
 import org.gdd.sage.http.data.SageQueryBuilder;
@@ -281,8 +281,8 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param query - Query to execute
      * @return Query results, containing the RDF quads that were processed by the server
      */
-    public UpdateResults update(String graphURI, UpdateQuery query) {
-        QueryResults results = sendQuery(graphURI, query.nextQuery(), Optional.empty());
+    public UpdateResults update(String graphURI, String query) {
+        QueryResults results = sendQuery(graphURI, query, Optional.empty());
         // convert QueryResults to UpdateResults
         if (results.hasError()) {
             return UpdateResults.withError(results.getError());
