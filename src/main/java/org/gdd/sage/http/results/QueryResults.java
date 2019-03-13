@@ -1,6 +1,7 @@
-package org.gdd.sage.http.data;
+package org.gdd.sage.http.results;
 
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.http.data.SageStatistics;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,7 @@ import java.util.Optional;
  * Results from the execution of a SPARQL query
  * @author Thomas Minier
  */
-public class QueryResults {
+public class QueryResults implements SageQueryResults {
     private List<Binding> bindings;
     private Optional<String> next;
     private SageStatistics stats;
@@ -27,7 +28,6 @@ public class QueryResults {
         this.error = "No error during query evaluation";
         this.hasError = false;
     }
-
 
     private QueryResults(String error) {
         this.error = error;

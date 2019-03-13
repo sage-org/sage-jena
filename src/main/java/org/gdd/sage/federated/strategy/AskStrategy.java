@@ -3,7 +3,7 @@ package org.gdd.sage.federated.strategy;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
+import org.gdd.sage.http.results.QueryResults;
 
 /**
  * An ASK-based strategy to compute relevant sources for a triple pattern.

@@ -20,11 +20,13 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
+import org.gdd.sage.engine.update.UpdateQuery;
 import org.gdd.sage.http.cache.QueryCache;
 import org.gdd.sage.http.cache.SimpleCache;
-import org.gdd.sage.http.data.QueryResults;
 import org.gdd.sage.http.data.SageQueryBuilder;
 import org.gdd.sage.http.data.SageResponse;
+import org.gdd.sage.http.results.QueryResults;
+import org.gdd.sage.http.results.UpdateResults;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -271,6 +273,21 @@ public class SageDefaultClient implements SageRemoteClient {
     public QueryResults query(String graphURI, Map<String, BasicPattern> graphs, Optional<String> next) {
         String query = SageQueryBuilder.buildGraphQuery(graphs);
         return sendQuery(graphURI, query, next);
+    }
+
+    /**
+     * Evaluate a SPARQL UPDATE query using a {@link UpdateQuery} object
+     * @param graphURI - Default Graph URI
+     * @param query - Query to execute
+     * @return Query results, containing the RDF quads that were processed by the server
+     */
+    public UpdateResults update(String graphURI, UpdateQuery query) {
+        QueryResults results = sendQuery(graphURI, query.nextQuery(), Optional.empty());
+        // convert QueryResults to UpdateResults
+        if (results.hasError()) {
+            return UpdateResults.withError(results.getError());
+        }
+        return new UpdateResults(graphURI, results.getBindings(), results.getStats());
     }
 
     /**

@@ -3,7 +3,7 @@ package org.gdd.sage.engine.iterators;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.gdd.sage.engine.iterators.base.SageQueryIterator;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
+import org.gdd.sage.http.results.QueryResults;
 
 import java.util.List;
 import java.util.Optional;

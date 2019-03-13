@@ -1,6 +1,6 @@
 package org.gdd.sage.http.cache;
 
-import org.gdd.sage.http.data.QueryResults;
+import org.gdd.sage.http.results.QueryResults;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

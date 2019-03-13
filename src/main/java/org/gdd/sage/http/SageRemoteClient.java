@@ -1,9 +1,10 @@
 package org.gdd.sage.http;
 
-import org.apache.jena.rdfxml.xmloutput.impl.Basic;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.expr.Expr;
-import org.gdd.sage.http.data.QueryResults;
+import org.gdd.sage.engine.update.UpdateQuery;
+import org.gdd.sage.http.results.QueryResults;
+import org.gdd.sage.http.results.UpdateResults;
 
 import java.util.List;
 import java.util.Map;
@@ -94,4 +95,12 @@ public interface SageRemoteClient {
      * @return Query results. If the next link is null, then the Union has been completely evaluated.
      */
     QueryResults query(String graphURI, Map<String, BasicPattern> graphs, Optional<String> next);
+
+    /**
+     * Evaluate a SPARQL UPDATE query using a {@link UpdateQuery} object
+     * @param graphURI - Default Graph URI
+     * @param query - Query to execute
+     * @return Query results, containing the RDF quads that were processed by the server
+     */
+    UpdateResults update(String graphURI, UpdateQuery query);
 }

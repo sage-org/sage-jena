@@ -8,7 +8,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.gdd.sage.engine.iterators.base.BufferedIterator;
 import org.gdd.sage.http.SageRemoteClient;
-import org.gdd.sage.http.data.QueryResults;
+import org.gdd.sage.http.results.QueryResults;
 import org.slf4j.Logger;
 
 import java.util.LinkedList;
