@@ -96,6 +96,7 @@ public class UpdateExecutor {
             if (results.hasError()) {
                 logger.error("Failed execution of update query: " + query);
                 logger.error(results.getError());
+                update.close();
                 return false;
             }
             // remove quads that were processed from the update operation

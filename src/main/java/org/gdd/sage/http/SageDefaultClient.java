@@ -20,6 +20,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.cache.QueryCache;
 import org.gdd.sage.http.cache.SimpleCache;
@@ -307,7 +308,7 @@ public class SageDefaultClient implements SageRemoteClient {
         // Literal case
         if (node.startsWith("\""))  {
             String literal = node.trim();
-            // typed literal case (HDT may parse datatype without the surrounding "<>")
+            // typed literal case (HDT can parse datatype without the surrounding "<>")
             if (literal.contains("\"^^<http")) {
                 int index = literal.lastIndexOf("\"^^<http:");
                 RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 4, literal.length() - 1));
@@ -319,6 +320,8 @@ public class SageDefaultClient implements SageRemoteClient {
             } else if (literal.contains("\"@")) {
                 int index = literal.lastIndexOf("\"@");
                 value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
+            } else if (literal.startsWith("\"") && literal.endsWith("\"")){
+                value = NodeFactory.createLiteral(literal.substring(1, literal.length() - 1));
             } else {
                 value = NodeFactory.createLiteral(literal);
             }
