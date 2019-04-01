@@ -13,15 +13,15 @@ public class ExecutionStats {
     private double executionTime;
     private int nbCalls;
     private List<Double> httpTimes;
-    private List<Double> importTimes;
-    private List<Double> exportTimes;
+    private List<Double> resumeTimes;
+    private List<Double> suspendTimes;
 
     public ExecutionStats() {
         executionTime = -1;
         nbCalls = 0;
         httpTimes = new ArrayList<>();
-        importTimes = new ArrayList<>();
-        exportTimes = new ArrayList<>();
+        resumeTimes = new ArrayList<>();
+        suspendTimes = new ArrayList<>();
     }
 
     public double getExecutionTime() {
@@ -39,18 +39,18 @@ public class ExecutionStats {
         return Stats.meanOf(httpTimes);
     }
 
-    public Double getMeanImportTimes() {
-        if (importTimes.isEmpty()) {
+    public Double getMeanResumeTime() {
+        if (resumeTimes.isEmpty()) {
             return 0.0;
         }
-        return Stats.meanOf(importTimes);
+        return Stats.meanOf(resumeTimes);
     }
 
-    public Double getMeanExportTimes() {
-        if (exportTimes.isEmpty()) {
+    public Double getMeanSuspendTime() {
+        if (suspendTimes.isEmpty()) {
             return 0.0;
         }
-        return Stats.meanOf(exportTimes);
+        return Stats.meanOf(suspendTimes);
     }
 
     public void startTimer() {
@@ -67,8 +67,8 @@ public class ExecutionStats {
         httpTimes.add(execTime);
     }
 
-    public void reportOverhead(double importTime, double exportTime) {
-        importTimes.add(importTime);
-        exportTimes.add(exportTime);
+    public void reportOverhead(double resumeTime, double suspendTime) {
+        resumeTimes.add(resumeTime);
+        suspendTimes.add(suspendTime);
     }
 }

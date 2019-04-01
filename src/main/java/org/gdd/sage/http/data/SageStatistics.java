@@ -10,22 +10,22 @@ import java.util.Map;
  * @author Thomas Minier
  */
 public class SageStatistics {
-    private double exportTime;
-    private double importTime;
+    private double suspendTime;
+    private double resumeTime;
     private Map<String, Integer> cardinalities;
 
-    public SageStatistics(double exportTime, double importTime) {
-        this.exportTime = exportTime;
-        this.importTime = importTime;
+    public SageStatistics(double suspendTime, double resumeTime) {
+        this.suspendTime = suspendTime;
+        this.resumeTime = resumeTime;
         this.cardinalities = new HashMap<>();
     }
 
-    public double getExportTime() {
-        return exportTime;
+    public double getSuspendTime() {
+        return suspendTime;
     }
 
-    public double getImportTime() {
-        return importTime;
+    public double getResumeTime() {
+        return resumeTime;
     }
 
     public void addTripleCardinality(String subject, String predicate, String object, int cardinality) {

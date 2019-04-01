@@ -9,6 +9,7 @@ import org.apache.jena.query.QueryFactory;
 import org.gdd.sage.core.factory.SageAutoConfiguration;
 import org.gdd.sage.core.factory.SageConfigurationFactory;
 import org.gdd.sage.core.factory.SageFederatedConfiguration;
+import org.gdd.sage.engine.update.UpdateExecutor;
 import org.gdd.sage.http.ExecutionStats;
 import org.slf4j.Logger;
 
@@ -65,51 +66,75 @@ public class CLI {
                     queryString = cmd.getOptionValue("query");
                 }
 
-                ExecutionStats spy = new ExecutionStats();
-                Query query = QueryFactory.create(queryString);
-
-                // get the auto-configuration factory based on query execution context (federated or not)
+                Dataset federation;
                 SageConfigurationFactory factory;
-                if (urls.size() > 1) {
-                    factory = new SageFederatedConfiguration(urls, query, spy);
+                ExecutionStats spy = new ExecutionStats();
+
+                // check if we are dealing with a classic query or an UPDATE query
+                if (cmd.hasOption("update")) {
+                    // compute bucket size
+                    int bucketSize = 100;
+                    if (cmd.hasOption("bucket")) {
+                        bucketSize = ((Number) cmd.getParsedOptionValue("bucket")).intValue();
+                    }
+                    // init execution env.
+                    factory = new SageAutoConfiguration(urls.get(0), QueryFactory.create("SELECT * WHERE { ?s ?p ?o}"), spy);
+                    factory.configure();
+                    factory.buildDataset();
+                    federation = factory.getDataset();
+                    // execute query
+                    UpdateExecutor executor = new UpdateExecutor(urls.get(0), federation, bucketSize);
+                    spy.startTimer();
+                    executor.execute(queryString);
+                    spy.stopTimer();
                 } else {
-                    factory = new SageAutoConfiguration(urls.get(0), query, spy);
+                    Query query = QueryFactory.create(queryString);
+                    // get the auto-configuration factory based on query execution context (federated or not)
+                    if (urls.size() > 1) {
+                        factory = new SageFederatedConfiguration(urls, query, spy);
+                    } else {
+                        factory = new SageAutoConfiguration(urls.get(0), query, spy);
+                    }
+
+                    // Init Sage dataset (maybe federated)
+                    factory.configure();
+                    factory.buildDataset();
+                    query = factory.getQuery();
+                    federation = factory.getDataset();
+
+                    // Evaluate SPARQL query
+                    QueryExecutor executor;
+
+                    if (query.isSelectType()) {
+                        executor = new SelectQueryExecutor(format);
+                    } else if (query.isAskType()) {
+                        executor = new AskQueryExecutor(format);
+                    } else if (query.isConstructType()) {
+                        executor = new ConstructQueryExecutor(format);
+                    } else {
+                        executor = new DescribeQueryExecutor(format);
+                    }
+                    spy.startTimer();
+                    executor.execute(federation, query);
+                    spy.stopTimer();
                 }
-
-                // Init Sage dataset (maybe federated)
-                factory.configure();
-                factory.buildDataset();
-                query = factory.getQuery();
-                Dataset federation = factory.getDataset();
-
-                // Evaluate SPARQL query
-                QueryExecutor executor;
-
-                if (query.isSelectType()) {
-                    executor = new SelectQueryExecutor(format);
-                } else if (query.isAskType()) {
-                    executor = new AskQueryExecutor(format);
-                } else if (query.isConstructType()) {
-                    executor = new ConstructQueryExecutor(format);
-                } else {
-                    executor = new DescribeQueryExecutor(format);
-                }
-                spy.startTimer();
-                executor.execute(federation, query);
-                spy.stopTimer();
+                // display execution time (if needed)
                 if (cmd.hasOption("time")) {
                     double duration = spy.getExecutionTime();
                     int nbQueries = spy.getNbCalls();
                     System.err.println(MessageFormat.format("SPARQL query executed in {0}s with {1} HTTP requests", duration , nbQueries));
                 }
+                // display stats in CSV format (if needed)
+                // format: duration,nb HTTP requests,Avg. HTTP response time, Avg. Resume time, Avg. Suspend time
                 if (cmd.hasOption("measure")) {
                     double duration = spy.getExecutionTime();
                     int nbQueries = spy.getNbCalls();
-                    double avgImport = spy.getMeanImportTimes();
-                    double avgExport = spy.getMeanExportTimes();
-                    String measure = String.format("%s,%s,%s,%s,%s", duration, nbQueries, spy.getMeanHttpTimes(), avgImport, avgExport);
+                    double avgResume = spy.getMeanResumeTime();
+                    double avgSuspend = spy.getMeanSuspendTime();
+                    String measure = String.format("%s,%s,%s,%s,%s", duration, nbQueries, spy.getMeanHttpTimes(), avgResume, avgSuspend);
                     Files.write(Paths.get(cmd.getOptionValue("measure")), measure.getBytes(), StandardOpenOption.APPEND);
                 }
+                // cleanup connections
                 federation.close();
                 factory.close();
             }

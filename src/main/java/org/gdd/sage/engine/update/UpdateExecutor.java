@@ -51,7 +51,7 @@ public class UpdateExecutor {
      * Execute a SPARQL UPDATE query
      * @param query - SPARQL UPDATE query
      */
-    public void execute(String query) {
+    public boolean execute(String query) {
         List<UpdateQuery> updates = new LinkedList<>();
 
         // parse query and get all update operations in the plan
@@ -69,11 +69,13 @@ public class UpdateExecutor {
                 updates.add(DeleteInsertQuery.fromOperation(modify, dataset, bucketSize));
             }
         }
-
         // execute each update operation
         for(UpdateQuery update: updates) {
-            executeOne(update);
+            if(!executeOne(update)) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -92,6 +94,7 @@ public class UpdateExecutor {
             UpdateResults results = defaultGraph.getClient().update(defaultGraphURI, query);
             // handle errors
             if (results.hasError()) {
+                logger.error("Failed execution of update query: " + query);
                 logger.error(results.getError());
                 return false;
             }

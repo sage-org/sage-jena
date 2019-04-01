@@ -341,7 +341,7 @@ public class SageDefaultClient implements SageRemoteClient {
             throw new IOException("Unexpected error when executing HTTP request: " + responseContent);
         }
         SageResponse sageResponse = mapper.readValue(responseContent, new TypeReference<SageResponse>(){});
-        spy.reportOverhead(sageResponse.stats.getImportTime(), sageResponse.stats.getExportTime());
+        spy.reportOverhead(sageResponse.stats.getResumeTime(), sageResponse.stats.getSuspendTime());
 
         // format bindings in Jena format
         List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {

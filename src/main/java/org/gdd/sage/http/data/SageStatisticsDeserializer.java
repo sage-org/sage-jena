@@ -16,9 +16,9 @@ public class SageStatisticsDeserializer extends JsonDeserializer<SageStatistics>
     @Override
     public SageStatistics deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
-        double exportTime = node.get("export").asDouble();
-        double importTime = node.get("import").asDouble();
-        SageStatistics sageStatistics = new SageStatistics(exportTime, importTime);
+        double suspendTime = node.get("export").asDouble();
+        double resumeTime = node.get("import").asDouble();
+        SageStatistics sageStatistics = new SageStatistics(suspendTime, resumeTime);
         // ensure that the "cardinalities" field is an array
         if (node.get("cardinalities").isArray()) {
             ArrayNode cardsNode = (ArrayNode) node.get("cardinalities");
