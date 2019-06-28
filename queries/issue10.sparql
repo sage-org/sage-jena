@@ -1,0 +1,3 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+CONSTRUCT { <http://example.com/void> void:triples ?count }
+WHERE { SELECT (COUNT(*) as ?count) WHERE  { SELECT * WHERE { ?s ?p ?o } LIMIT 1000000 } }
