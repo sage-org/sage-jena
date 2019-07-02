@@ -30,12 +30,15 @@ import org.gdd.sage.http.results.UpdateResults;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.rmi.ServerError;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +56,8 @@ public class SageDefaultClient implements SageRemoteClient {
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String HTTP_JSON_CONTENT_TYPE = "application/json";
+    private final Pattern typePattern = Pattern.compile("\"(.*)\"(\\^\\^)(.+)");
+    private final Pattern langPattern = Pattern.compile("\"(.*)\"(@)(.+)");
 
     private class JSONPayload {
         private String query;
@@ -311,29 +316,38 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return RDF node in a Jena compatible format
      */
     private Node parseNode(String node) {
-        Node value;
-        // Literal case
-        if (node.startsWith("\""))  {
-            String literal = node.trim();
-            // typed literal case (HDT can parse datatype without the surrounding "<>")
-            if (literal.contains("\"^^<http")) {
-                int index = literal.lastIndexOf("\"^^<http:");
-                RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 4, literal.length() - 1));
-                value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
-            } else if (literal.contains("\"^^http")) {
-                int index = literal.lastIndexOf("\"^^http:");
-                RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(literal.substring(index + 3, literal.length() - 1));
-                value = NodeFactory.createLiteral(literal.substring(1, index), datatype);
-            } else if (literal.contains("\"@")) {
-                int index = literal.lastIndexOf("\"@");
-                value = NodeFactory.createLiteral(literal.substring(1, index), literal.substring(index + 2));
-            } else if (literal.startsWith("\"") && literal.endsWith("\"")){
-                value = NodeFactory.createLiteral(literal.substring(1, literal.length() - 1));
+        Node value = null;
+        String literal = null;
+        try {
+            // Literal case
+            if (node.startsWith("\""))  {
+                literal = node.trim();
+                Matcher langMatcher = langPattern.matcher(literal);
+                Matcher typeMatcher = typePattern.matcher(literal);
+                langMatcher.matches();
+                typeMatcher.matches();
+                if (typeMatcher.matches()) {
+                    if (typeMatcher.group(3).startsWith("<")) {
+                        String type = typeMatcher.group(3);
+                        RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(type.substring(1, type.length() - 1));
+                        value = NodeFactory.createLiteral(typeMatcher.group(1), datatype);
+                    } else {
+                        RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(typeMatcher.group(3));
+                        value = NodeFactory.createLiteral(typeMatcher.group(1), datatype);
+                    }
+                } else if (langMatcher.matches()) {
+                    value = NodeFactory.createLiteral(langMatcher.group(1), langMatcher.group(3));
+                } else if (literal.startsWith("\"") && literal.endsWith("\"")){
+                    value = NodeFactory.createLiteral(literal.substring(1, literal.length() - 1));
+                } else {
+                    value = NodeFactory.createLiteral(literal);
+                }
             } else {
-                value = NodeFactory.createLiteral(literal);
+                value = NodeFactory.createURI(node);
             }
-        } else {
-            value = NodeFactory.createURI(node);
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw e;
         }
         return value;
     }
@@ -365,8 +379,10 @@ public class SageDefaultClient implements SageRemoteClient {
                     Var key = Var.alloc(entry.getKey().substring(1));
                     Node value = parseNode(entry.getValue());
                     b.add(key, value);
-                } catch(RiotParseException e) {
+                } catch(Exception e) {
                     // TODO: for now we skip parsing errors, maybe need to do something cleaner
+                     System.err.println(binding);
+                     System.err.println(entry.getKey() + " - " + entry.getValue());
                 }
             }
             return b;
