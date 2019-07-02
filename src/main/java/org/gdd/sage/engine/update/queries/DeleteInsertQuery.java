@@ -22,10 +22,12 @@ import java.util.List;
 public class DeleteInsertQuery implements UpdateQuery {
     private ResultSet source;
     private QueryExecution execution;
-    private UpdateQuery currentDelete;
-    private UpdateQuery currentInsert;
+    private UpdateQuery deleteQuery;
+    private UpdateQuery insertQuery;
     private List<Quad> deleteTemplates;
     private List<Quad> insertTemplates;
+    private List<Binding> results;
+    private boolean warmup;
     private int bucketSize;
 
     /**
@@ -38,11 +40,13 @@ public class DeleteInsertQuery implements UpdateQuery {
     private DeleteInsertQuery(QueryExecution execution, List<Quad> deleteTemplates, List<Quad> insertTemplates, int bucketSize) {
         this.source = execution.execSelect();
         this.execution = execution;
-        currentDelete = new EmptyQuery();
-        currentInsert = new EmptyQuery();
+        this.deleteQuery = new EmptyQuery();
+        this.insertQuery = new EmptyQuery();
+        this.results = new LinkedList<>();
         this.deleteTemplates = new LinkedList<>(deleteTemplates);
         this.insertTemplates = new LinkedList<>(insertTemplates);
         this.bucketSize = bucketSize;
+        this.warmup = true;
     }
 
     /**
@@ -70,27 +74,21 @@ public class DeleteInsertQuery implements UpdateQuery {
     }
 
     /**
-     * Pull a set of solution bindings from the source
-     * @return A set of solution bindings
-     */
-    private Binding pullBinding() {
-        return source.nextBinding();
-    }
-
-    /**
      * Instantiate a list of templates (RDF quads) using a set of solution bindings.
      * Exclude quads that where not all variables were substituted.
      * @param templates - Templates, i.e., RDF quads with SPARQL variables
-     * @param binding - Set of solution bindings
+     * @param bindings - List of sets of solution bindings
      * @return The list of instantiated RDF quads
      */
-    private List<Quad> buildTemplates(List<Quad> templates, Binding binding) {
+    private List<Quad> buildTemplates(List<Quad> templates, List<Binding> bindings) {
         List<Quad> results = new LinkedList<>();
-        for(Quad template: templates) {
-            Quad newQuad = Substitute.substitute(template, binding);
-            // assert that all variables in the new quad were substituted
-            if ((!newQuad.getSubject().isVariable()) && (!newQuad.getPredicate().isVariable()) && (!newQuad.getObject().isVariable())) {
-                results.add(newQuad);
+        for(Binding binding: bindings) {
+            for(Quad template: templates) {
+                Quad newQuad = Substitute.substitute(template, binding);
+                // assert that all variables in the new quad were substituted
+                if ((!newQuad.getSubject().isVariable()) && (!newQuad.getPredicate().isVariable()) && (!newQuad.getObject().isVariable())) {
+                    results.add(newQuad);
+                }
             }
         }
         return results;
@@ -102,25 +100,15 @@ public class DeleteInsertQuery implements UpdateQuery {
      */
     @Override
     public String nextQuery() {
-        if (currentDelete.hasNextQuery()) {
-            return currentDelete.nextQuery();
-        } else if (currentInsert.hasNextQuery()) {
-            return currentInsert.nextQuery();
-        } else if (source.hasNext()) {
-            // pull a binding and build new DELETE DATA and INSERT DATA queries
-            Binding b = pullBinding();
-            List<Quad> deleteQuads = buildTemplates(deleteTemplates, b);
-            List<Quad> insertQuads = buildTemplates(insertTemplates, b);
-            // do not build operators if the set of quads to insert is empty
-            if (!deleteQuads.isEmpty()) {
-                currentDelete = new DeleteQuery(deleteQuads, bucketSize);
-            }
-            if (!insertQuads.isEmpty()) {
-                currentInsert = new InsertQuery(insertQuads, bucketSize);
-            }
-            return nextQuery();
+        UpdateQuery currentQuery;
+        if (deleteQuery.hasNextQuery()) {
+            currentQuery = deleteQuery;
+        } else if (insertQuery.hasNextQuery()) {
+            currentQuery = insertQuery;
+        } else {
+            return null;
         }
-        return null;
+        return currentQuery.nextQuery();
     }
 
     /**
@@ -129,7 +117,26 @@ public class DeleteInsertQuery implements UpdateQuery {
      */
     @Override
     public boolean hasNextQuery() {
-        return currentDelete.hasNextQuery() || currentInsert.hasNextQuery() || source.hasNext();
+        if (warmup) {
+            // execute update pattern
+            while(source.hasNext()) {
+                results.add(source.nextBinding());
+            }
+            if (!results.isEmpty()) {
+                // build delete templates
+                List<Quad> deleteQuads = buildTemplates(deleteTemplates, results);
+                if (!deleteQuads.isEmpty()) {
+                    deleteQuery = new DeleteQuery(deleteQuads, bucketSize);
+                }
+                // build insert templates
+                List<Quad> insertQuads = buildTemplates(insertTemplates, results);
+                if (!insertQuads.isEmpty()) {
+                    insertQuery = new InsertQuery(insertQuads, bucketSize);
+                }
+            }
+            warmup = false;
+        }
+        return (!results.isEmpty()) && (deleteQuery.hasNextQuery() || insertQuery.hasNextQuery());
     }
 
     /**
@@ -137,10 +144,10 @@ public class DeleteInsertQuery implements UpdateQuery {
      * @param quads - List of quads
      */
     public void markAsCompleted(List<Quad> quads) {
-        if (currentDelete.hasNextQuery()) {
-            currentDelete.markAsCompleted(quads);
-        } else if (currentInsert.hasNextQuery()) {
-            currentInsert.markAsCompleted(quads);
+        if (deleteQuery.hasNextQuery()) {
+            deleteQuery.markAsCompleted(quads);
+        } else {
+            insertQuery.markAsCompleted(quads);
         }
     }
 

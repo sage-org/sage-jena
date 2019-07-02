@@ -20,7 +20,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.cache.QueryCache;
 import org.gdd.sage.http.cache.SimpleCache;
@@ -163,9 +162,9 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param next - Optional link used to resume query evaluation
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    private QueryResults sendQuery(String graphURI, String query, Optional<String> next) {
+    private QueryResults sendQuery(String graphURI, String query, Optional<String> next, boolean isRead) {
         // check in cache first
-        if (cache.has(graphURI, query, next)) {
+        if (isRead && cache.has(graphURI, query, next)) {
             return cache.get(graphURI, query, next);
         }
         // build POST query
@@ -177,11 +176,19 @@ public class SageDefaultClient implements SageRemoteClient {
             HttpRequest request = requestFactory.buildPostRequest(url, postContent);
             HttpResponse response = request.executeAsync(threadPool).get();
             double endTime = System.nanoTime();
-            spy.reportHttpQuery((endTime - startTime) / 1e9);
-            return decodeResponse(response);
+            if (isRead) {
+                spy.reportHTTPQueryRead((endTime - startTime) / 1e9);
+            } else {
+                spy.reportHTTPQueryWrite((endTime - startTime) / 1e9);
+            }
+            return decodeResponse(response, isRead);
         } catch (InterruptedException | ExecutionException | IOException e) {
             double endTime = System.nanoTime();
-            spy.reportHttpQuery((endTime - startTime) / 1e9);
+            if (isRead) {
+                spy.reportHTTPQueryRead((endTime - startTime) / 1e9);
+            } else {
+                spy.reportHTTPQueryWrite((endTime - startTime) / 1e9);
+            }
             return QueryResults.withError(e.getMessage());
         }
     }
@@ -205,7 +212,7 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public QueryResults query(String graphURI, BasicPattern bgp, Optional<String> next) {
         String query = SageQueryBuilder.buildBGPQuery(bgp);
-        return sendQuery(graphURI, query, next);
+        return sendQuery(graphURI, query, next, true);
     }
 
     /**
@@ -229,7 +236,7 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public QueryResults query(String graphURI, BasicPattern bgp, List<Expr> filters, Optional<String> next) {
         String query = SageQueryBuilder.buildBGPQuery(bgp, filters);
-        return sendQuery(graphURI, query, next);
+        return sendQuery(graphURI, query, next, true);
     }
 
     /**
@@ -251,7 +258,7 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public QueryResults query(String graphURI, List<BasicPattern> patterns, Optional<String> next) {
         String query = SageQueryBuilder.buildUnionQuery(patterns);
-        return sendQuery(graphURI, query, next);
+        return sendQuery(graphURI, query, next, true);
     }
 
     /**
@@ -273,7 +280,7 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     public QueryResults query(String graphURI, Map<String, BasicPattern> graphs, Optional<String> next) {
         String query = SageQueryBuilder.buildGraphQuery(graphs);
-        return sendQuery(graphURI, query, next);
+        return sendQuery(graphURI, query, next, true);
     }
 
     /**
@@ -283,7 +290,7 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return Query results, containing the RDF quads that were processed by the server
      */
     public UpdateResults update(String graphURI, String query) {
-        QueryResults results = sendQuery(graphURI, query, Optional.empty());
+        QueryResults results = sendQuery(graphURI, query, Optional.empty(), false);
         // convert QueryResults to UpdateResults
         if (results.hasError()) {
             return UpdateResults.withError(results.getError());
@@ -337,14 +344,18 @@ public class SageDefaultClient implements SageRemoteClient {
      * @return A decoded response
      * @throws IOException
      */
-    private QueryResults decodeResponse(HttpResponse response) throws IOException {
+    private QueryResults decodeResponse(HttpResponse response, boolean isRead) throws IOException {
         String responseContent = IOUtils.toString(response.getContent(), Charset.forName("UTF-8"));
         int statusCode = response.getStatusCode();
         if (statusCode != 200) {
             throw new IOException("Unexpected error when executing HTTP request: " + responseContent);
         }
         SageResponse sageResponse = mapper.readValue(responseContent, new TypeReference<SageResponse>(){});
-        spy.reportOverhead(sageResponse.stats.getResumeTime(), sageResponse.stats.getSuspendTime());
+        if (isRead) {
+            spy.reportOverheadRead(sageResponse.stats.getResumeTime(), sageResponse.stats.getSuspendTime());
+        } else {
+            spy.reportOverheadWrite(sageResponse.stats.getResumeTime(), sageResponse.stats.getSuspendTime());
+        }
 
         // format bindings in Jena format
         List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {

@@ -132,18 +132,28 @@ public class CLI implements Callable<Void> {
         // display execution time (if needed)
         if (this.time) {
             double duration = spy.getExecutionTime();
-            int nbQueries = spy.getNbCalls();
+            int nbQueries = spy.getNbCallsRead();
             System.err.println(MessageFormat.format("SPARQL query executed in {0}s with {1} HTTP requests", duration, nbQueries));
         }
 
         // display stats in CSV format (if needed)
-        // format: duration,nb HTTP requests,Avg. HTTP response time, Avg. Resume time, Avg. Suspend time
+        // FORMAT:
+        // duration
+        // nb HTTP requests read
+        // nb HTTP requests write
+        // Avg. HTTP response time read
+        // Avg. HTTP response time write
+        // Avg. Resume time read
+        // Avg. Resume time write
+        // Avg. Suspend time read
+        // Avg. Suspend time write
         if (this.measure != null) {
             double duration = spy.getExecutionTime();
-            int nbQueries = spy.getNbCalls();
-            double avgResume = spy.getMeanResumeTime();
-            double avgSuspend = spy.getMeanSuspendTime();
-            String csvLine = String.format("%s,%s,%s,%s,%s", duration, nbQueries, spy.getMeanHttpTimes(), avgResume, avgSuspend);
+            String csvLine = String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                    duration, spy.getNbCallsRead(), spy.getNbCallsWrite(),
+                    spy.getMeanHTTPTimesRead(), spy.getMeanHTTPTimesWrite(),
+                    spy.getMeanResumeTimeRead(), spy.getMeanResumeTimeWrite(),
+                    spy.getMeanSuspendTimeRead(), spy.getMeanSuspendTimeWrite());
             try {
                 Files.write(Paths.get(this.measure), csvLine.getBytes(), StandardOpenOption.APPEND);
             } catch (IOException e) {

@@ -1,16 +1,15 @@
 package org.gdd.sage;
 
 import org.apache.jena.query.*;
-import org.gdd.sage.cli.DescribeQueryExecutor;
-import org.gdd.sage.cli.QueryExecutor;
 import org.gdd.sage.core.factory.SageAutoConfiguration;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
