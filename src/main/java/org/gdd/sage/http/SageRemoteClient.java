@@ -1,6 +1,7 @@
 package org.gdd.sage.http;
 
 import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.results.QueryResults;
@@ -42,6 +43,25 @@ public interface SageRemoteClient {
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
     QueryResults query(String graphURI, BasicPattern bgp, Optional<String> next);
+
+    /**
+     * Evaluate a Basic Graph Pattern with a GROUP BY against a SaGe server, without a next link
+     * @param graphURI - Default Graph URI
+     * @param bgp - BGP to evaluate
+     * @param variables - GROUP BY variables
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables);
+
+    /**
+     * Evaluate a Basic Graph Pattern with a GROUP BY against a SaGe server, with a next link
+     * @param graphURI - Default Graph URI
+     * @param bgp - BGP to evaluate
+     * @param variables - GROUP BY variables
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables, Optional<String> next);
 
     /**
      * Evaluate a Basic Graph Pattern with filter against a SaGe server

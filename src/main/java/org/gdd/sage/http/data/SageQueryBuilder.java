@@ -1,15 +1,17 @@
 package org.gdd.sage.http.data;
 
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Builder used to create SPARQL queries that can be send to a SaGe server
@@ -49,6 +51,26 @@ public class SageQueryBuilder {
         }
         // apply projection
         //op = new OpProject(op, Lists.newLinkedList(variables));
+        return SageQueryBuilder.serializeQuery(op);
+    }
+
+    /**
+     * Build a SPARQL query from a Basic graph pattern and a list of SPARQL filters
+     * @param bgp - Basic Graph pattern
+     * @param variables - GROUP BY variables
+     * @return Generated SPARQL query
+     */
+    public static String buildBGPGroupByQuery(BasicPattern bgp, List<Var> variables) {
+        // query root: the basic graph pattern itself
+        Op op = new OpBGP(bgp);
+        // add group by
+        VarExprList list = new VarExprList();
+        for(Var v: variables) {
+            list.add(v);
+        }
+        op = new OpGroup(op, list, new LinkedList<>());
+        // apply projection
+        // op = new OpProject(op, variables);
         return SageQueryBuilder.serializeQuery(op);
     }
 

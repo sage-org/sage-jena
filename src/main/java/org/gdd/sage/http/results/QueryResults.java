@@ -1,7 +1,9 @@
 package org.gdd.sage.http.results;
 
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.gdd.sage.http.data.QuerySolutions;
 import org.gdd.sage.http.data.SageStatistics;
+import org.gdd.sage.http.data.SolutionGroup;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,14 +13,14 @@ import java.util.Optional;
  * @author Thomas Minier
  */
 public class QueryResults implements SageQueryResults {
-    private List<Binding> bindings;
+    private QuerySolutions solutions;
     private Optional<String> next;
     private SageStatistics stats;
     private String error;
     private boolean hasError;
 
-    public QueryResults(List<Binding> bindings, String next, SageStatistics stats) {
-        this.bindings = bindings;
+    public QueryResults(QuerySolutions solutions, String next, SageStatistics stats) {
+        this.solutions = solutions;
         if (next == null) {
             this.next = Optional.empty();
         } else {
@@ -39,7 +41,11 @@ public class QueryResults implements SageQueryResults {
     }
 
     public List<Binding> getBindings() {
-        return bindings;
+        return solutions.getBindings();
+    }
+
+    public List<SolutionGroup> getSolutionGroups() {
+        return solutions.getGroups();
     }
 
     public Optional<String> getNext() {

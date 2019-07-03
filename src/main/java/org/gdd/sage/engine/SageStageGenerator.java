@@ -2,7 +2,6 @@ package org.gdd.sage.engine;
 
 import com.google.common.collect.Sets;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
@@ -12,11 +11,9 @@ import org.apache.jena.sparql.engine.main.StageGenerator;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
 import org.gdd.sage.core.SageUtils;
-import org.gdd.sage.engine.iterators.boundjoin.BoundJoinIterator;
 import org.gdd.sage.engine.iterators.boundjoin.ParallelBoundJoinIterator;
 import org.gdd.sage.model.SageGraph;
 
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;

@@ -14,12 +14,16 @@ import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.engine.main.QC;
+import org.apache.jena.sparql.expr.ExprAggregator;
 import org.gdd.sage.core.SageUtils;
+import org.gdd.sage.engine.iterators.SageGroupByIterator;
 import org.gdd.sage.engine.iterators.optional.OptJoin;
 import org.gdd.sage.engine.iterators.optional.OptionalIterator;
 import org.gdd.sage.engine.iterators.parallel.ParallelUnionIterator;
+import org.gdd.sage.model.SageGraph;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -40,8 +44,23 @@ public class SageOpExecutor extends OpExecutor {
         return super.exec(op, input);
     }
 
+    @Override
+    protected QueryIterator execute(OpGroup opGroup, QueryIterator input) {
+        // reducer-based aggregations only works on a single BGP
+        Graph activeGraph = execCxt.getActiveGraph();
+        if (opGroup.getSubOp() instanceof OpBGP && activeGraph instanceof SageGraph) {
+            SageGraph graph = (SageGraph) activeGraph;
+            BasicPattern bgp = ((OpBGP) opGroup.getSubOp()).getPattern();
+            List<Var> variables = opGroup.getGroupVars().getVars();
+            List<ExprAggregator> aggregators = opGroup.getAggregators();
+            // create evaluation iterator
+            return new SageGroupByIterator(graph.getGraphURI(), graph.getClient(), bgp, variables, aggregators, execCxt);
+        }
+        return super.execute(opGroup, input);
+    }
+
     /**
-     * Exxecute a Left Join/Optional with a pure pipeline logic
+     * Execute a Left Join/Optional with a pure pipeline logic
      * @param left - Left operator
      * @param right - Right operator
      * @param input - Solution bindings input

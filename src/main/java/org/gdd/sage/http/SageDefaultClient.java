@@ -10,15 +10,8 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.riot.RiotParseException;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingHashMap;
 import org.apache.jena.sparql.expr.Expr;
 import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.cache.QueryCache;
@@ -30,16 +23,12 @@ import org.gdd.sage.http.results.UpdateResults;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.rmi.ServerError;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Allows evaluation of SPARQL queries against a SaGe server.
@@ -56,8 +45,6 @@ public class SageDefaultClient implements SageRemoteClient {
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
     private static final String HTTP_JSON_CONTENT_TYPE = "application/json";
-    private final Pattern typePattern = Pattern.compile("\"(.*)\"(\\^\\^)(.+)");
-    private final Pattern langPattern = Pattern.compile("\"(.*)\"(@)(.+)");
 
     private class JSONPayload {
         private String query;
@@ -221,6 +208,31 @@ public class SageDefaultClient implements SageRemoteClient {
     }
 
     /**
+     * Evaluate a Basic Graph Pattern with a GROUP BY against a SaGe server, without a next link
+     * @param graphURI - Default Graph URI
+     * @param bgp - BGP to evaluate
+     * @param variables - GROUP BY variables
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    public QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables) {
+        String query = SageQueryBuilder.buildBGPGroupByQuery(bgp, variables);
+        return sendQuery(graphURI, query, Optional.empty(),true);
+    }
+
+    /**
+     * Evaluate a Basic Graph Pattern with a GROUP BY against a SaGe server, with a next link
+     * @param graphURI - Default Graph URI
+     * @param bgp - BGP to evaluate
+     * @param variables - GROUP BY variables
+     * @param next - Optional link used to resume query evaluation
+     * @return Query results. If the next link is null, then the BGP has been completely evaluated.
+     */
+    public QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables, Optional<String> next) {
+        String query = SageQueryBuilder.buildBGPGroupByQuery(bgp, variables);
+        return sendQuery(graphURI, query, next,true);
+    }
+
+    /**
      * Evaluate a Basic Graph Pattern with filter against a SaGe server
      * @param graphURI - Default Graph URI
      * @param bgp - BGP to evaluate
@@ -311,48 +323,6 @@ public class SageDefaultClient implements SageRemoteClient {
     }
 
     /**
-     * Parse a RDF node from String format to a Jena compatible format
-     * @param node RDF node in string format
-     * @return RDF node in a Jena compatible format
-     */
-    private Node parseNode(String node) {
-        Node value = null;
-        String literal = null;
-        try {
-            // Literal case
-            if (node.startsWith("\""))  {
-                literal = node.trim();
-                Matcher langMatcher = langPattern.matcher(literal);
-                Matcher typeMatcher = typePattern.matcher(literal);
-                langMatcher.matches();
-                typeMatcher.matches();
-                if (typeMatcher.matches()) {
-                    if (typeMatcher.group(3).startsWith("<")) {
-                        String type = typeMatcher.group(3);
-                        RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(type.substring(1, type.length() - 1));
-                        value = NodeFactory.createLiteral(typeMatcher.group(1), datatype);
-                    } else {
-                        RDFDatatype datatype = TypeMapper.getInstance().getTypeByName(typeMatcher.group(3));
-                        value = NodeFactory.createLiteral(typeMatcher.group(1), datatype);
-                    }
-                } else if (langMatcher.matches()) {
-                    value = NodeFactory.createLiteral(langMatcher.group(1), langMatcher.group(3));
-                } else if (literal.startsWith("\"") && literal.endsWith("\"")){
-                    value = NodeFactory.createLiteral(literal.substring(1, literal.length() - 1));
-                } else {
-                    value = NodeFactory.createLiteral(literal);
-                }
-            } else {
-                value = NodeFactory.createURI(node);
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return value;
-    }
-
-    /**
      * Decode an HTTP response from a SaGe server
      * @param response - The HTTP response to decode
      * @return A decoded response
@@ -360,6 +330,7 @@ public class SageDefaultClient implements SageRemoteClient {
      */
     private QueryResults decodeResponse(HttpResponse response, boolean isRead) throws IOException {
         String responseContent = IOUtils.toString(response.getContent(), Charset.forName("UTF-8"));
+
         int statusCode = response.getStatusCode();
         if (statusCode != 200) {
             throw new IOException("Unexpected error when executing HTTP request: " + responseContent);
@@ -370,23 +341,6 @@ public class SageDefaultClient implements SageRemoteClient {
         } else {
             spy.reportOverheadWrite(sageResponse.stats.getResumeTime(), sageResponse.stats.getSuspendTime());
         }
-
-        // format bindings in Jena format
-        List<Binding> results = sageResponse.bindings.parallelStream().map(binding -> {
-            BindingHashMap b = new BindingHashMap();
-            for (Map.Entry<String, String> entry: binding.entrySet()) {
-                try {
-                    Var key = Var.alloc(entry.getKey().substring(1));
-                    Node value = parseNode(entry.getValue());
-                    b.add(key, value);
-                } catch(Exception e) {
-                    // TODO: for now we skip parsing errors, maybe need to do something cleaner
-                     System.err.println(binding);
-                     System.err.println(entry.getKey() + " - " + entry.getValue());
-                }
-            }
-            return b;
-        }).collect(Collectors.toList());
-        return new QueryResults(results, sageResponse.next, sageResponse.stats);
+        return new QueryResults(sageResponse.bindings, sageResponse.next, sageResponse.stats);
     }
 }
