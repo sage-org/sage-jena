@@ -8,6 +8,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A reducer used to reconstruct GROUP BY results
+ * @author Thomas Minier
+ */
 public class GroupByReducer implements Reducer {
 
     private Map<Binding, SolutionGroup> groups;
