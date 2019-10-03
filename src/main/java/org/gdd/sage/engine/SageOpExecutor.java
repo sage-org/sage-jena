@@ -50,7 +50,7 @@ public class SageOpExecutor extends OpExecutor {
         return new SageGroupByIterator(graph, bgp, variables, aggregations, extendExprs, execCxt);
     }
 
-    @Override
+    /*@Override
     protected QueryIterator execute(OpExtend opExtend, QueryIterator input) {
         // gather all extend operations
         VarExprList expressions = new VarExprList();
@@ -79,7 +79,7 @@ public class SageOpExecutor extends OpExecutor {
             return executeAggregation((SageGraph) activeGraph, opGroup, new VarExprList());
         }
         return super.execute(opGroup, input);
-    }
+    }*/
 
     /**
      * Execute a Left Join/Optional with a pure pipeline logic
