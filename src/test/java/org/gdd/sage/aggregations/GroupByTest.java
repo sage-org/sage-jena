@@ -2,12 +2,14 @@ package org.gdd.sage.aggregations;
 
 import org.apache.jena.query.*;
 import org.gdd.sage.core.factory.SageAutoConfiguration;
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GroupByTest {
 
+    @Ignore
     public static void main(String[] args) {
         String url = "http://localhost:8000/sparql/bsbm1k";
         String queryString = "SELECT (COUNT(?p) AS ?x) ?c WHERE { ?s a ?c ; ?p ?o } GROUP BY ?c";

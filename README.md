@@ -21,14 +21,24 @@ Unzip it, and use `bin/sage-jena` to evaluate SPARQL queries using a Sage server
 # Usage
 
 ```
-usage: bin/sage-jena <graph-url> [options]
- -f,--file <file>            File containing a SPARQL query to execute
-    --format <format>        Results format (Result set: text, XML, JSON,
-                             CSV, TSV; Graph: RDF serialization)
- -h,--help                   Show help
- -q,--query <sparql-query>   SPARQL query to execute (passed in
-                             command-line)
- -time                       Time the query execution
+Usage: sage-jena [-hV] [--time] [--update] [--bucket-size=<bucketSize>]
+                 [--format=<format>] [-f=<file>] [-m=<measure>] [-q=<query>]
+                 URL...
+Execute a SPARQL query with the SaGe Smart client
+      URL...                URL(s) of SaGe server(s) to query. If several URls are
+                              provided, the query will be executed as a Federated
+                              query.
+      --bucket-size=<bucketSize>
+                            Bucket size for SPARQL UPDATE query evaluation
+      --format=<format>     Results format (Result set: raw, XML, JSON, CSV, TSV;
+                              Graph: RDF serialization)
+      --time                Display the the query execution time at the end
+      --update              Execute the input query as a SPARQL UPDATE query
+  -f, --file=<file>         File containing a SPARQL query to execute
+  -h, --help                Show this help message and exit.
+  -m, --measure=<measure>   Measure query execution stats and append it to a file
+  -q, --query=<query>       SPARQL query to execute (passed in command-line)
+  -V, --version             Print version information and exit.
 ```
 
 ## Example: simple query
