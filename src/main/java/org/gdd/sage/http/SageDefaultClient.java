@@ -12,7 +12,9 @@ import com.google.api.client.util.ExponentialBackOff;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
 import org.gdd.sage.engine.update.base.UpdateQuery;
 import org.gdd.sage.http.cache.QueryCache;
 import org.gdd.sage.http.cache.SimpleCache;
@@ -212,11 +214,11 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param graphURI - Default Graph URI
      * @param bgp - BGP to evaluate
      * @param variables - GROUP BY variables
+     * @param aggregations - SPARQL aggregations (may be empty)
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables) {
-        String query = SageQueryBuilder.buildBGPGroupByQuery(bgp, variables);
-        return sendQuery(graphURI, query, Optional.empty(),true);
+    public QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables, List<ExprAggregator> aggregations, VarExprList extensions) {
+        return queryGroupBy(graphURI, bgp, variables, aggregations, extensions, Optional.empty());
     }
 
     /**
@@ -224,11 +226,12 @@ public class SageDefaultClient implements SageRemoteClient {
      * @param graphURI - Default Graph URI
      * @param bgp - BGP to evaluate
      * @param variables - GROUP BY variables
+     * @param aggregations - SPARQL aggregations (may be empty)
      * @param next - Optional link used to resume query evaluation
      * @return Query results. If the next link is null, then the BGP has been completely evaluated.
      */
-    public QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables, Optional<String> next) {
-        String query = SageQueryBuilder.buildBGPGroupByQuery(bgp, variables);
+    public QueryResults queryGroupBy(String graphURI, BasicPattern bgp, List<Var> variables, List<ExprAggregator> aggregations, VarExprList extensions,  Optional<String> next) {
+        String query = SageQueryBuilder.buildBGPGroupByQuery(bgp, variables, aggregations, extensions);
         return sendQuery(graphURI, query, next,true);
     }
 

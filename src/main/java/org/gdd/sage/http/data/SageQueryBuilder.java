@@ -8,6 +8,7 @@ import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprAggregator;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -60,7 +61,7 @@ public class SageQueryBuilder {
      * @param variables - GROUP BY variables
      * @return Generated SPARQL query
      */
-    public static String buildBGPGroupByQuery(BasicPattern bgp, List<Var> variables) {
+    public static String buildBGPGroupByQuery(BasicPattern bgp, List<Var> variables, List<ExprAggregator> aggregations, VarExprList extensions) {
         // query root: the basic graph pattern itself
         Op op = new OpBGP(bgp);
         // add group by
@@ -68,9 +69,12 @@ public class SageQueryBuilder {
         for(Var v: variables) {
             list.add(v);
         }
-        op = new OpGroup(op, list, new LinkedList<>());
-        // apply projection
-        // op = new OpProject(op, variables);
+        op = new OpGroup(op, list, aggregations);
+        // Jena expect an aggregate query Count(?s) as ?x to have the plan:
+        // OpWhere -> OpGroup(Count(?s) as ?.0) -> rename ?.0 to ?x -> project(?x)
+        // so, we need to respect this format, otherwise the serialization does not work...
+        op = OpExtend.create(op, extensions);
+        op = new OpProject(op, extensions.getVars());
         return SageQueryBuilder.serializeQuery(op);
     }
 
