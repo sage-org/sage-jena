@@ -46,7 +46,7 @@ Execute a SPARQL query with the SaGe Smart client
 The following example finds the first 100 RDf triples in the DBpedia 2016 dataset
 
 ```
-bin/sage-jena http://sage.univ-nantes.fr/sparql/dbpedia-2016-04 -q "SELECT * WHERE { ?s ?p ?o } LIMIT 100"
+bin/sage-jena http://soyez-sage.univ-nantes.fr/sparql/dbpedia-2016-04 -q "SELECT * WHERE { ?s ?p ?o } LIMIT 100"
 ```
 
 ## Example: federated SPARQL query
@@ -60,6 +60,6 @@ then **the query engine will automatically rewrite the query** by using source s
 export QUERY="SELECT * WHERE { <http://dbpedia.org/resource/Albert_Einstein> <http://www.w3.org/2002/07/owl#sameAs> ?cc . ?cc <http://www.w3.org/2000/01/rdf-schema#label> ?name. }"
 
 # execute the query
-bin/sage-jena http://sage.univ-nantes.fr/sparql/dbpedia-2016-04 http://sage.univ-nantes.fr/sparql/sameAs -q "$QUERY"
+bin/sage-jena http://soyez-sage.univ-nantes.fr/sparql/dbpedia-2016-04 http://soyez-sage.univ-nantes.fr/sparql/sameAs -q "$QUERY"
 ```
 
