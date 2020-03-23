@@ -6,7 +6,6 @@ import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.modify.request.UpdateModify;
 import org.gdd.sage.engine.update.base.UpdateQuery;
@@ -15,11 +14,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Execute a DELETE/INSERT query
+ * Execute a DELETE/INSERT query by materializing the update pattern first
  * @see {@href https://www.w3.org/TR/2013/REC-sparql11-update-20130321/#deleteInsert}
  * @author Thomas Minier
  */
-public class DeleteInsertQuery implements UpdateQuery {
+public class DeleteInsertQuery extends BaseDeleteInsert {
     private ResultSet source;
     private QueryExecution execution;
     private UpdateQuery deleteQuery;
@@ -74,27 +73,6 @@ public class DeleteInsertQuery implements UpdateQuery {
     }
 
     /**
-     * Instantiate a list of templates (RDF quads) using a set of solution bindings.
-     * Exclude quads that where not all variables were substituted.
-     * @param templates - Templates, i.e., RDF quads with SPARQL variables
-     * @param bindings - List of sets of solution bindings
-     * @return The list of instantiated RDF quads
-     */
-    private List<Quad> buildTemplates(List<Quad> templates, List<Binding> bindings) {
-        List<Quad> results = new LinkedList<>();
-        for(Binding binding: bindings) {
-            for(Quad template: templates) {
-                Quad newQuad = Substitute.substitute(template, binding);
-                // assert that all variables in the new quad were substituted
-                if ((!newQuad.getSubject().isVariable()) && (!newQuad.getPredicate().isVariable()) && (!newQuad.getObject().isVariable())) {
-                    results.add(newQuad);
-                }
-            }
-        }
-        return results;
-    }
-
-    /**
      * Build the next SPARQL UPDATE query to execute
      * @return A SPARQL UPDATE query, i.e., either an INSERT DATA or DELETE DATA query
      */
@@ -124,12 +102,12 @@ public class DeleteInsertQuery implements UpdateQuery {
             }
             if (!results.isEmpty()) {
                 // build delete templates
-                List<Quad> deleteQuads = buildTemplates(deleteTemplates, results);
+                List<Quad> deleteQuads = this.buildQuadsTemplates(deleteTemplates, results);
                 if (!deleteQuads.isEmpty()) {
                     deleteQuery = new DeleteQuery(deleteQuads, bucketSize);
                 }
                 // build insert templates
-                List<Quad> insertQuads = buildTemplates(insertTemplates, results);
+                List<Quad> insertQuads = this.buildQuadsTemplates(insertTemplates, results);
                 if (!insertQuads.isEmpty()) {
                     insertQuery = new InsertQuery(insertQuads, bucketSize);
                 }

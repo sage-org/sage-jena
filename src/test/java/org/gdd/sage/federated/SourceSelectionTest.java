@@ -17,12 +17,12 @@ import static org.junit.Assert.*;
 public class SourceSelectionTest {
     private SageRemoteClient httpClient;
     private SourceSelection sourceSelection;
-    private final String DBPEDIA_GRAPH_URI = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
-    private final String SAMEAS_GRAPH_URI = "http://sage.univ-nantes.fr/sparql/sameAs";
+    private final String DBPEDIA_GRAPH_URI = "http://soyez-sage.univ-nantes.fr/sparql/dbpedia-2016-04";
+    private final String SAMEAS_GRAPH_URI = "http://soyez-sage.univ-nantes.fr/sparql/sameAs";
 
     @Before
     public void setUp() throws Exception {
-        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+        httpClient = new SageDefaultClient("http://soyez-sage.univ-nantes.fr/sparql");
         sourceSelection = new SourceSelection();
         sourceSelection.registerSource(DBPEDIA_GRAPH_URI, httpClient);
         sourceSelection.registerSource(SAMEAS_GRAPH_URI, httpClient);
@@ -48,7 +48,7 @@ public class SourceSelectionTest {
         // verify right operand of the join
         assertTrue("The left operand of the join should be a SERVICE node", rightOp.getRight() instanceof OpService);
         OpService rightService = (OpService) rightOp.getRight();
-        assertEquals("The left SERVICE operand should be localized with <http://sage.univ-nantes.fr/sparql/sameAs>", SAMEAS_GRAPH_URI, rightService.getService().toString());
+        assertEquals("The left SERVICE operand should be localized with <http://soyez-sage.univ-nantes.fr/sparql/sameAs>", SAMEAS_GRAPH_URI, rightService.getService().toString());
         assertTrue("The left SERVICE must wraps a BGP", rightService.getSubOp() instanceof OpBGP);
         OpBGP bgp = (OpBGP) rightService.getSubOp();
         assertEquals("The BGP must be of size 1", 1, bgp.getPattern().size());
@@ -60,7 +60,7 @@ public class SourceSelectionTest {
         // verify left operand of the join
         assertTrue("The right operand of the join should be a SERVICE node", rightOp.getLeft() instanceof OpService);
         OpService leftService = (OpService) rightOp.getLeft();
-        assertEquals("The right SERVICE operand should be localized with <http://sage.univ-nantes.fr/sparql/dbpedia-2016-04>", DBPEDIA_GRAPH_URI, leftService.getService().toString());
+        assertEquals("The right SERVICE operand should be localized with <http://soyez-sage.univ-nantes.fr/sparql/dbpedia-2016-04>", DBPEDIA_GRAPH_URI, leftService.getService().toString());
         assertTrue("The right SERVICE must wraps a BGP", leftService.getSubOp() instanceof OpBGP);
         bgp = (OpBGP) leftService.getSubOp();
         assertEquals("The BGP must be of size 1", 1, bgp.getPattern().size());

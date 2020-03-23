@@ -17,11 +17,11 @@ import static org.junit.Assert.*;
 
 public class BoundJoinIteratorTest {
     private SageRemoteClient httpClient;
-    private final String GRAPH_URI = "http://sage.univ-nantes.fr/sparql/dbpedia-2015-04en";
+    private final String GRAPH_URI = "http://soyez-sage.univ-nantes.fr/sparql/dbpedia-2015-04en";
 
     @Before
     public void setUp() {
-        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+        httpClient = new SageDefaultClient("http://soyez-sage.univ-nantes.fr/sparql");
     }
 
     @After

@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
 public class ParallelUnionIteratorTest {
     private SageRemoteClient httpClient;
     private ExecutorService threadPool;
-    private final String GRAPH_URI = "http://sage.univ-nantes.fr/sparql/dbpedia-2016-04";
+    private final String GRAPH_URI = "http://soyez-sage.univ-nantes.fr/sparql/dbpedia-2016-04";
 
     @Before
     public void setUp() {
-        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+        httpClient = new SageDefaultClient("http://soyez-sage.univ-nantes.fr/sparql");
         threadPool = Executors.newCachedThreadPool();
     }
 

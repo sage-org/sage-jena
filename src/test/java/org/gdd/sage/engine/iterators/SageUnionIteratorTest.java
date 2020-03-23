@@ -21,7 +21,7 @@ public class SageUnionIteratorTest {
 
     @Before
     public void setUp() {
-        httpClient = new SageDefaultClient("http://sage.univ-nantes.fr/sparql");
+        httpClient = new SageDefaultClient("http://soyez-sage.univ-nantes.fr/sparql");
     }
 
     @After
